@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "KCLMGP",
-    "slug": "KCLMGP",
+    "name": "Habit Tracker",
+    "slug": "habit-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "habittracker",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
