@@ -13,7 +13,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Display Today/Selected Date */}
+      {/* Today/Selected Date */}
       <Text style={styles.selectedDateText}>
         {selectedDate.date === today.getDate()
           ? "Today"
@@ -122,15 +122,18 @@ const styles = StyleSheet.create({
   },
 });
 
-// Function to get the current weeks dates
+// Function to get the current weeks dates based on the week index
 const getWeekDates = (weekIndex: number): { day: string; date: number; fullDate: Date }[] => {
   const today = new Date();
+
   today.setDate(today.getDate() + weekIndex * 7);
   const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
+  // Set Sunday as the first day of the week
   const firstDayOfWeek = new Date(today);
   firstDayOfWeek.setDate(today.getDate() - today.getDay());
 
+  // Loop over weekDays array to get the full weeks dates
   return weekDays.map((day, index) => {
     const date = new Date(firstDayOfWeek);
     date.setDate(firstDayOfWeek.getDate() + index);
@@ -142,7 +145,10 @@ const getWeekDates = (weekIndex: number): { day: string; date: number; fullDate:
   });
 };
 
-// Weekly Caldenar and swiping functionality
+/**
+ * WeeklyCalendar Component
+ * Displays an interactive weekly calendar at the top of the screen
+ */
 const WeeklyCalendar = ({
   selectedDate,
   setSelectedDate,
@@ -159,7 +165,7 @@ const WeeklyCalendar = ({
   const initialized = useRef(false);
   const userInteracted = useRef(false);
 
-  // When the app first opens Today will be the automatically selected day
+  // When the app first opens, Today will be the automatically selected day
   React.useEffect(() => {
     if (!initialized.current) {
       setSelectedDate({ date: todayDate, fullDate: today });
@@ -167,13 +173,14 @@ const WeeklyCalendar = ({
     }
   }, [setSelectedDate, todayDate, today]);
 
+  // Keeps track of which week the user is viewing
   const handleScrollEnd = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
     if (!initialized.current || !userInteracted.current) return; 
     
     const newIndex = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
     setWeekIndex(newIndex - 500);
 
-    // When swiping between weeks, Sat will be the automatically selected day
+    // When swiping between weeks, Saturday is automatically selected
     const newWeek = getWeekDates(newIndex - 500);
     const saturday = newWeek.find((day) => day.day === "Sa");
     if (saturday) {
@@ -183,6 +190,7 @@ const WeeklyCalendar = ({
 
   return (
     <View style={styles.calendarWrapper}>
+      {/* Weekly calendar */}
       <FlatList
         ref={flatListRef}
         data={[...Array(1000)].map((_, i) => getWeekDates(i - 500))}
@@ -216,7 +224,10 @@ const WeeklyCalendar = ({
                     setSelectedDate({ date, fullDate });
                   }}
                 >
+                  {/* Day e.g. Mo, Tu */}
                   <Text style={styles.dayText}>{day}</Text>
+
+                  {/* Styles for today and selected date */}
                   <View style={[isToday && styles.todayRing, isSelected && styles.selectedCircle]}>
                     <Text style={[styles.dateText, isSelected && styles.selectedText]}>
                       {date}
