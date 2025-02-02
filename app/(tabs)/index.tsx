@@ -102,6 +102,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
+  todayRing: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#007AFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   addButtonContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -141,14 +150,30 @@ const WeeklyCalendar = ({
   selectedDate: { date: number; fullDate: Date };
   setSelectedDate: React.Dispatch<React.SetStateAction<{ date: number; fullDate: Date }>>;
 }) => {
-  const [weekIndex, setWeekIndex] = useState(0);
+  const [weekIndex, setWeekIndex] = useState<number>(0);
   const flatListRef = useRef<FlatList>(null);
+  const today = new Date();
+  const todayDate = today.getDate();
+  const todayMonth = today.getMonth();
+  const todayYear = today.getFullYear();
+  const initialized = useRef(false);
+  const userInteracted = useRef(false);
 
-  // Select Saturday automatically when swiping
+  // When the app first opens Today will be the automatically selected day
+  React.useEffect(() => {
+    if (!initialized.current) {
+      setSelectedDate({ date: todayDate, fullDate: today });
+      initialized.current = true;
+    }
+  }, [setSelectedDate, todayDate, today]);
+
   const handleScrollEnd = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
+    if (!initialized.current || !userInteracted.current) return; 
+    
     const newIndex = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
     setWeekIndex(newIndex - 500);
 
+    // When swiping between weeks, Sat will be the automatically selected day
     const newWeek = getWeekDates(newIndex - 500);
     const saturday = newWeek.find((day) => day.day === "Sa");
     if (saturday) {
@@ -160,7 +185,7 @@ const WeeklyCalendar = ({
     <View style={styles.calendarWrapper}>
       <FlatList
         ref={flatListRef}
-        data={[...Array(1000)].map((_, i) => getWeekDates(i - 500))} 
+        data={[...Array(1000)].map((_, i) => getWeekDates(i - 500))}
         keyExtractor={(_, index) => index.toString()}
         horizontal
         pagingEnabled
@@ -172,27 +197,34 @@ const WeeklyCalendar = ({
           index,
         })}
         onMomentumScrollEnd={handleScrollEnd}
+        onTouchStart={() => (userInteracted.current = true)} 
         renderItem={({ item: week }: { item: { day: string; date: number; fullDate: Date }[] }) => (
           <View style={styles.weekContainer}>
-            {week.map(
-              (
-                { day, date, fullDate }: { day: string; date: number; fullDate: Date },
-                index: number
-              ) => (
+            {week.map(({ day, date, fullDate }, index) => {
+              const isToday =
+                date === todayDate &&
+                fullDate.getMonth() === todayMonth &&
+                fullDate.getFullYear() === todayYear;
+              const isSelected = selectedDate.date === date;
+
+              return (
                 <TouchableOpacity
                   key={index}
                   style={styles.dayContainer}
-                  onPress={() => setSelectedDate({ date, fullDate })}
+                  onPress={() => {
+                    userInteracted.current = true;
+                    setSelectedDate({ date, fullDate });
+                  }}
                 >
                   <Text style={styles.dayText}>{day}</Text>
-                  <View style={selectedDate.date === date ? styles.selectedCircle : {}}>
-                    <Text style={[styles.dateText, selectedDate.date === date ? styles.selectedText : {}]}>
+                  <View style={[isToday && styles.todayRing, isSelected && styles.selectedCircle]}>
+                    <Text style={[styles.dateText, isSelected && styles.selectedText]}>
                       {date}
                     </Text>
                   </View>
                 </TouchableOpacity>
-              )
-            )}
+              );
+            })}
           </View>
         )}
       />
