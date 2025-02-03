@@ -13,5 +13,5 @@ export default function IndexRoute() {
       });
   }, []);
 
-  return <Redirect href="/(tabs)/habits" />;
+  return <Redirect href="/(auth)/login" />;
 }
