@@ -70,10 +70,11 @@ export default function SignupScreen() {
                     <Link href="/login" asChild>
                         <TouchableOpacity style={styles.linkButton}>
                             <ThemedText style={styles.linkText}>
-                                Already have an account? Login
+                                Already have an account? Log in
                             </ThemedText>
                         </TouchableOpacity>
                     </Link>
+
                 </ThemedView>
             </ScrollView>
         </SafeAreaView>
