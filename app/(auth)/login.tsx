@@ -49,7 +49,7 @@ export default function LoginScreen() {
                 </TouchableOpacity>
                 <ThemedView style={styles.card}>
                     <ThemedText type="title" style={styles.title}>
-                        Login
+                        Log In
                     </ThemedText>
 
                     {error ? (
