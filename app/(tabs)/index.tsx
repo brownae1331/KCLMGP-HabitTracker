@@ -149,7 +149,7 @@ const getWeekDates = (weekIndex: number): { day: string; date: number; fullDate:
  * WeeklyCalendar Component
  * Displays an interactive weekly calendar at the top of the screen
  */
-const WeeklyCalendar = ({
+export const WeeklyCalendar = ({
   selectedDate,
   setSelectedDate,
 }: {
@@ -192,6 +192,7 @@ const WeeklyCalendar = ({
     <View style={styles.calendarWrapper}>
       {/* Weekly calendar */}
       <FlatList
+        testID="weekly-calendar-list"
         ref={flatListRef}
         data={[...Array(1000)].map((_, i) => getWeekDates(i - 500))}
         keyExtractor={(_, index) => index.toString()}
