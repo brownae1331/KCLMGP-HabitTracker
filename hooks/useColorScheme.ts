@@ -1,20 +1,28 @@
 import { useEffect, useState } from 'react';
-import { useColorScheme as _useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Appearance } from 'react-native';
 
 export function useColorScheme() {
-  const systemColorScheme = _useColorScheme();
-  const [userTheme, setUserTheme] = useState<string | null>(null);
+  const [theme, setTheme] = useState<'light' | 'dark'>(Appearance.getColorScheme() || 'light');
 
   useEffect(() => {
-    const fetchTheme = async () => {
+    const loadThemePreference = async () => {
       const savedTheme = await AsyncStorage.getItem('theme');
-      if (savedTheme === 'light' || savedTheme === 'dark') {
-        setUserTheme(savedTheme);
+      if (savedTheme) {
+        setTheme(savedTheme as 'light' | 'dark');
+      } else {
+        setTheme(Appearance.getColorScheme() || 'light');
       }
     };
-    fetchTheme();
+
+    loadThemePreference();
+
+    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+      setTheme(colorScheme as 'light' | 'dark');
+    });
+
+    return () => subscription.remove();
   }, []);
 
-  return userTheme ?? systemColorScheme ?? 'light';
+  return theme;
 }
