@@ -22,13 +22,20 @@ const GoodHabitGraph = () => {
         {data.map((value, index) => (
           <View key={index} style={styles.barContainer}>
             <View style={[styles.bar, { height: (value / 150) * maxHeight }]} />
-            <Text style={styles.label}>{['M', 'T', 'W', 'T', 'F', 'S', 'S'][index]}</Text>
           </View>
         ))}
+
+        <View style={styles.labelContainer}>
+          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
+            <Text key={index} style={styles.label}>{day}</Text>
+          ))}
+        </View>
       </View>
     </View>
   );
 };
+
+//<Text style={styles.label}>{['M', 'T', 'W', 'T', 'F', 'S', 'S'][index]}</Text>
 
 const styles = StyleSheet.create({
   container: {
@@ -69,6 +76,14 @@ const styles = StyleSheet.create({
     width: 30,
     backgroundColor: '#0570B3',
     borderRadius: 5,
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    position: 'absolute',
+    bottom: -20,
+    right: '0%',
   },
   label: {
     marginTop: 5,
