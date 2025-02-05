@@ -1,3 +1,10 @@
+import { Image, StyleSheet, Platform } from 'react-native';
+import { HelloWave } from '@/components/HelloWave';
+import { ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 import { StyleSheet, Platform, View, Text, TouchableOpacity, SafeAreaView, FlatList, Dimensions } from 'react-native';
 import React, { useState, useRef } from 'react';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -32,6 +39,7 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
