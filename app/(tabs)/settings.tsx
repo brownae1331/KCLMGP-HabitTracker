@@ -48,7 +48,7 @@ import { useTheme } from '@/components/ThemeContext';
 // }
 
 export default function SettingsScreen() {
-  const { theme, toggleTheme } = useTheme();  // 使用 ThemeContext 获取主题和切换方法
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
