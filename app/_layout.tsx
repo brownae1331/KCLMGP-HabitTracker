@@ -47,11 +47,11 @@ export default function RootLayout() {
 }
 
 function AppContent(){
-  const { theme } = useTheme();
+  const { theme, refreshKey } = useTheme();
 
   return (
-    <NavigationThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+    <NavigationThemeProvider key={refreshKey} value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack key={refreshKey}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
