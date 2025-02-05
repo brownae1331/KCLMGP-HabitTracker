@@ -1,10 +1,11 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import GoodHabitGraph from '@/components/GoodHabitGraph';
 
 export default function StatsScreen() {
   return (
@@ -13,18 +14,19 @@ export default function StatsScreen() {
         <ThemedView style={styles.titleContainer}>
           <ThemedText type="title">Stats</ThemedText>
         </ThemedView>
+        <GoodHabitGraph />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
+  // headerImage: {
+  //   color: '#808080',
+  //   bottom: -90,
+  //   left: -35,
+  //   position: 'absolute',
+  // },
   titleContainer: {
     flexDirection: 'row',
     gap: 8,
