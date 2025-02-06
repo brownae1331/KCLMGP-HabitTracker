@@ -25,8 +25,8 @@ Windows install
 3.   cd server
 4.   npm install (if u dont have dependencies)
 5.   npm start
-      Server listening on port 3000
-      Connected to MySQL database habitdb (terminal output if done correctly)
+      (Terminal output: Server listening on port 3000
+      Connected to MySQL database habitdb)
 6. Start a new terminal
 7. cd ../client
 8. npm install
