@@ -4,17 +4,41 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 ## Get started
 
-1. Install dependencies
+MacOS install
+# Install MySQL (if not installed)
+brew install mysql
+brew services start mysql
+mysql --version
 
-   ```bash
-   npm install
-   ```
+# Create MySQL Database
+mysql -u root -p
+CREATE DATABASE habitdb;
+EXIT;
 
-2. Start the app
+# Set Up Backend
+cd server
+npm install  # Install dependencies
+npm start    # Start the server
 
-   ```bash
-    npx expo start
-   ```
+# Open a new terminal and set up the client
+cd ../client
+npm install  # Install dependencies
+expo start   # Start the React Native app
+
+
+
+Windows install
+1.   mysql -u root -p (sign in prompt, mysql must be installed prior) 
+2.   CREATE DATABASE habitdb;
+3.   cd server
+4.   npm install (if u dont have dependencies)
+5.   npm start
+      Server listening on port 3000
+      Connected to MySQL database habitdb (terminal output if done correctly)
+6. Start a new terminal
+7. cd ../client
+8. npm install
+9. expo start
 
 In the output, you'll find options to open the app in a
 
