@@ -20,13 +20,11 @@ MacOS install (brew)
 
 
 Windows install
-1.   mysql -u root -p (sign in prompt, mysql must be installed prior) 
+1.   mysql -u root -p # Sign in prompt, mysql must be installed prior
 2.   CREATE DATABASE habitdb;
 3.   cd server
-4.   npm install (if u dont have dependencies)
-5.   npm start
-      (Terminal output: Server listening on port 3000
-      Connected to MySQL database habitdb)
+4.   npm install # If u dont have dependencies
+5.   npm start # Terminal output: Server listening on port 3000 Connected to MySQL database habitdb
 6. Start a new terminal
 7. cd ../client
 8. npm install
