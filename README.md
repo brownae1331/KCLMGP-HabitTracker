@@ -4,22 +4,19 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 ## Get started
 
-MacOS install
-brew install mysql
-brew services start mysql
-mysql --version
-
-mysql -u root -p
-CREATE DATABASE habitdb;
-EXIT;
-
-cd server
-npm install  # Install dependencies
-npm start    # Start the server
-
-cd ../client
-npm install  # Install dependencies
-expo start   # Start the React Native app
+MacOS install (brew)
+1. brew install mysql
+2. brew services start mysql
+3. mysql --version
+4. mysql -u root -p
+5. CREATE DATABASE habitdb;
+6. EXIT;
+7. cd server
+8. npm install  # Install dependencies
+9. npm start    # Start the server
+10. cd ../client # New terminal
+11. npm install  # Install dependencies
+12. expo start   # Start the React Native app
 
 
 Windows install
