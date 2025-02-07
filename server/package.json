@@ -1,0 +1,29 @@
+{
+  "name": "habit-tracker-server",
+  "version": "1.0.0",
+  "description": "Backend API for the Habit Tracker app using Node.js, Express, and MySQL",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "reset-db": "node scripts/reset-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "mysql2": "^3.6.2",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["habit-tracker", "express", "mysql", "api", "nodejs"],
+  "author": "Your Name",
+  "license": "MIT"
+}
