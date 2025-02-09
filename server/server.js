@@ -1,20 +1,22 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
 import cors from 'cors';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
-const PORT = 3000; // Change if needed
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
-// Database Configuration (Replace with your credentials)
 const DB_CONFIG = {
-  host: '127.0.0.1', // Use 127.0.0.1 for local MySQL
-  user: 'root',       // Your MySQL username
-  password: 'root',       // Your MySQL password (leave empty if no password)
-  database: 'habitdb',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT, 10),
   queueLimit: 0
 };
+
 
 // Create a MySQL Connection Pool
 const pool = mysql.createPool(DB_CONFIG);
