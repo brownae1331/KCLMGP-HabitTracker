@@ -1,8 +1,21 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const GoodHabitGraph = () => {
-  const data = [50, 80, 100, 120, 60, 90, 110]; // Fake progess for each day
+interface GoodHabitGraphProps {
+  habit: string;
+}
+
+const GoodHabitGraph: React.FC<GoodHabitGraphProps> = ({habit}) => {
+  // const data = [50, 80, 100, 120, 60, 90, 110]; // Fake progess for each day
+  // const target = 100; // Target completion level (100%)
+  // const maxHeight = 150; // Max bar height in pixels
+  const habitData: { [key: string]: number[] } = {
+    habit1: [50, 80, 100, 120, 60, 90, 110], // Exercise
+    habit2: [30, 60, 90, 70, 50, 40, 80],    // Reading
+    habit3: [20, 40, 60, 80, 100, 120, 140], // Meditation
+  };  // Fake progess for each day
+
+  const data = habitData[habit] || [];
   const target = 100; // Target completion level (100%)
   const maxHeight = 150; // Max bar height in pixels
 
