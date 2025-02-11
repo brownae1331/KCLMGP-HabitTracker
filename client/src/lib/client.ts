@@ -58,15 +58,19 @@ export async function createUser(email: string, password: string, username: stri
 
 // Sign in a user.
 export async function signIn(email: string, password: string) {
-  const response = await fetch(`${BASE_URL}/auth/signin`, {
+  const response = await fetch(`${BASE_URL}/users/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password })
   });
+
+  const data = await response.json();
+
   if (!response.ok) {
-    throw new Error('Error signing in');
+    throw new Error(data.error || 'Error signing in');
   }
-  return response.json();
+
+  return data;
 }
 
 // Add a habit.

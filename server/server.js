@@ -156,6 +156,24 @@ app.delete('/habits/:username/:name', async (req, res) => {
   }
 });
 
+// Get a user by email
+app.post('/users/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (users.length === 0) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    const user = users[0];
+    if (user.password !== password) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Error retrieving user' });
+  }
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
