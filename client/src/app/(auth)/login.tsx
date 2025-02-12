@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
-import { signIn } from '../../lib/client';
+import { logIn } from '../../lib/client';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 
@@ -13,7 +13,7 @@ export default function LoginScreen() {
 
     const handleLogin = async () => {
         try {
-            await signIn(email, password);
+            await logIn(email, password);
             router.replace('/(tabs)/habits');
         } catch (err) {
             if (err instanceof Error) {
