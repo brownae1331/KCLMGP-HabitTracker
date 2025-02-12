@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 interface GoodHabitGraphProps {
@@ -9,13 +9,35 @@ const GoodHabitGraph: React.FC<GoodHabitGraphProps> = ({habit}) => {
   // const data = [50, 80, 100, 120, 60, 90, 110]; // Fake progess for each day
   // const target = 100; // Target completion level (100%)
   // const maxHeight = 150; // Max bar height in pixels
-  const habitData: { [key: string]: number[] } = {
-    habit1: [50, 80, 100, 120, 60, 90, 110], // Exercise
-    habit2: [30, 60, 90, 70, 50, 40, 80],    // Reading
-    habit3: [20, 40, 60, 80, 100, 120, 140], // Meditation
-  };  // Fake progess for each day
+  // const habitData: { [key: string]: number[] } = {
+  //   habit1: [50, 80, 100, 120, 60, 90, 110], // Exercise
+  //   habit2: [30, 60, 90, 70, 50, 40, 80],    // Reading
+  //   habit3: [20, 40, 60, 80, 100, 120, 140], // Meditation
+  // };  // Fake progess for each day
 
-  const data = habitData[habit] || [];
+  const [habitData, setHabitData] = useState<number[]>([]);
+  const username = 'your_username';
+
+  useEffect(() => {
+    const fetchHabitData = async () => {
+      try {
+        const response = await fetch(`http://<YOUR_SERVER_IP>:3000/habits/${username}`);
+        const data = await response.json();
+        const selectedHabitData = data.find((h: any) => h.name === habit);
+
+        if (selectedHabitData) {
+          setHabitData([selectedHabitData.amount]);
+        }
+      } catch (error) {
+        console.error('Error fetching habit data:', error);
+      }
+    };
+
+    if (habit) {
+      fetchHabitData();
+    }
+  }, [habit]);
+
   const target = 100; // Target completion level (100%)
   const maxHeight = 150; // Max bar height in pixels
 
@@ -32,7 +54,7 @@ const GoodHabitGraph: React.FC<GoodHabitGraphProps> = ({habit}) => {
       <View style={styles.chartContainer}>
         <View style={[styles.targetLine, { bottom: (target / 150) * maxHeight }]} />
         
-        {data.map((value, index) => (
+        {habitData.map((value, index) => (
           <View key={index} style={styles.barContainer}>
             <View style={[styles.bar, { height: (value / 150) * maxHeight }]} />
           </View>

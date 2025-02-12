@@ -1,5 +1,4 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { ScrollView } from 'react-native';
@@ -8,30 +7,44 @@ import GoodHabitGraph from '../../components/GoodHabitGraph';
 import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
 
+interface Habit {
+  username: string;
+  name: string;
+  description?: string;
+  amount?: number;
+  positive?: boolean;
+  date?: string;
+  increment?: number;
+  location?: string;
+  notifications_allowed?: boolean;
+  notification_sound?: string;
+  streak?: number;
+}
+
 export default function StatsScreen() {
   const [selectedHabit, setSelectedHabit ]= useState('');
-  const [habits, setHabits] = useState([]);
+  const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setloading] = useState(true);
   const username = 'your_username';
 
   useEffect(() => {
     const fetchHabits = async () => {
       try {
-        const response = await fetch(`http://<YOUR_SERVER_IP>:3000/habits/${username}`)
+        const response = await fetch(`http://Localhost:3000/habits/${username}`); //This need repalced later
         const data = await response.json();
         setHabits(data);
         if (data.length > 0) {
           setSelectedHabit(data[0].name);
-        } 
-      }catch (error) {
+        }
+      } catch (error) {
         console.error('Error fetching habits:', error);
-      }finally {
+      } finally {
         setloading(false);
       }
-      
     };
     fetchHabits();
   }, []);
+  
 
   if (loading) {
     return (
