@@ -2,6 +2,7 @@ import express from 'express';
 import mysql from 'mysql2/promise';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
 dotenv.config();
 
 const app = express();
@@ -17,6 +18,7 @@ const DB_CONFIG = {
   queueLimit: 0
 };
 
+const SALT_ROUNDS = 10;
 
 // Create a MySQL Connection Pool
 const pool = mysql.createPool(DB_CONFIG);
@@ -85,17 +87,81 @@ app.get('/users', async (req, res) => {
   }
 });
 
-// Create a new user
-app.post('/users', async (req, res) => {
-  const { email, password, username } = req.body;
+// Get a user by email
+app.post('/users/login', async (req, res) => {
+  const { email, password } = req.body;
   try {
+    const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (users.length === 0) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const user = users[0];
+
+    // Compare the provided password with the stored hash
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Don't send the password hash back to the client
+    const { password: _, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Error retrieving user' });
+  }
+});
+
+// Create a new user
+app.post('/users/signup', async (req, res) => {
+  const { email, password, username } = req.body;
+
+  // Validate required fields
+  if (!email || !password || !username) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  // Validate email format
+  const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+
+  // Validate password length
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+  }
+
+  // Validate username length and format
+  if (username.length < 3) {
+    return res.status(400).json({ error: 'Username must be at least 3 characters long' });
+  }
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    return res.status(400).json({ error: 'Username can only contain letters, numbers, and underscores' });
+  }
+
+  try {
+    // Hash the password before storing
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
     const [result] = await pool.query(
       'INSERT INTO users (email, password, username) VALUES (?, ?, ?)',
-      [email, password, username]
+      [email, hashedPassword, username]
     );
     res.status(201).json({ id: result.insertId, email, username });
   } catch (error) {
-    res.status(500).json({ error: 'Error creating user' });
+    // Handle specific MySQL errors
+    if (error.code === 'ER_DUP_ENTRY') {
+      if (error.sqlMessage.includes('email')) {
+        return res.status(409).json({ error: 'Email already exists' });
+      }
+      return res.status(409).json({ error: 'Duplicate entry' });
+    }
+
+    console.error('Signup error:', error);
+    res.status(500).json({ error: 'Internal server error while creating user' });
   }
 });
 

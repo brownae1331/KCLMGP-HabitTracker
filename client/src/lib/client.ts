@@ -45,28 +45,36 @@ export const getHabitsByUser = getHabits;
 
 // Create a new user.
 export async function createUser(email: string, password: string, username: string) {
-  const response = await fetch(`${BASE_URL}/users`, {
+  const response = await fetch(`${BASE_URL}/users/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password, username }),
   });
+
+  const data = await response.json();
+
   if (!response.ok) {
-    throw new Error('Error creating user');
+    throw new Error(data.error || 'Error creating user');
   }
-  return response.json();
+
+  return data;
 }
 
 // Sign in a user.
-export async function signIn(email: string, password: string) {
-  const response = await fetch(`${BASE_URL}/auth/signin`, {
+export async function logIn(email: string, password: string) {
+  const response = await fetch(`${BASE_URL}/users/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password })
   });
+
+  const data = await response.json();
+
   if (!response.ok) {
-    throw new Error('Error signing in');
+    throw new Error(data.error || 'Error logging in');
   }
-  return response.json();
+
+  return data;
 }
 
 // Add a habit.
