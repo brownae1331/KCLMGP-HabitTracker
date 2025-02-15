@@ -13,7 +13,7 @@ const DB_CONFIG = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
+  // port: process.env.DB_PORT,
   waitForConnections: true,
   connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT, 10),
   queueLimit: 0
@@ -98,6 +98,11 @@ app.post('/users/login', async (req, res) => {
     }
 
     const user = users[0];
+
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
 
     // Compare the provided password with the stored hash
     const passwordMatch = await bcrypt.compare(password, user.password);
