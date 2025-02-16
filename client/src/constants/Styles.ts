@@ -107,17 +107,6 @@ export const SharedStyles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    modalContent: {
-        width: '90%',
-        padding: 20,
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-    },
     modalTitle: {
         marginBottom: 12,
     },
@@ -198,11 +187,6 @@ export const SharedStyles = StyleSheet.create({
     selectedDayButtonText: {
         color: '#fff',
     },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 12,
-    },
     button: {
         flex: 1,
         paddingVertical: 10,
@@ -245,5 +229,28 @@ export const SharedStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 12,
+    },
+    modalContent: {
+        width: '90%',
+        maxHeight: '90%', // Limit modal height
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+    },
+    scrollContent: {
+        padding: 20,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        padding: 20,
+        paddingTop: 0,
+        backgroundColor: '#fff',
+        borderBottomLeftRadius: 8,
+        borderBottomRightRadius: 8,
     },
 }); 

@@ -6,6 +6,7 @@ import {
     View,
     ScrollView,
     Switch,
+    StyleSheet,
 } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { Picker } from '@react-native-picker/picker';
@@ -92,136 +93,141 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
         >
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                    <ThemedText type="title" style={[styles.modalTitle, styles.textDark]}>
-                        Add New Habit
-                    </ThemedText>
-
-                    <HabitTypeSlider habitType={habitType} setHabitType={setHabitType} />
-
-                    <TextInput
-                        style={[styles.input, { color: '#333' }]}
-                        placeholder="Habit Name"
-                        placeholderTextColor="#777"
-                        value={habitName}
-                        onChangeText={setHabitName}
-                    />
-
-                    <TextInput
-                        style={[styles.input, styles.descriptionInput, { color: '#333' }]}
-                        placeholder="Habit Description"
-                        placeholderTextColor="#777"
-                        value={habitDescription}
-                        onChangeText={setHabitDescription}
-                        multiline
-                    />
-
-                    <ThemedText type="subtitle" style={[styles.sectionLabel, styles.textDark]}>
-                        Pick a Color
-                    </ThemedText>
                     <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.colorPickerContainer}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.scrollContent}
                     >
-                        {colorOptions.map((color) => (
-                            <TouchableOpacity
-                                key={color}
-                                style={[
-                                    styles.colorSwatch,
-                                    { backgroundColor: color },
-                                    color === habitColor && styles.selectedSwatch,
-                                ]}
-                                onPress={() => setHabitColor(color)}
-                            />
-                        ))}
-                    </ScrollView>
+                        <ThemedText type="title" style={[styles.modalTitle, styles.textDark]}>
+                            Add New Habit
+                        </ThemedText>
 
-                    {habitType === 'build' && (
-                        <>
-                            <ThemedText type="subtitle" style={[styles.sectionLabel, styles.textDark]}>
-                                Goal
-                            </ThemedText>
-                            <View style={styles.goalToggleContainer}>
-                                <ThemedText style={[styles.textDark]}>Enable Goal?</ThemedText>
-                                <Switch
-                                    value={isGoalEnabled}
-                                    onValueChange={setIsGoalEnabled}
-                                    trackColor={{ false: '#ccc', true: '#007AFF' }}
-                                    thumbColor="#fff"
-                                />
-                            </View>
-                            {isGoalEnabled && (
-                                <View style={styles.goalFieldsContainer}>
-                                    <TextInput
-                                        style={[styles.input, { flex: 0.4, color: '#333' }]}
-                                        placeholder="Number"
-                                        placeholderTextColor="#777"
-                                        keyboardType="numeric"
-                                        value={goalValue}
-                                        onChangeText={setGoalValue}
-                                    />
-                                    <TextInput
-                                        style={[styles.input, { flex: 0.6, color: '#333', marginLeft: 8 }]}
-                                        placeholder="Unit (e.g. minutes, pages)"
-                                        placeholderTextColor="#777"
-                                        value={goalUnit}
-                                        onChangeText={setGoalUnit}
-                                    />
-                                    <ThemedText style={[styles.daysText, styles.textDark]}>per day</ThemedText>
-                                </View>
-                            )}
-                        </>
-                    )}
+                        <HabitTypeSlider habitType={habitType} setHabitType={setHabitType} />
 
-                    <ThemedText type="subtitle" style={[styles.sectionLabel, styles.textDark]}>
-                        Schedule
-                    </ThemedText>
-                    <Picker
-                        mode="dropdown"
-                        selectedValue={scheduleOption}
-                        onValueChange={(itemValue) => setScheduleOption(itemValue)}
-                        style={styles.picker}
-                    >
-                        <Picker.Item label="Every ___ days" value="interval" />
-                        <Picker.Item label="Every ___ day of the week" value="weekly" />
-                    </Picker>
+                        <TextInput
+                            style={[styles.input, { color: '#333' }]}
+                            placeholder="Habit Name"
+                            placeholderTextColor="#777"
+                            value={habitName}
+                            onChangeText={setHabitName}
+                        />
 
-                    {scheduleOption === 'interval' ? (
-                        <View style={styles.intervalContainer}>
-                            <TextInput
-                                style={[styles.input, { flex: 1, color: '#333' }]}
-                                placeholder="Enter number"
-                                placeholderTextColor="#777"
-                                keyboardType="numeric"
-                                value={intervalDays}
-                                onChangeText={setIntervalDays}
-                            />
-                            <ThemedText style={[styles.daysText, styles.textDark]}>days</ThemedText>
-                        </View>
-                    ) : (
-                        <View style={styles.weeklyContainer}>
-                            {daysOfWeek.map((day) => (
+                        <TextInput
+                            style={[styles.input, styles.descriptionInput, { color: '#333' }]}
+                            placeholder="Habit Description"
+                            placeholderTextColor="#777"
+                            value={habitDescription}
+                            onChangeText={setHabitDescription}
+                            multiline
+                        />
+
+                        <ThemedText type="subtitle" style={[styles.sectionLabel, styles.textDark]}>
+                            Pick a Color
+                        </ThemedText>
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={styles.colorPickerContainer}
+                        >
+                            {colorOptions.map((color) => (
                                 <TouchableOpacity
-                                    key={day}
-                                    onPress={() => toggleDay(day)}
+                                    key={color}
                                     style={[
-                                        styles.dayButton,
-                                        selectedDays.includes(day) && styles.selectedDayButton,
+                                        styles.colorSwatch,
+                                        { backgroundColor: color },
+                                        color === habitColor && styles.selectedSwatch,
                                     ]}
-                                >
-                                    <ThemedText
+                                    onPress={() => setHabitColor(color)}
+                                />
+                            ))}
+                        </ScrollView>
+
+                        {habitType === 'build' && (
+                            <>
+                                <ThemedText type="subtitle" style={[styles.sectionLabel, styles.textDark]}>
+                                    Goal
+                                </ThemedText>
+                                <View style={styles.goalToggleContainer}>
+                                    <ThemedText style={[styles.textDark]}>Enable Goal?</ThemedText>
+                                    <Switch
+                                        value={isGoalEnabled}
+                                        onValueChange={setIsGoalEnabled}
+                                        trackColor={{ false: '#ccc', true: '#007AFF' }}
+                                        thumbColor="#fff"
+                                    />
+                                </View>
+                                {isGoalEnabled && (
+                                    <View style={styles.goalFieldsContainer}>
+                                        <TextInput
+                                            style={[styles.input, { flex: 0.4, color: '#333' }]}
+                                            placeholder="Number"
+                                            placeholderTextColor="#777"
+                                            keyboardType="numeric"
+                                            value={goalValue}
+                                            onChangeText={setGoalValue}
+                                        />
+                                        <TextInput
+                                            style={[styles.input, { flex: 0.6, color: '#333', marginLeft: 8 }]}
+                                            placeholder="Unit (e.g. minutes, pages)"
+                                            placeholderTextColor="#777"
+                                            value={goalUnit}
+                                            onChangeText={setGoalUnit}
+                                        />
+                                        <ThemedText style={[styles.daysText, styles.textDark]}>per day</ThemedText>
+                                    </View>
+                                )}
+                            </>
+                        )}
+
+                        <ThemedText type="subtitle" style={[styles.sectionLabel, styles.textDark]}>
+                            Schedule
+                        </ThemedText>
+                        <Picker
+                            mode="dropdown"
+                            selectedValue={scheduleOption}
+                            onValueChange={(itemValue) => setScheduleOption(itemValue)}
+                            style={styles.picker}
+                        >
+                            <Picker.Item label="Every ___ days" value="interval" />
+                            <Picker.Item label="Every ___ day of the week" value="weekly" />
+                        </Picker>
+
+                        {scheduleOption === 'interval' ? (
+                            <View style={styles.intervalContainer}>
+                                <TextInput
+                                    style={[styles.input, { flex: 1, color: '#333' }]}
+                                    placeholder="Enter number"
+                                    placeholderTextColor="#777"
+                                    keyboardType="numeric"
+                                    value={intervalDays}
+                                    onChangeText={setIntervalDays}
+                                />
+                                <ThemedText style={[styles.daysText, styles.textDark]}>days</ThemedText>
+                            </View>
+                        ) : (
+                            <View style={styles.weeklyContainer}>
+                                {daysOfWeek.map((day) => (
+                                    <TouchableOpacity
+                                        key={day}
+                                        onPress={() => toggleDay(day)}
                                         style={[
-                                            styles.dayButtonText,
-                                            selectedDays.includes(day) && styles.selectedDayButtonText,
-                                            styles.textDark,
+                                            styles.dayButton,
+                                            selectedDays.includes(day) && styles.selectedDayButton,
                                         ]}
                                     >
-                                        {day.slice(0, 3)}
-                                    </ThemedText>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    )}
+                                        <ThemedText
+                                            style={[
+                                                styles.dayButtonText,
+                                                selectedDays.includes(day) && styles.selectedDayButtonText,
+                                                styles.textDark,
+                                            ]}
+                                        >
+                                            {day.slice(0, 3)}
+                                        </ThemedText>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+                    </ScrollView>
 
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity style={styles.button} onPress={onAddHabit}>
@@ -238,4 +244,4 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
             </View>
         </Modal>
     );
-}; 
+};
