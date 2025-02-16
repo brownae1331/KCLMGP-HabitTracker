@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { getWeekDates } from '../utils/dateUtils';
-import { SharedStyles as styles } from '../constants/Styles';
+import { SharedStyles as styles } from './styles/SharedStyles';
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 

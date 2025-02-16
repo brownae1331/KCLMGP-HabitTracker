@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
-import { SharedStyles as styles } from '../constants/Styles';
+import { HabitModalStyles } from './styles/HabitModalStyles';
+import { SharedStyles } from './styles/SharedStyles';
 import { ThemedText } from './ThemedText';
 
 interface HabitTypeSliderProps {
@@ -13,19 +14,19 @@ export const HabitTypeSlider: React.FC<HabitTypeSliderProps> = ({
     setHabitType,
 }) => {
     return (
-        <View style={styles.sliderContainer}>
+        <View style={HabitModalStyles.sliderContainer}>
             <TouchableOpacity
                 style={[
-                    styles.sliderOption,
-                    habitType === 'build' && styles.selectedOption,
+                    HabitModalStyles.sliderOption,
+                    habitType === 'build' && HabitModalStyles.selectedOption,
                 ]}
                 onPress={() => setHabitType('build')}
             >
                 <ThemedText
                     style={[
-                        styles.sliderOptionText,
-                        habitType === 'build' && styles.selectedOptionText,
-                        styles.textDark,
+                        HabitModalStyles.sliderOptionText,
+                        habitType === 'build' && HabitModalStyles.selectedOptionText,
+                        SharedStyles.textDark,
                     ]}
                 >
                     Build
@@ -33,16 +34,16 @@ export const HabitTypeSlider: React.FC<HabitTypeSliderProps> = ({
             </TouchableOpacity>
             <TouchableOpacity
                 style={[
-                    styles.sliderOption,
-                    habitType === 'quit' && styles.selectedOption,
+                    HabitModalStyles.sliderOption,
+                    habitType === 'quit' && HabitModalStyles.selectedOption,
                 ]}
                 onPress={() => setHabitType('quit')}
             >
                 <ThemedText
                     style={[
-                        styles.sliderOptionText,
-                        habitType === 'quit' && styles.selectedOptionText,
-                        styles.textDark,
+                        HabitModalStyles.sliderOptionText,
+                        habitType === 'quit' && HabitModalStyles.selectedOptionText,
+                        SharedStyles.textDark,
                     ]}
                 >
                     Quit

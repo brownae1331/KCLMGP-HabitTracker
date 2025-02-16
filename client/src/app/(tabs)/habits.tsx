@@ -8,7 +8,7 @@ import {
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { WeeklyCalendar } from '../../components/WeeklyCalendar';
-import { SharedStyles as styles } from '../../constants/Styles';
+import { SharedStyles } from '../../components/styles/SharedStyles';
 import { NewHabitModal } from '../../components/NewHabitModal';
 
 export default function HomeScreen() {
@@ -67,11 +67,11 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={SharedStyles.container}>
       <ScrollView style={{ flex: 1 }}>
 
         {/* Today/Selected Date */}
-        <Text style={styles.selectedDateText}>
+        <Text style={SharedStyles.selectedDateText}>
           {selectedDate.date === today.getDate()
             ? "Today"
             : selectedDate.fullDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
@@ -81,7 +81,7 @@ export default function HomeScreen() {
         <WeeklyCalendar selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
 
         {/* Add Habit Button */}
-        <ThemedView style={styles.addButtonContainer}>
+        <ThemedView style={SharedStyles.addButtonContainer}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <IconSymbol name="plus" size={24} color="#007AFF" />
           </TouchableOpacity>
