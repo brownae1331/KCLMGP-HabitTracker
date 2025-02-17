@@ -7,12 +7,6 @@ export const CalendarStyles = StyleSheet.create({
         width: SCREEN_WIDTH,
         overflow: "hidden",
     },
-    calendarContainer: {
-        flexDirection: "row",
-        width: SCREEN_WIDTH * 3,
-        alignItems: "center",
-        justifyContent: "center",
-    },
     weekContainer: {
         width: SCREEN_WIDTH,
         flexDirection: "row",
@@ -27,12 +21,6 @@ export const CalendarStyles = StyleSheet.create({
         height: 50,
         borderRadius: 25,
     },
-    selectedDay: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        justifyContent: 'center',
-    },
     dayText: {
         fontSize: 12,
         fontWeight: 'bold',
@@ -43,4 +31,23 @@ export const CalendarStyles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#000',
     },
-}); 
+    todayRing: {
+        borderWidth: 2,
+        borderColor: '#007AFF',
+        borderRadius: 12,
+        padding: 4,
+    },
+    selectedCircle: {
+        backgroundColor: '#007AFF',
+        borderRadius: 15,
+        width: 30,
+        height: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
+        transform: [{ scale: 1.1 }],
+    },
+    selectedText: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+    },
+});

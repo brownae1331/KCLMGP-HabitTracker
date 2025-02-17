@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { getWeekDates } from '../utils/dateUtils';
-import { SharedStyles as styles } from './styles/SharedStyles';
+import { CalendarStyles } from './styles/CalendarStyles';
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -47,7 +47,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
     };
 
     return (
-        <View style={styles.calendarWrapper}>
+        <View style={CalendarStyles.calendarWrapper}>
             {/* Weekly calendar */}
             <FlatList
                 testID="weekly-calendar-list"
@@ -66,7 +66,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                 onMomentumScrollEnd={handleScrollEnd}
                 onTouchStart={() => (userInteracted.current = true)}
                 renderItem={({ item: week }: { item: { day: string; date: number; fullDate: Date }[] }) => (
-                    <View style={styles.weekContainer}>
+                    <View style={CalendarStyles.weekContainer}>
                         {week.map(({ day, date, fullDate }, index) => {
                             const isToday =
                                 date === todayDate &&
@@ -77,18 +77,18 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
                             return (
                                 <TouchableOpacity
                                     key={index}
-                                    style={styles.dayContainer}
+                                    style={CalendarStyles.dayContainer}
                                     onPress={() => {
                                         userInteracted.current = true;
                                         setSelectedDate({ date, fullDate });
                                     }}
                                 >
                                     {/* Day e.g. Mo, Tu */}
-                                    <Text style={styles.dayText}>{day}</Text>
+                                    <Text style={CalendarStyles.dayText}>{day}</Text>
 
                                     {/* Styles for today and selected date */}
-                                    <View style={[isToday && styles.todayRing, isSelected && styles.selectedCircle]}>
-                                        <Text style={[styles.dateText, isSelected && styles.selectedText]}>
+                                    <View style={[isToday && CalendarStyles.todayRing, isSelected && CalendarStyles.selectedCircle]}>
+                                        <Text style={[CalendarStyles.dateText, isSelected && CalendarStyles.selectedText]}>
                                             {date}
                                         </Text>
                                     </View>
@@ -101,4 +101,3 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
         </View>
     );
 };
-
