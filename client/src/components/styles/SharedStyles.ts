@@ -91,4 +91,13 @@ export const SharedStyles = StyleSheet.create({
         padding: 16,
         alignItems: 'center',
     },
+
+
+
+
+
+    titleContainer: {
+        flexDirection: 'row',
+        gap: 8,
+    },
 });

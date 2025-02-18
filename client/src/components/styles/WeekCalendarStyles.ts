@@ -2,7 +2,7 @@ import { StyleSheet, Dimensions } from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
-export const CalendarStyles = StyleSheet.create({
+export const WeekCalendarStyles = StyleSheet.create({
     calendarWrapper: {
         width: SCREEN_WIDTH,
         overflow: "hidden",

@@ -3,13 +3,15 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
-  Text,
 } from 'react-native';
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { WeeklyCalendar } from '../../components/WeeklyCalendar';
 import { SharedStyles } from '../../components/styles/SharedStyles';
 import { NewHabitModal } from '../../components/NewHabitModal';
+import { ThemedText } from '@/src/components/ThemedText';
+import { Colors } from '../../components/styles/Colors';
+import { useTheme } from '../../components/ThemeContext';
 
 export default function HomeScreen() {
   const today = new Date();
@@ -34,6 +36,8 @@ export default function HomeScreen() {
   const [isGoalEnabled, setIsGoalEnabled] = useState(false);
   const [goalValue, setGoalValue] = useState('');
   const [goalUnit, setGoalUnit] = useState('');
+
+  const { theme } = useTheme();
 
   const handleAddHabit = () => {
     // Only add goal if "build" type is selected and isGoalEnabled is true
@@ -67,21 +71,26 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={SharedStyles.container}>
-      <ScrollView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
+      <ScrollView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
 
         {/* Today/Selected Date */}
-        <Text style={SharedStyles.selectedDateText}>
-          {selectedDate.date === today.getDate()
-            ? "Today"
-            : selectedDate.fullDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-        </Text>
+        <ThemedView style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+          <ThemedText type="title" style={{ color: Colors[theme].text, textAlign: 'center', width: '100%' }}>
+            {selectedDate.date === today.getDate()
+              ? "Today"
+              : selectedDate.fullDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+          </ThemedText>
+        </ThemedView>
 
         {/* Weekly Calendar */}
-        <WeeklyCalendar selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+        <WeeklyCalendar
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+        />
 
         {/* Add Habit Button */}
-        <ThemedView style={SharedStyles.addButtonContainer}>
+        <ThemedView style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <IconSymbol name="plus" size={24} color="#007AFF" />
           </TouchableOpacity>
@@ -117,4 +126,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
