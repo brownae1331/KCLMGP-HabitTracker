@@ -42,18 +42,18 @@ const initDatabase = async () => {
 
     await connection.query(`
       CREATE TABLE IF NOT EXISTS habits (
-        email VARCHAR(100) NOT NULL,
-        name VARCHAR(255) NOT NULL,
-        description TEXT,
-        amount INT DEFAULT 0,
-        positive BOOLEAN DEFAULT TRUE,
-        date DATETIME DEFAULT NULL,
-        increment INT DEFAULT 1,
-        location VARCHAR(255) DEFAULT '',
-        notifications_allowed BOOLEAN DEFAULT TRUE,
-        notification_sound VARCHAR(100) DEFAULT 'default_ringtone',
-        streak INT DEFAULT 0,
-        PRIMARY KEY (email, name),
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(255) NOT NULL,
+        habitName VARCHAR(255) NOT NULL,
+        habitDescription TEXT,
+        habitType ENUM('build', 'quit') NOT NULL,
+        habitColor VARCHAR(7) NOT NULL,
+        scheduleOption ENUM('interval', 'weekly') NOT NULL,
+        intervalDays INT,
+        selectedDays JSON,
+        isGoalEnabled BOOLEAN DEFAULT FALSE,
+        goalValue DOUBLE,
+        goalUnit VARCHAR(50),
         FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
       );
     `);
@@ -197,21 +197,48 @@ app.get('/habits/:username', async (req, res) => {
   }
 });
 
-// Add a new habit
+//new habit
 app.post('/habits', async (req, res) => {
-  const { username, name, description, amount, positive, date, increment, location, notifications_allowed, notification_sound, streak } = req.body;
+  const {
+    email,
+    habitName,
+    habitDescription,
+    habitType,
+    habitColor,
+    scheduleOption,
+    intervalDays,
+    selectedDays,
+    isGoalEnabled,
+    goalValue,
+    goalUnit,
+  } = req.body;
 
   try {
     const [result] = await pool.query(
-      `INSERT INTO habits (username, name, description, amount, positive, date, increment, location, notifications_allowed, notification_sound, streak) 
+      `INSERT INTO habits 
+        (email, habitName, habitDescription, habitType, habitColor, scheduleOption, intervalDays, selectedDays, isGoalEnabled, goalValue, goalUnit)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [username, name, description, amount, positive, date, increment, location, notifications_allowed, notification_sound, streak]
+      [
+        email,
+        habitName,
+        habitDescription,
+        habitType,
+        habitColor,
+        scheduleOption,
+        intervalDays,
+        JSON.stringify(selectedDays), // convert array to JSON string
+        isGoalEnabled,
+        goalValue,
+        goalUnit,
+      ]
     );
     res.status(201).json({ id: result.insertId, message: 'Habit added successfully' });
   } catch (error) {
+    console.error('Error adding habit:', error);
     res.status(500).json({ error: 'Error adding habit' });
   }
 });
+
 
 // Delete a habit
 app.delete('/habits/:username/:name', async (req, res) => {

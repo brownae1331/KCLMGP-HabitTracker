@@ -18,6 +18,7 @@ import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { Picker } from '@react-native-picker/picker';
 import { getHabitsByUser } from '../../lib/client';
+import HabitPanel, { Habit } from '../../components/HabitPanel'; // adjust the path as needed
 
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -28,7 +29,7 @@ export default function HomeScreen() {
     date: today.getDate(),
     fullDate: today
   });
-
+  const [email, setEmail] = useState(''); //dummy email
   // State for modal and habit form
   const [modalVisible, setModalVisible] = useState(false);
   const [habitName, setHabitName] = useState('');
@@ -66,23 +67,39 @@ export default function HomeScreen() {
     }
   };
 
-  const handleAddHabit = () => {
-    // Only add goal if "build" type is selected and isGoalEnabled is true
-    console.log('New Habit Added:', {
+  const handleAddHabit = async () => {
+    // Prepare the habit data object
+    const newHabit = {
+      email: email || 'hugo@gmail.com', // Ensure email is set (using your dummy email here)
       habitName,
       habitDescription,
       habitType,
       habitColor,
       scheduleOption,
-      intervalDays,
+      intervalDays: intervalDays ? parseInt(intervalDays, 10) : null,
       selectedDays,
-      goal:
-        habitType === 'build' && isGoalEnabled
-          ? { goalValue, goalUnit, period: 'per day' }
-          : null,
-    });
-
-    // Reset form
+      isGoalEnabled,
+      goalValue: goalValue ? parseFloat(goalValue) : null,
+      goalUnit,
+    };
+  
+    try {
+      const response = await fetch('http://localhost:3000/habits', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newHabit),
+      });
+      const data = await response.json();
+      console.log('Habit added successfully:', data);
+      // Optionally, refresh your habit list here
+    } catch (error) {
+      console.error('Error adding habit:', error);
+    }
+  
+    // Reset form values and close modal
+    setEmail('hugo@gmail.com'); // dummy email
     setHabitName('');
     setHabitDescription('');
     setHabitType('build');
@@ -93,35 +110,43 @@ export default function HomeScreen() {
     setIsGoalEnabled(false);
     setGoalValue('');
     setGoalUnit('');
-
     setModalVisible(false);
   };
-
+  
   const [dbHabits, setDbHabits] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchHabits = async () => {
       try {
-        // Replace 'user@example.com' with the current user's email (or pass it via props/context)
-        const habits = await getHabitsByUser('user@example.com');
-        // Filter habits by date:
+        const habits = await getHabitsByUser('hugo@gmail.com');
+  
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const selectedDayName = dayNames[selectedDate.fullDate.getDay()];
+  
         const filtered = habits.filter((habit: any) => {
-          if (!habit.date) return false;
-          const habitDate = new Date(habit.date);
-          return (
-            habitDate.getDate() === selectedDate.fullDate.getDate() &&
-            habitDate.getMonth() === selectedDate.fullDate.getMonth() &&
-            habitDate.getFullYear() === selectedDate.fullDate.getFullYear()
-          );
+          if (habit.scheduleOption === 'weekly') {
+            // For weekly habits, check if the selected day's name is in the selectedDays array.
+            return habit.selectedDays && habit.selectedDays.includes(selectedDayName);
+          } else {
+            // For interval (or date-specific) habits, check the habit.date.
+            if (!habit.date) return false;
+            const habitDate = new Date(habit.date);
+            return (
+              habitDate.getDate() === selectedDate.fullDate.getDate() &&
+              habitDate.getMonth() === selectedDate.fullDate.getMonth() &&
+              habitDate.getFullYear() === selectedDate.fullDate.getFullYear()
+            );
+          }
         });
         setDbHabits(filtered);
       } catch (error) {
         console.error('Error fetching habits for selected date:', error);
       }
     };
-
+  
     fetchHabits();
   }, [selectedDate]);
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -142,19 +167,16 @@ export default function HomeScreen() {
           </ThemedText>
         </ThemedView>
 
-        <ThemedView style={styles.dbHabitsContainer}>
+        <ThemedView>
           {dbHabits.length > 0 ? (
-            dbHabits.map((habit: any) => (
-              <ThemedView key={`${habit.user_email}-${habit.name}`} style={styles.habitItem}>
-                <ThemedText>{habit.name}</ThemedText>
-              </ThemedView>
+            dbHabits.map((habit: Habit) => (
+              <HabitPanel key={habit.id} habit={habit} />
             ))
           ) : (
-            <ThemedText style={styles.noHabitsText}>
-              No habits found for this date.
-            </ThemedText>
+            <ThemedText>No habits found for this date.</ThemedText>
           )}
         </ThemedView>
+
 
         {/* Add Habit Button */}
         <ThemedView style={styles.addButtonContainer}>
@@ -390,6 +412,131 @@ const HabitTypeSlider: React.FC<HabitTypeSliderProps> = ({
   );
 };
 
+
+
+// Function to get the current weeks dates based on the week index
+const getWeekDates = (weekIndex: number): { day: string; date: number; fullDate: Date }[] => {
+  const today = new Date();
+
+  today.setDate(today.getDate() + weekIndex * 7);
+  const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+  // Set Sunday as the first day of the week
+  const firstDayOfWeek = new Date(today);
+  firstDayOfWeek.setDate(today.getDate() - today.getDay());
+
+  // Loop over weekDays array to get the full weeks dates
+  return weekDays.map((day, index) => {
+    const date = new Date(firstDayOfWeek);
+    date.setDate(firstDayOfWeek.getDate() + index);
+    return {
+      day,
+      date: date.getDate(),
+      fullDate: new Date(date),
+    };
+  });
+};
+
+/**
+ * WeeklyCalendar Component
+ * Displays an interactive weekly calendar at the top of the screen
+ */
+interface WeeklyCalendarProps {
+  selectedDate: { date: number; fullDate: Date };
+  setSelectedDate: React.Dispatch<React.SetStateAction<{ date: number; fullDate: Date }>>;
+}
+
+export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
+  selectedDate,
+  setSelectedDate,
+}) => {
+  const [weekIndex, setWeekIndex] = useState<number>(0);
+  const flatListRef = useRef<FlatList>(null);
+  const today = new Date();
+  const todayDate = today.getDate();
+  const todayMonth = today.getMonth();
+  const todayYear = today.getFullYear();
+  const initialized = useRef(false);
+  const userInteracted = useRef(false);
+
+  // When the app first opens, Today will be the automatically selected day
+  React.useEffect(() => {
+    if (!initialized.current) {
+      setSelectedDate({ date: todayDate, fullDate: today });
+      initialized.current = true;
+    }
+  }, [setSelectedDate, todayDate, today]);
+
+  // Keeps track of which week the user is viewing
+  const handleScrollEnd = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
+    if (!initialized.current || !userInteracted.current) return;
+
+    const newIndex = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+    setWeekIndex(newIndex - 500);
+
+    // When swiping between weeks, Saturday is automatically selected
+    const newWeek = getWeekDates(newIndex - 500);
+    const saturday = newWeek.find((day) => day.day === "Sa");
+    if (saturday) {
+      setSelectedDate({ date: saturday.date, fullDate: new Date(saturday.fullDate) });
+    }
+  };
+
+  return (
+    <View style={styles.calendarWrapper}>
+      {/* Weekly calendar */}
+      <FlatList
+        testID="weekly-calendar-list"
+        ref={flatListRef}
+        data={[...Array(1000)].map((_, i) => getWeekDates(i - 500))}
+        keyExtractor={(_, index) => index.toString()}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        initialScrollIndex={500}
+        getItemLayout={(_, index) => ({
+          length: SCREEN_WIDTH,
+          offset: SCREEN_WIDTH * index,
+          index,
+        })}
+        onMomentumScrollEnd={handleScrollEnd}
+        onTouchStart={() => (userInteracted.current = true)}
+        renderItem={({ item: week }: { item: { day: string; date: number; fullDate: Date }[] }) => (
+          <View style={styles.weekContainer}>
+            {week.map(({ day, date, fullDate }, index) => {
+              const isToday =
+                date === todayDate &&
+                fullDate.getMonth() === todayMonth &&
+                fullDate.getFullYear() === todayYear;
+              const isSelected = selectedDate.date === date;
+
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.dayContainer}
+                  onPress={() => {
+                    userInteracted.current = true;
+                    setSelectedDate({ date, fullDate });
+                  }}
+                >
+                  {/* Day e.g. Mo, Tu */}
+                  <Text style={styles.dayText}>{day}</Text>
+
+                  {/* Styles for today and selected date */}
+                  <View style={[isToday && styles.todayRing, isSelected && styles.selectedCircle]}>
+                    <Text style={[styles.dateText, isSelected && styles.selectedText]}>
+                      {date}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+      />
+    </View>
+  );
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -633,127 +780,3 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 });
-
-// Function to get the current weeks dates based on the week index
-const getWeekDates = (weekIndex: number): { day: string; date: number; fullDate: Date }[] => {
-  const today = new Date();
-
-  today.setDate(today.getDate() + weekIndex * 7);
-  const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-  // Set Sunday as the first day of the week
-  const firstDayOfWeek = new Date(today);
-  firstDayOfWeek.setDate(today.getDate() - today.getDay());
-
-  // Loop over weekDays array to get the full weeks dates
-  return weekDays.map((day, index) => {
-    const date = new Date(firstDayOfWeek);
-    date.setDate(firstDayOfWeek.getDate() + index);
-    return {
-      day,
-      date: date.getDate(),
-      fullDate: new Date(date),
-    };
-  });
-};
-
-/**
- * WeeklyCalendar Component
- * Displays an interactive weekly calendar at the top of the screen
- */
-interface WeeklyCalendarProps {
-  selectedDate: { date: number; fullDate: Date };
-  setSelectedDate: React.Dispatch<React.SetStateAction<{ date: number; fullDate: Date }>>;
-}
-
-export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
-  selectedDate,
-  setSelectedDate,
-}) => {
-  const [weekIndex, setWeekIndex] = useState<number>(0);
-  const flatListRef = useRef<FlatList>(null);
-  const today = new Date();
-  const todayDate = today.getDate();
-  const todayMonth = today.getMonth();
-  const todayYear = today.getFullYear();
-  const initialized = useRef(false);
-  const userInteracted = useRef(false);
-
-  // When the app first opens, Today will be the automatically selected day
-  React.useEffect(() => {
-    if (!initialized.current) {
-      setSelectedDate({ date: todayDate, fullDate: today });
-      initialized.current = true;
-    }
-  }, [setSelectedDate, todayDate, today]);
-
-  // Keeps track of which week the user is viewing
-  const handleScrollEnd = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
-    if (!initialized.current || !userInteracted.current) return;
-
-    const newIndex = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-    setWeekIndex(newIndex - 500);
-
-    // When swiping between weeks, Saturday is automatically selected
-    const newWeek = getWeekDates(newIndex - 500);
-    const saturday = newWeek.find((day) => day.day === "Sa");
-    if (saturday) {
-      setSelectedDate({ date: saturday.date, fullDate: new Date(saturday.fullDate) });
-    }
-  };
-
-  return (
-    <View style={styles.calendarWrapper}>
-      {/* Weekly calendar */}
-      <FlatList
-        testID="weekly-calendar-list"
-        ref={flatListRef}
-        data={[...Array(1000)].map((_, i) => getWeekDates(i - 500))}
-        keyExtractor={(_, index) => index.toString()}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        initialScrollIndex={500}
-        getItemLayout={(_, index) => ({
-          length: SCREEN_WIDTH,
-          offset: SCREEN_WIDTH * index,
-          index,
-        })}
-        onMomentumScrollEnd={handleScrollEnd}
-        onTouchStart={() => (userInteracted.current = true)}
-        renderItem={({ item: week }: { item: { day: string; date: number; fullDate: Date }[] }) => (
-          <View style={styles.weekContainer}>
-            {week.map(({ day, date, fullDate }, index) => {
-              const isToday =
-                date === todayDate &&
-                fullDate.getMonth() === todayMonth &&
-                fullDate.getFullYear() === todayYear;
-              const isSelected = selectedDate.date === date;
-
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.dayContainer}
-                  onPress={() => {
-                    userInteracted.current = true;
-                    setSelectedDate({ date, fullDate });
-                  }}
-                >
-                  {/* Day e.g. Mo, Tu */}
-                  <Text style={styles.dayText}>{day}</Text>
-
-                  {/* Styles for today and selected date */}
-                  <View style={[isToday && styles.todayRing, isSelected && styles.selectedCircle]}>
-                    <Text style={[styles.dateText, isSelected && styles.selectedText]}>
-                      {date}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
-      />
-    </View>
-  );
-};
