@@ -8,8 +8,7 @@ import { useTheme } from '../../components/ThemeContext';
 import { router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SettingsPageStyles } from '../../components/styles/SettingsPageStyle';
-
-
+import { Colors } from '../../components/styles/Colors';
 
 export default function SettingsScreen() {
   const { theme, toggleTheme } = useTheme();
@@ -27,18 +26,18 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView style={{ flex: 1 }}>
-        <ThemedView style={SettingsPageStyles.titleContainer}>
-          <ThemedText type="title">Settings</ThemedText>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
+      <ScrollView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
+        <ThemedView style={[SettingsPageStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+          <ThemedText type="title" style={{ color: Colors[theme].text }}>Settings</ThemedText>
         </ThemedView>
 
-        <ThemedView style={SettingsPageStyles.settingItem}>
-          <ThemedText>Dark Mode</ThemedText>
+        <ThemedView style={[SettingsPageStyles.settingItem, { backgroundColor: Colors[theme].background }]}>
+          <ThemedText style={{ color: Colors[theme].text }}>Dark Mode</ThemedText>
           <Switch value={theme === 'dark'} onValueChange={toggleTheme} />
         </ThemedView>
 
-        <ThemedView style={SettingsPageStyles.settingItem}>
+        <ThemedView style={[SettingsPageStyles.settingItem, { backgroundColor: Colors[theme].background }]}>
           <TouchableOpacity style={SettingsPageStyles.signOutButton} onPress={handleSignOut}>
             <ThemedText style={SettingsPageStyles.signOutText}>Sign Out</ThemedText>
           </TouchableOpacity>

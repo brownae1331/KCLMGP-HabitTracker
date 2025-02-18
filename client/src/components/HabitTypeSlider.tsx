@@ -3,6 +3,8 @@ import { View, TouchableOpacity } from 'react-native';
 import { HabitModalStyles } from './styles/HabitModalStyles';
 import { SharedStyles } from './styles/SharedStyles';
 import { ThemedText } from './ThemedText';
+import { Colors } from './styles/Colors';
+import { useTheme } from './ThemeContext';
 
 interface HabitTypeSliderProps {
     habitType: 'build' | 'quit';
@@ -13,6 +15,7 @@ export const HabitTypeSlider: React.FC<HabitTypeSliderProps> = ({
     habitType,
     setHabitType,
 }) => {
+    const { theme } = useTheme();
     return (
         <View style={HabitModalStyles.sliderContainer}>
             <TouchableOpacity
@@ -26,7 +29,7 @@ export const HabitTypeSlider: React.FC<HabitTypeSliderProps> = ({
                     style={[
                         HabitModalStyles.sliderOptionText,
                         habitType === 'build' && HabitModalStyles.selectedOptionText,
-                        SharedStyles.textDark,
+                        { color: Colors[theme].text },
                     ]}
                 >
                     Build
@@ -43,7 +46,7 @@ export const HabitTypeSlider: React.FC<HabitTypeSliderProps> = ({
                     style={[
                         HabitModalStyles.sliderOptionText,
                         habitType === 'quit' && HabitModalStyles.selectedOptionText,
-                        SharedStyles.textDark,
+                        { color: Colors[theme].text },
                     ]}
                 >
                     Quit

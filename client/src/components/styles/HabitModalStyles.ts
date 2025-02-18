@@ -17,7 +17,6 @@ export const HabitModalStyles = StyleSheet.create({
         flex: 1,
         paddingVertical: 10,
         alignItems: 'center',
-        backgroundColor: '#fff',
     },
     selectedOption: {
         backgroundColor: '#007AFF',
@@ -59,15 +58,13 @@ export const HabitModalStyles = StyleSheet.create({
         justifyContent: 'space-between',
         padding: 20,
         paddingTop: 0,
-        backgroundColor: '#fff',
         borderBottomLeftRadius: 8,
         borderBottomRightRadius: 8,
     },
     picker: {
         width: '100%',
-        backgroundColor: '#fff',
         marginBottom: 12,
-        color: '#333333',
+        color: '#333',
     },
     weeklyContainer: {
         flexDirection: 'row',

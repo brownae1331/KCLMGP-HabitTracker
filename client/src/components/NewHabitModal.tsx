@@ -11,7 +11,9 @@ import { ThemedText } from './ThemedText';
 import { Picker } from '@react-native-picker/picker';
 import { HabitTypeSlider } from './HabitTypeSlider';
 import { SharedStyles } from './styles/SharedStyles';
-import { HabitModalStyles as styles } from './styles/HabitModalStyles';
+import { HabitModalStyles } from './styles/HabitModalStyles';
+import { Colors } from './styles/Colors';
+import { useTheme } from './ThemeContext';
 
 interface NewHabitModalProps {
     modalVisible: boolean;
@@ -84,6 +86,8 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
         }
     };
 
+    const { theme } = useTheme();
+
     return (
         <Modal
             animationType="slide"
@@ -92,19 +96,19 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
             onRequestClose={() => setModalVisible(false)}
         >
             <View style={SharedStyles.modalOverlay}>
-                <View style={SharedStyles.modalContent}>
+                <View style={[SharedStyles.modalContent, { backgroundColor: Colors[theme].background }]}>
                     <ScrollView
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={SharedStyles.scrollContent}
                     >
-                        <ThemedText type="title" style={[SharedStyles.modalTitle, SharedStyles.textDark]}>
+                        <ThemedText type="title" style={{ color: Colors[theme].text }}>
                             Add New Habit
                         </ThemedText>
 
                         <HabitTypeSlider habitType={habitType} setHabitType={setHabitType} />
 
                         <TextInput
-                            style={[SharedStyles.input, { color: '#333' }]}
+                            style={[SharedStyles.input, { color: Colors[theme].text }]}
                             placeholder="Habit Name"
                             placeholderTextColor="#777"
                             value={habitName}
@@ -112,7 +116,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                         />
 
                         <TextInput
-                            style={[SharedStyles.input, styles.descriptionInput, { color: '#333' }]}
+                            style={[SharedStyles.input, HabitModalStyles.descriptionInput, { color: Colors[theme].text }]}
                             placeholder="Habit Description"
                             placeholderTextColor="#777"
                             value={habitDescription}
@@ -120,22 +124,18 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                             multiline
                         />
 
-                        <ThemedText type="subtitle" style={[SharedStyles.sectionLabel, SharedStyles.textDark]}>
+                        <ThemedText type="subtitle" style={[SharedStyles.sectionLabel, { color: Colors[theme].text }]}>
                             Pick a Color
                         </ThemedText>
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={styles.colorPickerContainer}
+                            contentContainerStyle={HabitModalStyles.colorPickerContainer}
                         >
                             {colorOptions.map((color) => (
                                 <TouchableOpacity
                                     key={color}
-                                    style={[
-                                        styles.colorSwatch,
-                                        { backgroundColor: color },
-                                        color === habitColor && styles.selectedSwatch,
-                                    ]}
+                                    style={[HabitModalStyles.colorSwatch, { backgroundColor: color }, color === habitColor && HabitModalStyles.selectedSwatch,]}
                                     onPress={() => setHabitColor(color)}
                                 />
                             ))}
@@ -143,11 +143,11 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
 
                         {habitType === 'build' && (
                             <>
-                                <ThemedText type="subtitle" style={[SharedStyles.sectionLabel, SharedStyles.textDark]}>
+                                <ThemedText type="subtitle" style={[SharedStyles.sectionLabel, { color: Colors[theme].text }]}>
                                     Goal
                                 </ThemedText>
-                                <View style={styles.goalToggleContainer}>
-                                    <ThemedText style={[SharedStyles.textDark]}>Enable Goal?</ThemedText>
+                                <View style={HabitModalStyles.goalToggleContainer}>
+                                    <ThemedText style={{ color: Colors[theme].text }}>Enable Goal?</ThemedText>
                                     <Switch
                                         value={isGoalEnabled}
                                         onValueChange={setIsGoalEnabled}
@@ -156,7 +156,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                     />
                                 </View>
                                 {isGoalEnabled && (
-                                    <View style={styles.goalFieldsContainer}>
+                                    <View style={HabitModalStyles.goalFieldsContainer}>
                                         <TextInput
                                             style={[SharedStyles.input, { flex: 0.4, color: '#333' }]}
                                             placeholder="Number"
@@ -178,21 +178,21 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                             </>
                         )}
 
-                        <ThemedText type="subtitle" style={[SharedStyles.sectionLabel, SharedStyles.textDark]}>
+                        <ThemedText type="subtitle" style={[SharedStyles.sectionLabel, { color: Colors[theme].text }]}>
                             Schedule
                         </ThemedText>
                         <Picker
                             mode="dropdown"
                             selectedValue={scheduleOption}
                             onValueChange={(itemValue) => setScheduleOption(itemValue)}
-                            style={styles.picker}
+                            style={[HabitModalStyles.picker, { backgroundColor: Colors[theme].background }]}
                         >
                             <Picker.Item label="Every ___ days" value="interval" />
                             <Picker.Item label="Every ___ day of the week" value="weekly" />
                         </Picker>
 
                         {scheduleOption === 'interval' ? (
-                            <View style={styles.intervalContainer}>
+                            <View style={HabitModalStyles.intervalContainer}>
                                 <TextInput
                                     style={[SharedStyles.input, { flex: 1, color: '#333' }]}
                                     placeholder="Enter number"
@@ -201,23 +201,23 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                     value={intervalDays}
                                     onChangeText={setIntervalDays}
                                 />
-                                <ThemedText style={[SharedStyles.daysText, SharedStyles.textDark]}>days</ThemedText>
+                                <ThemedText style={[SharedStyles.daysText, { color: Colors[theme].text }]}>days</ThemedText>
                             </View>
                         ) : (
-                            <View style={styles.weeklyContainer}>
+                            <View style={HabitModalStyles.weeklyContainer}>
                                 {daysOfWeek.map((day) => (
                                     <TouchableOpacity
                                         key={day}
                                         onPress={() => toggleDay(day)}
                                         style={[
-                                            styles.dayButton,
-                                            selectedDays.includes(day) && styles.selectedDayButton,
+                                            HabitModalStyles.dayButton,
+                                            selectedDays.includes(day) && HabitModalStyles.selectedDayButton,
                                         ]}
                                     >
                                         <ThemedText
                                             style={[
-                                                styles.dayButtonText,
-                                                selectedDays.includes(day) && styles.selectedDayButtonText,
+                                                HabitModalStyles.dayButtonText,
+                                                selectedDays.includes(day) && HabitModalStyles.selectedDayButtonText,
                                                 SharedStyles.textDark,
                                             ]}
                                         >
@@ -229,7 +229,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                         )}
                     </ScrollView>
 
-                    <View style={styles.buttonContainer}>
+                    <View style={[HabitModalStyles.buttonContainer, { backgroundColor: Colors[theme].background }]}>
                         <TouchableOpacity style={SharedStyles.button} onPress={onAddHabit}>
                             <ThemedText style={SharedStyles.buttonText}>Add Habit</ThemedText>
                         </TouchableOpacity>

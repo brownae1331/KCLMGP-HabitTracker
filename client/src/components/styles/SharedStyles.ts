@@ -30,7 +30,6 @@ export const SharedStyles = StyleSheet.create({
         marginVertical: 12,
         paddingHorizontal: 8,
         borderRadius: 4,
-        color: '#333333',
     },
 
     /** Button Styles */
@@ -59,7 +58,6 @@ export const SharedStyles = StyleSheet.create({
     modalContent: {
         width: '90%',
         maxHeight: '90%',
-        backgroundColor: '#FFFFFF',
         borderRadius: 8,
         elevation: 5,
         shadowColor: '#000000',
