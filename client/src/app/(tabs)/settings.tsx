@@ -50,16 +50,25 @@ import { Image } from 'react-native';
 // }
 
 const settingsOptions = [
-  { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' },
-  { title: 'Notifications', icon: require('../../../assets/images/notifications.png'), route: '/notifications' },
-  { title: 'Appearance', icon: require('../../../assets/images/appearance.png'), route: '/appearance' },
+  { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' as const },
+  { title: 'Notifications', icon: require('../../../assets/images/notifications.png'), route: '/notifications' as const },
+  { title: 'Appearance', icon: require('../../../assets/images/appearance.png'), route: '/appearance' as const },
 ] as const;
 
 type RouteType = (typeof settingsOptions)[number]['route'];
 
 export default function SettingsScreen() {
+  const handleSignOut = async () => {
+    try {
+      await AsyncStorage.removeItem('token');
+      router.replace('/login'); 
+    } catch (error) {
+      Alert.alert('Error', 'Failed to sign out.');
+    }
+  };
+
   const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
-    <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route as any)}>
+    <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route)}>
       <ThemedView style={styles.iconContainer}>
         <Image source={item.icon} style={styles.iconImage} />
       </ThemedView>
@@ -80,6 +89,10 @@ export default function SettingsScreen() {
         keyExtractor={(item) => item.title}
         contentContainerStyle={styles.listContainer}
       />
+
+      <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+        <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
