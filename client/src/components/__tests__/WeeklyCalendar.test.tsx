@@ -1,6 +1,7 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native"
-import { WeeklyCalendar } from "@/client/src/app/(tabs)/habits";
+import { WeeklyCalendar } from "@tabs/habits";
+
 
 describe("WeeklyCalendar", () => {
   test("loads without crashing", () => {
