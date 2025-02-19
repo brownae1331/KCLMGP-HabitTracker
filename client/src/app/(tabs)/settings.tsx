@@ -3,10 +3,12 @@ import React from 'react';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons'
 import { Image } from 'react-native';
+
+
 
 
 
@@ -48,25 +50,16 @@ import { Image } from 'react-native';
 // }
 
 const settingsOptions = [
-  { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' as const },
-  { title: 'Notifications', icon: require('../../../assets/images/notifications.png'), route: '/notifications' as const },
-  { title: 'Appearance', icon: require('../../../assets/images/appearance.png'), route: '/appearance' as const },
+  { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' },
+  { title: 'Notifications', icon: require('../../../assets/images/notifications.png'), route: '/notifications' },
+  { title: 'Appearance', icon: require('../../../assets/images/appearance.png'), route: '/appearance' },
 ] as const;
 
 type RouteType = (typeof settingsOptions)[number]['route'];
 
 export default function SettingsScreen() {
-  const handleSignOut = async () => {
-    try {
-      await AsyncStorage.removeItem('token');
-      router.replace('/login'); 
-    } catch (error) {
-      Alert.alert('Error', 'Failed to sign out.');
-    }
-  };
-
   const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
-    <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route)}>
+    <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route as any)}>
       <ThemedView style={styles.iconContainer}>
         <Image source={item.icon} style={styles.iconImage} />
       </ThemedView>
@@ -87,10 +80,6 @@ export default function SettingsScreen() {
         keyExtractor={(item) => item.title}
         contentContainerStyle={styles.listContainer}
       />
-
-      <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-        <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }
