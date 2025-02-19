@@ -30,6 +30,12 @@ export default function StatsScreen() {
   const username = 'your_username';
   const { theme } = useTheme();
 
+  const pickerStyle = {
+    ...styles.picker,
+    color: theme === 'dark' ? '#ffffff' : '#000000',
+    backgroundColor: theme === 'dark' ? '#333333' : '#ffffff',
+  };
+
   useEffect(() => {
     const fetchHabits = async () => {
       try {
@@ -81,7 +87,7 @@ export default function StatsScreen() {
           <Picker
             selectedValue={selectedHabit}
             onValueChange={(itemValue) => setSelectedHabit(itemValue)}
-            style={styles.picker}
+            style={pickerStyle}
           >
             {Array.isArray(habits) && habits.length > 0 ? (
               habits.map((habit, index) => (
