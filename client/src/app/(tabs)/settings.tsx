@@ -1,29 +1,83 @@
-import { Switch, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, TouchableOpacity, Alert, FlatList } from 'react-native';
 import React from 'react';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
-import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../../components/ThemeContext';
-import { router } from 'expo-router'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { router, usePathname } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Feather } from '@expo/vector-icons'
+import { Image } from 'react-native';
 import { SettingsPageStyles } from '../../components/styles/SettingsPageStyle';
+import { useTheme } from '../../components/ThemeContext';
 import { Colors } from '../../components/styles/Colors';
+import { ScrollView } from 'react-native';
+
+// export default function SettingsScreen() {
+//   const systemColorScheme = useColorScheme();
+//   const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark')
+
+//   useEffect(()=>{
+//     const loadThemePreference = async () =>{
+//       const savedTheme = await AsyncStorage.getItem('theme');
+//       if (savedTheme) {
+//         setIsDarkMode(savedTheme === 'dark');
+//       }
+//     };
+
+//     loadThemePreference();
+//   },[]);
+
+//   const toggleswith = async () => {
+//     const newTheme = isDarkMode? 'light' :'dark';
+//     setIsDarkMode(!isDarkMode);
+//     await AsyncStorage.setItem('theme', newTheme);
+//   };
+
+//   return (
+//     <SafeAreaView style={{ flex: 1 }}>
+//       <ScrollView style={{ flex: 1 }}>  
+//         <ThemedView style={styles.titleContainer}>
+//           <ThemedText type="title">Settings</ThemedText>
+//         </ThemedView>
+
+//         <ThemedView style={styles.settingItem}>
+//           <ThemedText>Dark Mode</ThemedText>
+//           <Switch value={isDarkMode} onValueChange={toggleswith} />
+//         </ThemedView>
+//       </ScrollView>
+//     </SafeAreaView>
+//   );
+// }
+
+const settingsOptions = [
+  { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' as const },
+  { title: 'Notifications', icon: require('../../../assets/images/notifications.png'), route: '/notifications' as const },
+  { title: 'Appearance', icon: require('../../../assets/images/appearance.png'), route: '/appearance' as const },
+] as const;
+
+type RouteType = (typeof settingsOptions)[number]['route'];
 
 export default function SettingsScreen() {
   const { theme, toggleTheme } = useTheme();
 
   const handleSignOut = async () => {
     try {
-      // Remove authentication token from AsyncStorage
       await AsyncStorage.removeItem('token');
-
-      // Go to log in page
-      router.replace('/login');
+      router.replace('/login'); 
     } catch (error) {
       Alert.alert('Error', 'Failed to sign out.');
     }
   };
+
+  const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
+    <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route)}>
+      <ThemedView style={styles.iconContainer}>
+        <Image source={item.icon} style={styles.iconImage} />
+      </ThemedView>
+      <ThemedText style={styles.settingText}>{item.title}</ThemedText>
+      <Feather name="chevron-right" size={20} color="gray" />
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
@@ -32,17 +86,70 @@ export default function SettingsScreen() {
           <ThemedText type="title" style={{ color: Colors[theme].text }}>Settings</ThemedText>
         </ThemedView>
 
-        <ThemedView style={[SettingsPageStyles.settingItem, { backgroundColor: Colors[theme].background }]}>
-          <ThemedText style={{ color: Colors[theme].text }}>Dark Mode</ThemedText>
-          <Switch value={theme === 'dark'} onValueChange={toggleTheme} />
-        </ThemedView>
+      <FlatList
+        data={settingsOptions}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.title}
+        contentContainerStyle={styles.listContainer}
+      />
 
-        <ThemedView style={[SettingsPageStyles.settingItem, { backgroundColor: Colors[theme].background }]}>
-          <TouchableOpacity style={SettingsPageStyles.signOutButton} onPress={handleSignOut}>
-            <ThemedText style={SettingsPageStyles.signOutText}>Sign Out</ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+          <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  titleContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ccc',
+  },
+  listContainer: {
+    flexGrow: 1,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ccc',
+  },
+  iconContainer: {
+    width: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    backgroundColor: 'transparent',
+  },
+  settingText: {
+    flex: 1,
+    fontSize: 16,
+    marginLeft: 10,
+    color: 'black', 
+  },
+  signOutButton: {
+    backgroundColor: 'red',
+    paddingVertical: 12,
+    marginHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  signOutText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  iconImage: {
+    width: 24,  
+    height: 24, 
+    resizeMode: 'contain',
+    backgroundColor: 'transparent',
+  },
+});

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TouchableOpacity,
   ScrollView,
@@ -9,9 +9,10 @@ import { IconSymbol } from '../../components/ui/IconSymbol';
 import { WeeklyCalendar } from '../../components/WeeklyCalendar';
 import { SharedStyles } from '../../components/styles/SharedStyles';
 import { NewHabitModal } from '../../components/NewHabitModal';
-import { ThemedText } from '@/src/components/ThemedText';
+import { ThemedText } from '../../components/ThemedText';
 import { Colors } from '../../components/styles/Colors';
 import { useTheme } from '../../components/ThemeContext';
+import { getHabitsByUser } from '../../lib/client';
 
 export default function HomeScreen() {
   const today = new Date();
@@ -69,6 +70,32 @@ export default function HomeScreen() {
 
     setModalVisible(false);
   };
+
+  const [dbHabits, setDbHabits] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchHabits = async () => {
+      try {
+        // Replace 'user@example.com' with the current user's email (or pass it via props/context)
+        const habits = await getHabitsByUser('user@example.com');
+        // Filter habits by date:
+        const filtered = habits.filter((habit: any) => {
+          if (!habit.date) return false;
+          const habitDate = new Date(habit.date);
+          return (
+            habitDate.getDate() === selectedDate.fullDate.getDate() &&
+            habitDate.getMonth() === selectedDate.fullDate.getMonth() &&
+            habitDate.getFullYear() === selectedDate.fullDate.getFullYear()
+          );
+        });
+        setDbHabits(filtered);
+      } catch (error) {
+        console.error('Error fetching habits for selected date:', error);
+      }
+    };
+
+    fetchHabits();
+  }, [selectedDate]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
