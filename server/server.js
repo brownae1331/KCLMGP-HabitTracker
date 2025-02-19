@@ -6,13 +6,14 @@ import bcrypt from 'bcrypt';
 dotenv.config();
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const PORT = 3000;
 
 const DB_CONFIG = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  // port: process.env.DB_PORT,
   waitForConnections: true,
   connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT, 10),
   queueLimit: 0
@@ -41,19 +42,19 @@ const initDatabase = async () => {
 
     await connection.query(`
       CREATE TABLE IF NOT EXISTS habits (
-        username VARCHAR(100) NOT NULL,
+        email VARCHAR(100) NOT NULL,
         name VARCHAR(255) NOT NULL,
         description TEXT,
         amount INT DEFAULT 0,
         positive BOOLEAN DEFAULT TRUE,
-        date DATETIME DEFAULT CURRENT_TIMESTAMP,
+        date DATETIME DEFAULT NULL,
         increment INT DEFAULT 1,
         location VARCHAR(255) DEFAULT '',
         notifications_allowed BOOLEAN DEFAULT TRUE,
         notification_sound VARCHAR(100) DEFAULT 'default_ringtone',
         streak INT DEFAULT 0,
-        PRIMARY KEY (username, name),
-        FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
+        PRIMARY KEY (email, name),
+        FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
       );
     `);
 
@@ -97,6 +98,11 @@ app.post('/users/login', async (req, res) => {
     }
 
     const user = users[0];
+
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
 
     // Compare the provided password with the stored hash
     const passwordMatch = await bcrypt.compare(password, user.password);

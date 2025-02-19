@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet,
   Platform,
@@ -17,6 +17,7 @@ import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { Picker } from '@react-native-picker/picker';
+import { getHabitsByUser } from '../../lib/client';
 
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -96,6 +97,32 @@ export default function HomeScreen() {
     setModalVisible(false);
   };
 
+  const [dbHabits, setDbHabits] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchHabits = async () => {
+      try {
+        // Replace 'user@example.com' with the current user's email (or pass it via props/context)
+        const habits = await getHabitsByUser('user@example.com');
+        // Filter habits by date:
+        const filtered = habits.filter((habit: any) => {
+          if (!habit.date) return false;
+          const habitDate = new Date(habit.date);
+          return (
+            habitDate.getDate() === selectedDate.fullDate.getDate() &&
+            habitDate.getMonth() === selectedDate.fullDate.getMonth() &&
+            habitDate.getFullYear() === selectedDate.fullDate.getFullYear()
+          );
+        });
+        setDbHabits(filtered);
+      } catch (error) {
+        console.error('Error fetching habits for selected date:', error);
+      }
+    };
+
+    fetchHabits();
+  }, [selectedDate]);
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Today/Selected Date */}
@@ -113,6 +140,20 @@ export default function HomeScreen() {
           <ThemedText type="title" style={styles.textDark}>
             Habits
           </ThemedText>
+        </ThemedView>
+
+        <ThemedView style={styles.dbHabitsContainer}>
+          {dbHabits.length > 0 ? (
+            dbHabits.map((habit: any) => (
+              <ThemedView key={`${habit.user_email}-${habit.name}`} style={styles.habitItem}>
+                <ThemedText>{habit.name}</ThemedText>
+              </ThemedView>
+            ))
+          ) : (
+            <ThemedText style={styles.noHabitsText}>
+              No habits found for this date.
+            </ThemedText>
+          )}
         </ThemedView>
 
         {/* Add Habit Button */}
