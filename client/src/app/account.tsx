@@ -1,134 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
+import React from 'react';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../components/ThemeContext';
 import { Colors } from '../components/styles/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getUserDetails, updateUserDetails } from '../lib/client';
 
 export default function AccountScreen() {
   const { theme } = useTheme();
 
-  const [userName, setUserName] = useState('');
-  const [email, setEmail] = useState('');
-  const [isEditingEmail, setIsEditingEmail] = useState(false);
-  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
-
-  // Password
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
-
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        const user = await getUserDetails();
-        setUserName(user.username);
-        setEmail(user.email);
-      } catch (error) {
-        console.error('Failed to load user data', error);
-      }
-    };
-
-    loadUserData();
-  }, []);
-
-  const handleNameChange = async (text: string) => {
-    setUserName(text);
-    await updateUserDetails({ username: text });
-    Alert.alert('Success', 'Your username has been updated.');
-  };
-
-  const handleEmailChange = async () => {
-    setIsEditingEmail(false);
-    await updateUserDetails({ email });
-    Alert.alert('Success', 'Your email has been updated.');
-  };
-
-  const handleChangePassword = async () => {
-    if (!oldPassword || !newPassword || !confirmNewPassword) {
-      Alert.alert('Error', 'All fields are required.');
-      return;
-    }
-
-    if (newPassword !== confirmNewPassword) {
-      Alert.alert('Error', 'New passwords do not match.');
-      return;
-    }
-
-    try {
-      await updateUserDetails({ oldPassword, newPassword });
-      setIsPasswordModalVisible(false);
-      Alert.alert('Success', 'Your password has been updated.');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update password.');
-    }
-  };
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
+      {/* Account */}
       <ThemedView style={[styles.section, { backgroundColor: Colors[theme].background }]}>
         <ThemedText type="title" style={[styles.headerText, { color: Colors[theme].text }]}>
-          Account Settings
+          Account Information
         </ThemedText>
       </ThemedView>
 
-      {/* Username Field */}
+      {/* Username */}
       <ThemedView style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
-        <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Your Name</ThemedText>
+        <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Username</ThemedText>
         <TextInput
           style={[
             styles.input,
             {
               color: Colors[theme].text,
               borderColor: Colors[theme].border,
-              backgroundColor: theme === 'dark' ? '#222' : '#FFF', 
+              backgroundColor: theme === 'dark' ? '#222' : '#FFF',
             },
           ]}
-          value={userName}
-          onChangeText={setUserName}
+          placeholder="Your username"
           placeholderTextColor={Colors[theme].placeholder}
+          editable={false} // Username is not editable
         />
       </ThemedView>
 
-      {/* Email Field with Change Button */}
+      {/* Email Section */}
       <ThemedView style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
         <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Email Address</ThemedText>
-        {isEditingEmail ? (
+        <View style={styles.row}>
           <TextInput
             style={[
               styles.input,
-              {
-                color: Colors[theme].text,
-                borderColor: Colors[theme].border,
-                backgroundColor: theme === 'dark' ? '#222' : '#FFF', 
-              },
+              { flex: 1, color: Colors[theme].text, borderColor: Colors[theme].border },
             ]}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
+            placeholder="Your email"
             placeholderTextColor={Colors[theme].placeholder}
+            editable={false} // Email is not editable
           />
-        ) : (
-          <ThemedText style={{ color: Colors[theme].text }}>{email}</ThemedText>
-        )}
-        <TouchableOpacity onPress={() => (isEditingEmail ? handleEmailChange() : setIsEditingEmail(true))}>
-          <ThemedText style={[styles.changeText, { color: theme === 'dark' ? '#3399FF' : 'blue' }]}>
-            {isEditingEmail ? 'Save' : 'Change'}
-          </ThemedText>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <ThemedText style={[styles.changeText, { color: theme === 'dark' ? '#3399FF' : 'blue' }]}>
+              Change
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
       </ThemedView>
 
-      {/* Password Section with Change Button */}
+      {/* Password Section */}
       <ThemedView style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
         <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Password</ThemedText>
-        <ThemedText style={{ color: Colors[theme].text }}>********</ThemedText>
-        <TouchableOpacity onPress={() => setIsPasswordModalVisible(true)}>
-          <ThemedText style={[styles.changeText, { color: theme === 'dark' ? '#3399FF' : 'blue' }]}>
-            Change
-          </ThemedText>
-        </TouchableOpacity>
+        <View style={styles.row}>
+          <TextInput
+            style={[
+              styles.input,
+              { flex: 1, color: Colors[theme].text, borderColor: Colors[theme].border },
+            ]}
+            placeholder="********"
+            placeholderTextColor={Colors[theme].placeholder}
+            secureTextEntry
+            editable={false} // Password field should not be directly editable
+          />
+          <TouchableOpacity style={styles.iconButton}>
+            <ThemedText style={[styles.changeText, { color: theme === 'dark' ? '#3399FF' : 'blue' }]}>
+              Change
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
       </ThemedView>
     </SafeAreaView>
   );
@@ -140,25 +88,34 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   headerText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   inputContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   input: {
     borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
+    borderRadius: 8,
+    padding: 12,
     marginTop: 5,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconButton: {
+    marginLeft: 10,
   },
   changeText: {
-    marginTop: 5,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
+
