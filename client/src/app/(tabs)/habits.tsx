@@ -29,7 +29,7 @@ export default function HomeScreen() {
     date: today.getDate(),
     fullDate: today
   });
-  const [email, setEmail] = useState(''); //dummy email
+  const [email, setEmail] = useState('');
   // State for modal and habit form
   const [modalVisible, setModalVisible] = useState(false);
   const [habitName, setHabitName] = useState('');
@@ -70,7 +70,7 @@ export default function HomeScreen() {
   const handleAddHabit = async () => {
     // Prepare the habit data object
     const newHabit = {
-      email: email || 'hugo@gmail.com', // Ensure email is set (using your dummy email here)
+      email: email || 'abcdef@gmail.com', // Ensure email is set (using your dummy email here)
       habitName,
       habitDescription,
       habitType,
@@ -99,7 +99,7 @@ export default function HomeScreen() {
     }
   
     // Reset form values and close modal
-    setEmail('hugo@gmail.com'); // dummy email
+    setEmail('abcdef@gmail.com'); // dummy email
     setHabitName('');
     setHabitDescription('');
     setHabitType('build');
@@ -170,7 +170,7 @@ export default function HomeScreen() {
         <ThemedView>
           {dbHabits.length > 0 ? (
             dbHabits.map((habit: Habit) => (
-              <HabitPanel key={habit.id} habit={habit} />
+              <HabitPanel key={habit.habitName} habit={habit} />
             ))
           ) : (
             <ThemedText>No habits found for this date.</ThemedText>

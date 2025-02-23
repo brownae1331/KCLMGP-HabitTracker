@@ -4,20 +4,20 @@ import { ThemedText } from './ThemedText'; // Adjust path if needed
 
 // Define the Habit interface (adjust if your structure is different)
 export interface Habit {
-  id: number;
-  email: string;
-  habitName: string;
-  habitDescription: string;
-  habitType: 'build' | 'quit';
-  habitColor: string;
-  scheduleOption: 'interval' | 'weekly';
-  intervalDays?: number;
-  selectedDays?: string[];
-  isGoalEnabled: boolean;
-  goalValue?: number | null;
-  goalUnit?: string;
-  // Additional fields if necessary...
-}
+    email: string;
+    habitName: string;
+    habitDescription: string;
+    habitType: 'build' | 'quit';
+    habitColor: string;
+    scheduleOption: 'interval' | 'weekly';
+    intervalDays?: number;
+    selectedDays?: string[];
+    isGoalEnabled: boolean;
+    goalValue?: number | null;
+    goalUnit?: string;
+    // etc.
+  }
+  
 
 interface HabitPanelProps {
   habit: Habit;
