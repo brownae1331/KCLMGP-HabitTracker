@@ -39,22 +39,22 @@ const initDatabase = async () => {
 
 
     await connection.query(`
-      CREATE TABLE IF NOT EXISTS habits (
-        user_email VARCHAR(255) NOT NULL,
-        habitName VARCHAR(255) NOT NULL,
-        habitDescription TEXT,
-        habitType ENUM('build', 'quit') NOT NULL,
-        habitColour VARCHAR(7) NOT NULL,
-        scheduleOption ENUM('interval', 'weekly') NOT NULL,
-        isGoalEnabled BOOLEAN DEFAULT FALSE,
-        goalValue DOUBLE,
-        goalUnit VARCHAR(50),
-        colour VARCHAR(7) NOT NULL,
-        notification_sound VARCHAR(100) DEFAULT 'default_ringtone',
-        streak INT DEFAULT 0,
-        PRIMARY KEY (user_email, name),
-        FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
-      );
+    CREATE TABLE IF NOT EXISTS habits (
+      user_email VARCHAR(255) NOT NULL,
+      habitName VARCHAR(255) NOT NULL,
+      habitDescription TEXT,
+      habitType ENUM('build','quit') NOT NULL,
+      habitColor VARCHAR(7) NOT NULL,
+      scheduleOption ENUM('interval','weekly') NOT NULL,
+      isGoalEnabled BOOLEAN DEFAULT FALSE,
+      goalValue DOUBLE,
+      goalUnit VARCHAR(50),
+      -- dummy or default for now
+      notification_sound VARCHAR(100) DEFAULT 'default_ringtone',
+      streak INT DEFAULT 0,
+      PRIMARY KEY (user_email, habitName),
+      FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
+    );
     `);
 
     await connection.query(`
@@ -75,8 +75,8 @@ const initDatabase = async () => {
         name VARCHAR(255) NOT NULL,
         date DATETIME DEFAULT CURRENT_TIMESTAMP,
         increment INT DEFAULT 1,
-        PRIMARY KEY (user_email, name),
-        FOREIGN KEY (user_email, name) REFERENCES habits(user_email, name) ON DELETE CASCADE
+        PRIMARY KEY (user_email, habitName),
+        FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
       );
     `);
 
@@ -85,8 +85,8 @@ const initDatabase = async () => {
         user_email VARCHAR(255) NOT NULL,
         name VARCHAR(255) NOT NULL,
         day ENUM('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday') NOT NULL,
-        PRIMARY KEY (user_email, name, day),
-        FOREIGN KEY (user_email, name) REFERENCES habits(user_email, name) ON DELETE CASCADE
+        PRIMARY KEY (user_email, habitName, day),
+        FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
       );
     `);
 
@@ -96,7 +96,7 @@ const initDatabase = async () => {
         name VARCHAR(255) NOT NULL,
         location VARCHAR(255) NOT NULL,
         PRIMARY KEY (user_email, name, location),
-        FOREIGN KEY (user_email, name) REFERENCES habits(user_email, name) ON DELETE CASCADE
+        FOREIGN KEY (user_email, name) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
       );
     `);
 
@@ -240,19 +240,68 @@ app.get('/habits/:username', async (req, res) => {
 
 // Add a new habit
 app.post('/habits', async (req, res) => {
-  const { username, name, description, amount, positive, date, increment, location, notifications_allowed, notification_sound, streak } = req.body;
+  const {
+    email,
+    habitName,
+    habitDescription,
+    habitType,
+    habitColor,
+    scheduleOption,
+    intervalDays,
+    selectedDays,
+    isGoalEnabled,
+    goalValue,
+    goalUnit
+  } = req.body;
 
   try {
-    const [result] = await pool.query(
-      `INSERT INTO habits (username, name, description, amount, positive, date, increment, location, notifications_allowed, notification_sound, streak) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [username, name, description, amount, positive, date, increment, location, notifications_allowed, notification_sound, streak]
+    // 1) Insert into the main habits table
+    await pool.query(
+      `INSERT INTO habits
+      (user_email, habitName, habitDescription, habitType, habitColor,
+       scheduleOption, isGoalEnabled, goalValue, goalUnit)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        email,
+        habitName,
+        habitDescription || '',
+        habitType,
+        habitColor,
+        scheduleOption,
+        isGoalEnabled ? 1 : 0,
+        goalValue || null,
+        goalUnit || null
+      ]
     );
-    res.status(201).json({ id: result.insertId, message: 'Habit added successfully' });
+
+    // 2) If the schedule is "weekly," insert each selected day into habit_days
+    if (scheduleOption === 'weekly' && Array.isArray(selectedDays)) {
+      for (const day of selectedDays) {
+        await pool.query(
+          `INSERT INTO habit_days (user_email, habitName, day)
+           VALUES (?, ?, ?)`,
+          [email, habitName, day]
+        );
+      }
+    }
+
+    // 3) If the schedule is "interval," insert a row into habit_intervals
+    if (scheduleOption === 'interval' && intervalDays) {
+      await pool.query(
+        `INSERT INTO habit_intervals (user_email, habitName, increment)
+         VALUES (?, ?, ?)`,
+        [email, habitName, parseInt(intervalDays, 10)]
+      );
+    }
+
+    res.status(201).json({ message: 'Habit added successfully' });
   } catch (error) {
+    console.error('Error adding habit:', error);
+    // e.g. handle duplicates or other errors
     res.status(500).json({ error: 'Error adding habit' });
   }
 });
+
 
 // Delete a habit
 app.delete('/habits/:username/:name', async (req, res) => {
