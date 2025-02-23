@@ -30,20 +30,29 @@ export default function StatsScreen() {
   useEffect(() => {
     const fetchHabits = async () => {
       try {
-        const response = await fetch(`http://Localhost:3000/habits/${username}`); //This need repalced later
+        const response = await fetch(`http://localhost:3000/habits/${username}`);
         const data = await response.json();
-        setHabits(data);
-        if (data.length > 0) {
-          setSelectedHabit(data[0].name);
+        console.log("Fetched habits data:", data);
+  
+        if (Array.isArray(data)) {
+          setHabits(data);
+          if (data.length > 0) {
+            setSelectedHabit(data[0].habitName);
+          }
+        } else {
+          console.error("Expected an array but got:", data);
+          setHabits([]);
         }
       } catch (error) {
-        console.error('Error fetching habits:', error);
+        console.error("Error fetching habits:", error);
+        setHabits([]);
       } finally {
         setloading(false);
       }
     };
     fetchHabits();
   }, []);
+  
   
 
   if (loading) {
