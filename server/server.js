@@ -57,22 +57,22 @@ const initDatabase = async () => {
     );
     `);
 
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS habit_progress (
-        user_email VARCHAR(255) NOT NULL,
-        habitName VARCHAR(255) NOT NULL,
-        progress_date DATE NOT NULL DEFAULT CURRENT_DATE,
-        amount_completed INT DEFAULT 0,
-        PRIMARY KEY (user_email, habitName, progress_date),
-        FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
-      );
-    `);
+    // await connection.query(`
+    //   CREATE TABLE IF NOT EXISTS habit_progress (
+    //     user_email VARCHAR(255) NOT NULL,
+    //     habitName VARCHAR(255) NOT NULL,
+    //     progress_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    //     amount_completed INT DEFAULT 0,
+    //     PRIMARY KEY (user_email, habitName, progress_date),
+    //     FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
+    //   );
+    // `);
     
 
     await connection.query(`
       CREATE TABLE IF NOT EXISTS habit_intervals (
         user_email VARCHAR(255) NOT NULL,
-        name VARCHAR(255) NOT NULL,
+        habitName VARCHAR(255) NOT NULL,
         date DATETIME DEFAULT CURRENT_TIMESTAMP,
         increment INT DEFAULT 1,
         PRIMARY KEY (user_email, habitName),
@@ -83,7 +83,7 @@ const initDatabase = async () => {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS habit_days (
         user_email VARCHAR(255) NOT NULL,
-        name VARCHAR(255) NOT NULL,
+        habitName VARCHAR(255) NOT NULL,
         day ENUM('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday') NOT NULL,
         PRIMARY KEY (user_email, habitName, day),
         FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
@@ -93,10 +93,10 @@ const initDatabase = async () => {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS habit_locations (
         user_email VARCHAR(255) NOT NULL,
-        name VARCHAR(255) NOT NULL,
+        habitName VARCHAR(255) NOT NULL,
         location VARCHAR(255) NOT NULL,
-        PRIMARY KEY (user_email, name, location),
-        FOREIGN KEY (user_email, name) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
+        PRIMARY KEY (user_email, habitName, location),
+        FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
       );
     `);
 
@@ -228,10 +228,14 @@ app.delete('/users/:username', async (req, res) => {
 });
 
 // Get all habits for a user
+// have to get email first, then get habits
 app.get('/habits/:username', async (req, res) => {
   const { username } = req.params;
   try {
-    const [habits] = await pool.query('SELECT * FROM habits WHERE username = ?', [username]);
+    const [users] = await pool.query('SELECT email FROM users WHERE username = ?', [username]);
+    if (users.length === 0) { return res.status(404).json({ error: 'User not found' }); }
+    const userEmail = users[0].email;
+    const [habits] = await pool.query('SELECT * FROM habits WHERE user_email = ?', [userEmail]);
     res.json(habits);
   } catch (error) {
     res.status(500).json({ error: 'Error retrieving habits' });
