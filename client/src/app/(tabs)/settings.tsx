@@ -12,53 +12,19 @@ import { useTheme } from '../../components/ThemeContext';
 import { Colors } from '../../components/styles/Colors';
 import { ScrollView } from 'react-native';
 
-// export default function SettingsScreen() {
-//   const systemColorScheme = useColorScheme();
-//   const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark')
 
-//   useEffect(()=>{
-//     const loadThemePreference = async () =>{
-//       const savedTheme = await AsyncStorage.getItem('theme');
-//       if (savedTheme) {
-//         setIsDarkMode(savedTheme === 'dark');
-//       }
-//     };
-
-//     loadThemePreference();
-//   },[]);
-
-//   const toggleswith = async () => {
-//     const newTheme = isDarkMode? 'light' :'dark';
-//     setIsDarkMode(!isDarkMode);
-//     await AsyncStorage.setItem('theme', newTheme);
-//   };
-
-//   return (
-//     <SafeAreaView style={{ flex: 1 }}>
-//       <ScrollView style={{ flex: 1 }}>  
-//         <ThemedView style={styles.titleContainer}>
-//           <ThemedText type="title">Settings</ThemedText>
-//         </ThemedView>
-
-//         <ThemedView style={styles.settingItem}>
-//           <ThemedText>Dark Mode</ThemedText>
-//           <Switch value={isDarkMode} onValueChange={toggleswith} />
-//         </ThemedView>
-//       </ScrollView>
-//     </SafeAreaView>
-//   );
-// }
-
-const settingsOptions = [
-  { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' as const },
-  { title: 'Notifications', icon: require('../../../assets/images/notifications.png'), route: '/notifications' as const },
-  { title: 'Appearance', icon: require('../../../assets/images/appearance.png'), route: '/appearance' as const },
-] as const;
-
-type RouteType = (typeof settingsOptions)[number]['route'];
 
 export default function SettingsScreen() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
+
+  const settingsOptions = [
+    { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' as const },
+    { title: 'Notifications', icon: require('../../../assets/images/notifications.png'), route: '/notifications' as const },
+    { title: 'Appearance', icon: require('../../../assets/images/appearance.png'), route: '/appearance' as const },
+  ] as const;
+  
+  
+  type RouteType = (typeof settingsOptions)[number]['route'];
 
   const handleSignOut = async () => {
     try {
@@ -72,10 +38,12 @@ export default function SettingsScreen() {
   const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
     <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route)}>
       <ThemedView style={styles.iconContainer}>
-        <Image source={item.icon} style={styles.iconImage} />
+        <Image source={item.icon} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
       </ThemedView>
-      <ThemedText style={styles.settingText}>{item.title}</ThemedText>
-      <Feather name="chevron-right" size={20} color="gray" />
+      <ThemedText style={[styles.settingText, { color: theme === 'light' ? 'black' : Colors[theme].text }]}>
+        {item.title}
+      </ThemedText>
+      <Feather name="chevron-right" size={20} color={theme === 'light' ? 'black' : Colors[theme].text} />
     </TouchableOpacity>
   );
 
@@ -86,12 +54,12 @@ export default function SettingsScreen() {
           <ThemedText type="title" style={{ color: Colors[theme].text }}>Settings</ThemedText>
         </ThemedView>
 
-      <FlatList
-        data={settingsOptions}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.title}
-        contentContainerStyle={styles.listContainer}
-      />
+        <FlatList
+          data={settingsOptions}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.title}
+          contentContainerStyle={styles.listContainer}
+        />
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
@@ -129,8 +97,7 @@ const styles = StyleSheet.create({
   settingText: {
     flex: 1,
     fontSize: 16,
-    marginLeft: 10,
-    color: 'black', 
+    marginLeft: 10, 
   },
   signOutButton: {
     backgroundColor: 'red',
