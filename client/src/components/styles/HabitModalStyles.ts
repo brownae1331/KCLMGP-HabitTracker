@@ -1,6 +1,22 @@
 import { StyleSheet } from 'react-native';
 
 export const HabitModalStyles = StyleSheet.create({
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        width: '90%',
+        maxHeight: '90%',
+        borderRadius: 8,
+        elevation: 5,
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+    },
     descriptionInput: {
         height: 60,
         textAlignVertical: 'top',
@@ -27,9 +43,6 @@ export const HabitModalStyles = StyleSheet.create({
     },
     selectedOptionText: {
         color: '#fff',
-    },
-    colorPickerContainer: {
-        paddingVertical: 8,
     },
     colorSwatch: {
         width: 32,
@@ -61,11 +74,6 @@ export const HabitModalStyles = StyleSheet.create({
         borderBottomLeftRadius: 8,
         borderBottomRightRadius: 8,
     },
-    picker: {
-        width: '100%',
-        marginBottom: 12,
-        color: '#333',
-    },
     weeklyContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -92,5 +100,12 @@ export const HabitModalStyles = StyleSheet.create({
     },
     selectedDayButtonText: {
         color: '#FFFFFF',
+    },
+    picker: {
+        color: '#777',
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 4,
+        padding: 8,
     },
 }); 

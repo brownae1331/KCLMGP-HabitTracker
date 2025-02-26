@@ -25,13 +25,7 @@ export const HabitTypeSlider: React.FC<HabitTypeSliderProps> = ({
                 ]}
                 onPress={() => setHabitType('build')}
             >
-                <ThemedText
-                    style={[
-                        HabitModalStyles.sliderOptionText,
-                        habitType === 'build' && HabitModalStyles.selectedOptionText,
-                        { color: Colors[theme].text },
-                    ]}
-                >
+                <ThemedText type="defaultSemiBold" style={[HabitModalStyles.sliderOptionText, habitType === 'build' && HabitModalStyles.selectedOptionText, { color: Colors[theme].text }]}>
                     Build
                 </ThemedText>
             </TouchableOpacity>
@@ -42,13 +36,7 @@ export const HabitTypeSlider: React.FC<HabitTypeSliderProps> = ({
                 ]}
                 onPress={() => setHabitType('quit')}
             >
-                <ThemedText
-                    style={[
-                        HabitModalStyles.sliderOptionText,
-                        habitType === 'quit' && HabitModalStyles.selectedOptionText,
-                        { color: Colors[theme].text },
-                    ]}
-                >
+                <ThemedText type="defaultSemiBold" style={[HabitModalStyles.sliderOptionText, habitType === 'quit' && HabitModalStyles.selectedOptionText, { color: Colors[theme].text }]}>
                     Quit
                 </ThemedText>
             </TouchableOpacity>
