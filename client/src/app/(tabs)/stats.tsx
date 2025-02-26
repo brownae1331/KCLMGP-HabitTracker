@@ -8,8 +8,8 @@ import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
 
 interface Habit {
-  username: string;
-  name: string;
+  user_email: string;
+  habitName: string;
   description?: string;
   amount?: number;
   positive?: boolean;
@@ -25,8 +25,15 @@ export default function StatsScreen() {
   const [selectedHabit, setSelectedHabit ]= useState('');
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setloading] = useState(true);
-  const username = 'your_username';
+ //const [username, setUsername] = useState('');
+  const username = 'doris'; //hardcoded, need to change later
 
+  // useEffect(() => {
+  //   const fetchUsername = async () => {
+
+  //   }
+  // }, []);
+  
   useEffect(() => {
     const fetchHabits = async () => {
       try {
@@ -36,11 +43,8 @@ export default function StatsScreen() {
   
         if (Array.isArray(data)) {
           setHabits(data);
-          if (data.length > 0) {
-            setSelectedHabit(data[0].habitName);
-          }
         } else {
-          console.error("Expected an array but got:", data);
+          console.error("Invalid response format:", data);
           setHabits([]);
         }
       } catch (error) {
@@ -51,9 +55,13 @@ export default function StatsScreen() {
       }
     };
     fetchHabits();
-  }, []);
-  
-  
+  }, [username]);
+
+  // useEffect(() => {
+  //   if (habits.length > 0) {
+  //     setSelectedHabit(habits[0].habitName);
+  //   }
+  // }, [habits]);
 
   if (loading) {
     return (
@@ -66,23 +74,43 @@ export default function StatsScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={{ flex: 1 }}>
+
         <ThemedView style={styles.titleContainer}>
           <ThemedText type="title">Stats</ThemedText>
         </ThemedView>
 
-        <ThemedView>
-          <Picker
-            selectedValue={selectedHabit}
-            onValueChange={(itemValue) => setSelectedHabit(itemValue)}
-            style={styles.picker}
-          >
-            {habits.map((habit) => (
-              <Picker.Item label={habit.name} value={habit.name} key={habit.name} />
-            ))}
-          </Picker>
-        </ThemedView>
+        {habits.length === 0 ? (
+          <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+            <ThemedText type="subtitle">
+            You don't have any habits yet! Create a habit before seeing statistics about it.
+            </ThemedText>
+          </ThemedView>
+        ) : (
+          <>
+            <ThemedView>
+              <Picker
+                selectedValue={selectedHabit}
+                onValueChange={(itemValue) => setSelectedHabit(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Please select a habit..." value={null}/>
+                {habits.map((habit: Habit) => (
+                  <Picker.Item label={habit.habitName} value={habit.habitName} key={habit.habitName} />
+                ))}
+              </Picker>
+            </ThemedView>
 
-        <GoodHabitGraph habit={selectedHabit} />
+            {selectedHabit ? (
+              <GoodHabitGraph habit={selectedHabit} />
+            ) : (
+              <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ThemedText type="subtitle">
+                  Please select a habit to see statistics about your progress!
+                </ThemedText>
+              </ThemedView>
+            )}
+          </>
+        )}        
       </ScrollView>
     </SafeAreaView>
   );

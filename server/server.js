@@ -57,17 +57,17 @@ const initDatabase = async () => {
     );
     `);
 
-    // await connection.query(`
-    //   CREATE TABLE IF NOT EXISTS habit_progress (
-    //     user_email VARCHAR(255) NOT NULL,
-    //     habitName VARCHAR(255) NOT NULL,
-    //     progress_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    //     amount_completed INT DEFAULT 0,
-    //     PRIMARY KEY (user_email, habitName, progress_date),
-    //     FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
-    //   );
-    // `);
-    
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS habit_progress (
+        user_email VARCHAR(255) NOT NULL,
+        habitName VARCHAR(255) NOT NULL,
+        progressDate DATE NOT NULL DEFAULT (CURRENT_DATE),
+        actualValue DOUBLE DEFAULT 0,
+        habitCompleted BOOLEAN DEFAULT FALSE,
+        PRIMARY KEY (user_email, habitName, progressDate),
+        FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
+      );
+    `);
 
     await connection.query(`
       CREATE TABLE IF NOT EXISTS habit_intervals (
@@ -311,7 +311,7 @@ app.post('/habits', async (req, res) => {
 app.delete('/habits/:username/:name', async (req, res) => {
   const { username, name } = req.params;
   try {
-    const [result] = await pool.query('DELETE FROM habits WHERE username = ? AND name = ?', [username, name]);
+    const [result] = await pool.query('DELETE FROM habits WHERE username = ? AND habitName = ?', [username, habitName]);
     if (result.affectedRows > 0) {
       res.json({ success: true, message: `Habit "${name}" deleted successfully.` });
     } else {
