@@ -232,9 +232,11 @@ app.delete('/users/:username', async (req, res) => {
 app.get('/habits/:username', async (req, res) => {
   const { username } = req.params;
   try {
-    const [users] = await pool.query('SELECT email FROM users WHERE username = ?', [username]);
-    if (users.length === 0) { return res.status(404).json({ error: 'User not found' }); }
-    const userEmail = users[0].email;
+    const [user] = await pool.query('SELECT email FROM users WHERE username = ?', [username]);
+    if (user.length === 0) { 
+      return res.status(404).json({ error: 'User not found' }); 
+    }
+    const userEmail = user[0].email;
     const [habits] = await pool.query('SELECT * FROM habits WHERE user_email = ?', [userEmail]);
     res.json(habits);
   } catch (error) {
@@ -321,6 +323,55 @@ app.delete('/habits/:username/:name', async (req, res) => {
     res.status(500).json({ error: 'Error deleting habit' });
   }
 });
+
+
+// Get habit progress data for a specific user and habit
+app.get('/habit-progress/:username/:habitName', async (req, res) => {
+  const { username, habitName } = req.params;
+  const { range } = req.query; // "7" for past 7 days, "30" for past 30 days/month, or 'month' for monthly average
+  
+  try {
+    const [user] = await pool.query('SELECT email FROM users WHERE username = ?', [username]);
+    if (user.length === 0) { 
+      return res.status(404).json({ error: 'User not found' }); 
+    }
+    const userEmail = user[0].email;
+    let query = '';
+    let queryParams = [userEmail, habitName];
+    if (range === '7' || range === '30') {
+      query = `
+        SELECT progressDate, actualValue
+        FROM habit_progress
+        WHERE user_email = ? AND habitName = ?
+        AND progressDate BETWEEN CURDATE() - INTERVAL ? DAY AND CURDATE()
+        ORDER BY progressDate ASC;
+      `;
+      queryParams.push(parseInt(range));
+    } else if (range === 'month') {
+      query = `
+        SELECT 
+          YEAR(progressDate) AS year,
+          MONTH(progressDate) AS month,
+          AVG(actualValue) AS avg_value
+        FROM habit_progress
+        WHERE user_email = ? AND habitName = ?
+        AND progressDate BETWEEN ? AND ?
+        GROUP BY YEAR(progressDate), MONTH(progressDate)
+        ORDER BY YEAR(progressDate) DESC, MONTH(progressDate) DESC;
+      `;
+      queryParams.push(startDate.toISOString().split('T')[0]);
+    } else {
+      return res.status(400).json({ error: 'Invalid range parameter' });
+    }
+    const [progressData] = await pool.query(query, queryParams);
+    res.json(progressData);
+  } catch (error) {
+    console.error('Error fetching habit progress:', error);
+    res.status(500).json({ error: 'Error fetching habit progress data' });
+  }
+});
+
+
 
 // Start the server
 app.listen(PORT, () => {
