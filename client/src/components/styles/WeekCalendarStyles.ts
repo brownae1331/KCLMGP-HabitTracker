@@ -43,8 +43,4 @@ export const WeekCalendarStyles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    selectedText: {
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-    },
 });

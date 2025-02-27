@@ -178,10 +178,11 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                             mode="dropdown"
                             selectedValue={scheduleOption}
                             onValueChange={(itemValue) => setScheduleOption(itemValue)}
-                            style={[HabitModalStyles.picker, { backgroundColor: Colors[theme].background }]}
+                            style={[HabitModalStyles.picker, { backgroundColor: Colors[theme].background, color: Colors[theme].text }]}
+                            dropdownIconColor={Colors[theme].text}
                         >
-                            <Picker.Item label="Every ___ days" value="interval" />
-                            <Picker.Item label="Every ___ day of the week" value="weekly" />
+                            <Picker.Item label="Every ___ days" value="interval" color={Colors[theme].text} />
+                            <Picker.Item label="Every ___ day of the week" value="weekly" color={Colors[theme].text} />
                         </Picker>
 
                         {scheduleOption === 'interval' ? (

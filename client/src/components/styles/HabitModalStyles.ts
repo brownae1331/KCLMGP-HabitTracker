@@ -37,13 +37,6 @@ export const HabitModalStyles = StyleSheet.create({
     selectedOption: {
         backgroundColor: '#007AFF',
     },
-    sliderOptionText: {
-        color: '#007AFF',
-        fontWeight: '500',
-    },
-    selectedOptionText: {
-        color: '#fff',
-    },
     colorSwatch: {
         width: 32,
         height: 32,
