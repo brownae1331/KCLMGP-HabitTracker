@@ -11,53 +11,18 @@ import { Colors } from '../../components/styles/Colors';
 import { ScrollView } from 'react-native';
 import { SharedStyles } from '../../components/styles/SharedStyles';
 
-// export default function SettingsScreen() {
-//   const systemColorScheme = useColorScheme();
-//   const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark')
-
-//   useEffect(()=>{
-//     const loadThemePreference = async () =>{
-//       const savedTheme = await AsyncStorage.getItem('theme');
-//       if (savedTheme) {
-//         setIsDarkMode(savedTheme === 'dark');
-//       }
-//     };
-
-//     loadThemePreference();
-//   },[]);
-
-//   const toggleswith = async () => {
-//     const newTheme = isDarkMode? 'light' :'dark';
-//     setIsDarkMode(!isDarkMode);
-//     await AsyncStorage.setItem('theme', newTheme);
-//   };
-
-//   return (
-//     <SafeAreaView style={{ flex: 1 }}>
-//       <ScrollView style={{ flex: 1 }}>  
-//         <ThemedView style={styles.titleContainer}>
-//           <ThemedText type="title">Settings</ThemedText>
-//         </ThemedView>
-
-//         <ThemedView style={styles.settingItem}>
-//           <ThemedText>Dark Mode</ThemedText>
-//           <Switch value={isDarkMode} onValueChange={toggleswith} />
-//         </ThemedView>
-//       </ScrollView>
-//     </SafeAreaView>
-//   );
-// }
-
-const settingsOptions = [
-  { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' as const },
-  { title: 'Notifications', icon: require('../../../assets/images/notifications.png'), route: '/notifications' as const },
-  { title: 'Appearance', icon: require('../../../assets/images/appearance.png'), route: '/appearance' as const },
-] as const;
-
-type RouteType = (typeof settingsOptions)[number]['route'];
 
 export default function SettingsScreen() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
+
+  const settingsOptions = [
+    { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' as const },
+    { title: 'Notifications', icon: require('../../../assets/images/notifications.png'), route: '/notifications' as const },
+    { title: 'Appearance', icon: require('../../../assets/images/appearance.png'), route: '/appearance' as const },
+  ] as const;
+
+
+  type RouteType = (typeof settingsOptions)[number]['route'];
 
   const handleSignOut = async () => {
     try {
@@ -71,10 +36,10 @@ export default function SettingsScreen() {
   const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
     <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route)}>
       <View style={styles.iconContainer}>
-        <Image source={item.icon} style={styles.iconImage} />
+        <Image source={item.icon} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
       </View>
-      <ThemedText style={styles.settingText}>{item.title}</ThemedText>
-      <Feather name="chevron-right" size={20} color="gray" />
+      <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>{item.title}</ThemedText>
+      <Feather name="chevron-right" size={20} color={Colors[theme].text} />
     </TouchableOpacity>
   );
 
@@ -129,7 +94,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     marginLeft: 10,
-    color: 'black',
   },
   signOutButton: {
     backgroundColor: 'red',
