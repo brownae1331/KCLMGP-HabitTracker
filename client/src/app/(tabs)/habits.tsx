@@ -118,7 +118,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const fetchHabits = async () => {
       try {
-        const habits = await getHabitsByUser('hugo@gmail.com');
+        const habits = await getHabitsByUser('abcdef@gmail.com');
   
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const selectedDayName = dayNames[selectedDate.fullDate.getDay()];
@@ -170,7 +170,7 @@ export default function HomeScreen() {
         <ThemedView>
           {dbHabits.length > 0 ? (
             dbHabits.map((habit: Habit) => (
-              <HabitPanel key={habit.habitName} habit={habit} />
+              <HabitPanel key={'$habit.email}-${habit.habitName'} habit={habit} />
             ))
           ) : (
             <ThemedText>No habits found for this date.</ThemedText>

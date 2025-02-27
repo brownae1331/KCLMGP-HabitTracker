@@ -228,10 +228,10 @@ app.delete('/users/:username', async (req, res) => {
 });
 
 // Get all habits for a user
-app.get('/habits/:username', async (req, res) => {
+app.get('/habits/:email', async (req, res) => {
   const { username } = req.params;
   try {
-    const [habits] = await pool.query('SELECT * FROM habits WHERE username = ?', [username]);
+    const [habits] = await pool.query('SELECT * FROM habits WHERE user_email = ?', [email]);
     res.json(habits);
   } catch (error) {
     res.status(500).json({ error: 'Error retrieving habits' });
