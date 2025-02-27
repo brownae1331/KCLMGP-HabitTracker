@@ -92,7 +92,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
 
                                     {/* Styles for today and selected date */}
                                     <View style={[isToday && WeekCalendarStyles.todayRing, isSelected && WeekCalendarStyles.selectedCircle]}>
-                                        <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
+                                        <ThemedText type="defaultSemiBold" style={{ color: Colors[theme].text }}>
                                             {date}
                                         </ThemedText>
                                     </View>

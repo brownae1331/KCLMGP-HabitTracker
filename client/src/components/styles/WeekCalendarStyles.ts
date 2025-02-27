@@ -26,11 +26,6 @@ export const WeekCalendarStyles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#555',
     },
-    dateText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#000',
-    },
     todayRing: {
         borderWidth: 2,
         borderColor: '#007AFF',

@@ -3,8 +3,8 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  View,
 } from 'react-native';
-import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { WeeklyCalendar } from '../../components/WeeklyCalendar';
 import { SharedStyles } from '../../components/styles/SharedStyles';
@@ -102,13 +102,13 @@ export default function HomeScreen() {
       <ScrollView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
 
         {/* Today/Selected Date */}
-        <ThemedView style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+        <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
           <ThemedText type="title" style={{ color: Colors[theme].text, textAlign: 'center', width: '100%' }}>
             {selectedDate.date === today.getDate()
               ? "Today"
               : selectedDate.fullDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
           </ThemedText>
-        </ThemedView>
+        </View>
 
         {/* Weekly Calendar */}
         <WeeklyCalendar
@@ -117,11 +117,11 @@ export default function HomeScreen() {
         />
 
         {/* Add Habit Button */}
-        <ThemedView style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
+        <View style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <IconSymbol name="plus" size={24} color="#007AFF" />
           </TouchableOpacity>
-        </ThemedView>
+        </View>
 
         {/* New Habit Modal */}
         <NewHabitModal

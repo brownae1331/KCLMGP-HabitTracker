@@ -7,14 +7,11 @@ import { IconSymbol } from '../../components/ui/IconSymbol';
 import TabBarBackground from '../../components/ui/TabBarBackground';
 import { Colors } from '../../components/styles/Colors';
 
-import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
-
 export default function TabLayout() {
   // const colorScheme = useColorScheme() as 'light'| 'dark';
   const { theme, refreshKey } = useTheme();
 
   return (
-    // <NavigationThemeProvider key={refreshKey} value={theme === 'dark' ? DarkTheme : DefaultTheme}>
     <Tabs
       key={refreshKey}
       screenOptions={{
@@ -62,6 +59,5 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
-    // </NavigationThemeProvider>
   );
 }

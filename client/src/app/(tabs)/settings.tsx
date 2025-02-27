@@ -1,16 +1,15 @@
-import { StyleSheet, TouchableOpacity, Alert, FlatList } from 'react-native';
+import { StyleSheet, TouchableOpacity, Alert, FlatList, View } from 'react-native';
 import React from 'react';
 import { ThemedText } from '../../components/ThemedText';
-import { ThemedView } from '../../components/ThemedView';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, usePathname } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons'
 import { Image } from 'react-native';
-import { SettingsPageStyles } from '../../components/styles/SettingsPageStyle';
 import { useTheme } from '../../components/ThemeContext';
 import { Colors } from '../../components/styles/Colors';
 import { ScrollView } from 'react-native';
+import { SharedStyles } from '../../components/styles/SharedStyles';
 
 // export default function SettingsScreen() {
 //   const systemColorScheme = useColorScheme();
@@ -63,7 +62,7 @@ export default function SettingsScreen() {
   const handleSignOut = async () => {
     try {
       await AsyncStorage.removeItem('token');
-      router.replace('/login'); 
+      router.replace('/login');
     } catch (error) {
       Alert.alert('Error', 'Failed to sign out.');
     }
@@ -71,9 +70,9 @@ export default function SettingsScreen() {
 
   const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
     <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route)}>
-      <ThemedView style={styles.iconContainer}>
+      <View style={styles.iconContainer}>
         <Image source={item.icon} style={styles.iconImage} />
-      </ThemedView>
+      </View>
       <ThemedText style={styles.settingText}>{item.title}</ThemedText>
       <Feather name="chevron-right" size={20} color="gray" />
     </TouchableOpacity>
@@ -82,16 +81,16 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
       <ScrollView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
-        <ThemedView style={[SettingsPageStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+        <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
           <ThemedText type="title" style={{ color: Colors[theme].text }}>Settings</ThemedText>
-        </ThemedView>
+        </View>
 
-      <FlatList
-        data={settingsOptions}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.title}
-        contentContainerStyle={styles.listContainer}
-      />
+        <FlatList
+          data={settingsOptions}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.title}
+          contentContainerStyle={styles.listContainer}
+        />
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
@@ -130,7 +129,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     marginLeft: 10,
-    color: 'black', 
+    color: 'black',
   },
   signOutButton: {
     backgroundColor: 'red',
@@ -147,8 +146,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   iconImage: {
-    width: 24,  
-    height: 24, 
+    width: 24,
+    height: 24,
     resizeMode: 'contain',
     backgroundColor: 'transparent',
   },

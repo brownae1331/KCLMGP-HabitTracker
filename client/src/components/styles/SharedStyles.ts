@@ -26,5 +26,8 @@ export const SharedStyles = StyleSheet.create({
     titleContainer: {
         flexDirection: 'row',
         gap: 8,
+        height: 50,
+        padding: 16,
+        alignItems: 'center',
     },
 });

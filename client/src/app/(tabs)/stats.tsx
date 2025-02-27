@@ -1,6 +1,5 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ThemedText } from '../../components/ThemedText';
-import { ThemedView } from '../../components/ThemedView';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GoodHabitGraph from '../../components/GoodHabitGraph';
@@ -8,7 +7,7 @@ import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
 import { Colors } from '../../components/styles/Colors';
 import { useTheme } from '../../components/ThemeContext';
-import { CalendarPageStyles } from '../../components/styles/CalendarPageStyles';
+import { SharedStyles } from '../../components/styles/SharedStyles';
 
 interface Habit {
   username: string;
@@ -41,7 +40,7 @@ export default function StatsScreen() {
       try {
         const response = await fetch(`http://localhost:3000/habits/${username}`);
         const data: Habit[] = await response.json();
-        
+
         if (Array.isArray(data)) {
           setHabits(data);
         } else {
@@ -77,13 +76,13 @@ export default function StatsScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={{ flex: 1 }}>
-        <ThemedView style={[CalendarPageStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+        <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
           <ThemedText type="title" style={{ color: Colors[theme].text }}>
             Stats
           </ThemedText>
-        </ThemedView>
+        </View>
 
-        <ThemedView>
+        <View>
           <Picker
             selectedValue={selectedHabit}
             onValueChange={(itemValue) => setSelectedHabit(itemValue)}
@@ -97,7 +96,7 @@ export default function StatsScreen() {
               <Picker.Item label="No habits available" value="" />
             )}
           </Picker>
-        </ThemedView>
+        </View>
 
         <GoodHabitGraph habit={selectedHabit} />
       </ScrollView>

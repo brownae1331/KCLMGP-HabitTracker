@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { logIn } from '../../lib/client';
 import { ThemedText } from '../../components/ThemedText';
-import { ThemedView } from '../../components/ThemedView';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
@@ -27,7 +26,7 @@ export default function LoginScreen() {
     return (
         <SafeAreaView style={styles.background}>
             <ScrollView contentContainerStyle={styles.container} keyboardDismissMode="on-drag">
-                <ThemedView style={styles.card}>
+                <View style={styles.card}>
                     <ThemedText type="title" style={styles.title}>
                         Log In
                     </ThemedText>
@@ -66,7 +65,7 @@ export default function LoginScreen() {
                             </ThemedText>
                         </TouchableOpacity>
                     </Link>
-                </ThemedView>
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
