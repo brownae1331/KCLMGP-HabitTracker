@@ -1,5 +1,5 @@
 // Start of Selection
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 // Core Reusable Styles
 export const SharedStyles = StyleSheet.create({
@@ -26,8 +26,9 @@ export const SharedStyles = StyleSheet.create({
     titleContainer: {
         flexDirection: 'row',
         gap: 8,
-        height: 50,
-        padding: 16,
+        minHeight: 60,
+        paddingHorizontal: 16,
         alignItems: 'center',
+        justifyContent: 'flex-start',
     },
 });

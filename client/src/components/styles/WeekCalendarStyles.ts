@@ -16,10 +16,10 @@ export const WeekCalendarStyles = StyleSheet.create({
     },
     dayContainer: {
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         width: 50,
-        height: 50,
-        borderRadius: 25,
+        height: 60,
+        paddingVertical: 6,
     },
     dayText: {
         fontSize: 12,
@@ -29,8 +29,11 @@ export const WeekCalendarStyles = StyleSheet.create({
     todayRing: {
         borderWidth: 2,
         borderColor: '#007AFF',
-        borderRadius: 12,
-        padding: 4,
+        borderRadius: 15,
+        width: 30,
+        height: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     selectedCircle: {
         backgroundColor: '#007AFF',
@@ -39,7 +42,6 @@ export const WeekCalendarStyles = StyleSheet.create({
         height: 30,
         alignItems: 'center',
         justifyContent: 'center',
-        transform: [{ scale: 1.1 }],
     },
     selectedText: {
         color: '#FFFFFF',
