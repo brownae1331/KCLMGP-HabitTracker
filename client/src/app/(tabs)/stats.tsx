@@ -1,11 +1,13 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ThemedText } from '../../components/ThemedText';
-import { ThemedView } from '../../components/ThemedView';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GoodHabitGraph from '../../components/GoodHabitGraph';
 import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
+import { Colors } from '../../components/styles/Colors';
+import { useTheme } from '../../components/ThemeContext';
+import { SharedStyles } from '../../components/styles/SharedStyles';
 
 interface Habit {
   username: string;
@@ -22,29 +24,46 @@ interface Habit {
 }
 
 export default function StatsScreen() {
-  const [selectedHabit, setSelectedHabit ]= useState('');
   const [habits, setHabits] = useState<Habit[]>([]);
-  const [loading, setloading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const username = 'your_username';
+  const { theme } = useTheme();
+
+  const pickerStyle = {
+    ...styles.picker,
+    color: theme === 'dark' ? '#ffffff' : '#000000',
+    backgroundColor: theme === 'dark' ? '#333333' : '#ffffff',
+  };
 
   useEffect(() => {
     const fetchHabits = async () => {
       try {
-        const response = await fetch(`http://Localhost:3000/habits/${username}`); //This need repalced later
-        const data = await response.json();
-        setHabits(data);
-        if (data.length > 0) {
-          setSelectedHabit(data[0].name);
+        const response = await fetch(`http://localhost:3000/habits/${username}`);
+        const data: Habit[] = await response.json();
+
+        if (Array.isArray(data)) {
+          setHabits(data);
+        } else {
+          console.error("Invalid response format:", data);
+          setHabits([]);
         }
       } catch (error) {
         console.error('Error fetching habits:', error);
+        setHabits([]);
       } finally {
-        setloading(false);
+        setLoading(false);
       }
     };
     fetchHabits();
   }, []);
-  
+
+  const [selectedHabit, setSelectedHabit] = useState<string>('');
+
+  useEffect(() => {
+    if (habits.length > 0) {
+      setSelectedHabit(habits[0].name);
+    }
+  }, [habits]);
 
   if (loading) {
     return (
@@ -53,25 +72,31 @@ export default function StatsScreen() {
       </SafeAreaView>
     );
   }
-  
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={{ flex: 1 }}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="title">Stats</ThemedText>
-        </ThemedView>
+        <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+          <ThemedText type="title" style={{ color: Colors[theme].text }}>
+            Stats
+          </ThemedText>
+        </View>
 
-        <ThemedView>
+        <View>
           <Picker
             selectedValue={selectedHabit}
             onValueChange={(itemValue) => setSelectedHabit(itemValue)}
-            style={styles.picker}
+            style={pickerStyle}
           >
-            {habits.map((habit) => (
-              <Picker.Item label={habit.name} value={habit.name} key={habit.name} />
-            ))}
+            {Array.isArray(habits) && habits.length > 0 ? (
+              habits.map((habit, index) => (
+                <Picker.Item label={habit.name} value={habit.name} key={habit.name + index} />
+              ))
+            ) : (
+              <Picker.Item label="No habits available" value="" />
+            )}
           </Picker>
-        </ThemedView>
+        </View>
 
         <GoodHabitGraph habit={selectedHabit} />
       </ScrollView>
@@ -80,22 +105,10 @@ export default function StatsScreen() {
 }
 
 const styles = StyleSheet.create({
-  // headerImage: {
-  //   color: '#808080',
-  //   bottom: -90,
-  //   left: -35,
-  //   position: 'absolute',
-  // },
   titleContainer: {
     flexDirection: 'row',
     gap: 8,
     padding: 10,
-  },
-  pickerContainer: {
-    margin: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
   },
   picker: {
     height: 50,

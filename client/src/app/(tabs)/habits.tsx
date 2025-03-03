@@ -1,22 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  StyleSheet,
-  Platform,
-  Modal,
   TouchableOpacity,
-  TextInput,
-  View,
   ScrollView,
-  Switch,
-  Dimensions,
-  FlatList,
   SafeAreaView,
-  Text,
+  View,
 } from 'react-native';
-import { ThemedText } from '../../components/ThemedText';
-import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
-import { Picker } from '@react-native-picker/picker';
+import { WeeklyCalendar } from '../../components/WeeklyCalendar';
+import { SharedStyles } from '../../components/styles/SharedStyles';
+import { NewHabitModal } from '../../components/NewHabitModal';
+import { ThemedText } from '../../components/ThemedText';
+import { Colors } from '../../components/styles/Colors';
+import { useTheme } from '../../components/ThemeContext';
 import { getHabitsByUser } from '../../lib/client';
 import HabitPanel, { Habit } from '../../components/HabitPanel'; // adjust the path as needed
 
@@ -41,7 +36,6 @@ export default function HomeScreen() {
   const [scheduleOption, setScheduleOption] = useState<'interval' | 'weekly'>('interval');
   const [intervalDays, setIntervalDays] = useState('');
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   // Goal fields (only relevant for build type)
   const [isGoalEnabled, setIsGoalEnabled] = useState(false);
@@ -149,21 +143,15 @@ export default function HomeScreen() {
   
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Today/Selected Date */}
-      <Text style={styles.selectedDateText}>
-        {selectedDate.date === today.getDate()
-          ? "Today"
-          : selectedDate.fullDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-      </Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
+      <ScrollView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
 
-      {/* Weekly Calendar */}
-      <WeeklyCalendar selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-
-      <ScrollView style={{ flex: 1 }}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="title" style={styles.textDark}>
-            Habits
+        {/* Today/Selected Date */}
+        <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+          <ThemedText type="title" style={{ color: Colors[theme].text, textAlign: 'center', width: '100%' }}>
+            {selectedDate.date === today.getDate()
+              ? "Today"
+              : selectedDate.fullDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
           </ThemedText>
         </ThemedView>
 
@@ -179,184 +167,38 @@ export default function HomeScreen() {
 
 
         {/* Add Habit Button */}
-        <ThemedView style={styles.addButtonContainer}>
+        <View style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <IconSymbol name="plus" size={24} color="#007AFF" />
           </TouchableOpacity>
-        </ThemedView>
+        </View>
 
-        {/* Modal for Adding a New Habit */}
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <ThemedText type="title" style={[styles.modalTitle, styles.textDark]}>
-                Add New Habit
-              </ThemedText>
-
-              {/* Habit Type Slider */}
-              <HabitTypeSlider habitType={habitType} setHabitType={setHabitType} />
-
-              {/* Habit Name Input */}
-              <TextInput
-                style={[styles.input, { color: '#333' }]}
-                placeholder="Habit Name"
-                placeholderTextColor="#777"
-                value={habitName}
-                onChangeText={setHabitName}
-              />
-
-              {/* Habit Description Input (multi-line) */}
-              <TextInput
-                style={[styles.input, styles.descriptionInput, { color: '#333' }]}
-                placeholder="Habit Description"
-                placeholderTextColor="#777"
-                value={habitDescription}
-                onChangeText={setHabitDescription}
-                multiline
-              />
-
-              {/* Color Picker */}
-              <ThemedText type="subtitle" style={[styles.sectionLabel, styles.textDark]}>
-                Pick a Color
-              </ThemedText>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.colorPickerContainer}
-              >
-                {colorOptions.map((color) => {
-                  const selected = color === habitColor;
-                  return (
-                    <TouchableOpacity
-                      key={color}
-                      style={[
-                        styles.colorSwatch,
-                        { backgroundColor: color },
-                        selected && styles.selectedSwatch,
-                      ]}
-                      onPress={() => setHabitColor(color)}
-                    />
-                  );
-                })}
-              </ScrollView>
-
-              {/* Goal Section (only visible if habitType is build) */}
-              {habitType === 'build' && (
-                <>
-                  <ThemedText type="subtitle" style={[styles.sectionLabel, styles.textDark]}>
-                    Goal
-                  </ThemedText>
-                  <View style={styles.goalToggleContainer}>
-                    <ThemedText style={[styles.textDark]}>
-                      Enable Goal?
-                    </ThemedText>
-                    <Switch
-                      value={isGoalEnabled}
-                      onValueChange={setIsGoalEnabled}
-                      trackColor={{ false: '#ccc', true: '#007AFF' }}
-                      thumbColor="#fff"
-                    />
-                  </View>
-                  {isGoalEnabled && (
-                    <View style={styles.goalFieldsContainer}>
-                      <TextInput
-                        style={[styles.input, { flex: 0.4, color: '#333' }]}
-                        placeholder="Number"
-                        placeholderTextColor="#777"
-                        keyboardType="numeric"
-                        value={goalValue}
-                        onChangeText={setGoalValue}
-                      />
-                      <TextInput
-                        style={[
-                          styles.input,
-                          { flex: 0.6, color: '#333', marginLeft: 8 },
-                        ]}
-                        placeholder="Unit (e.g. minutes, pages)"
-                        placeholderTextColor="#777"
-                        value={goalUnit}
-                        onChangeText={setGoalUnit}
-                      />
-                      <ThemedText style={[styles.daysText, styles.textDark]}>
-                        per day
-                      </ThemedText>
-                    </View>
-                  )}
-                </>
-              )}
-
-              {/* Scheduling Options */}
-              <ThemedText type="subtitle" style={[styles.sectionLabel, styles.textDark]}>
-                Schedule
-              </ThemedText>
-              <Picker
-                mode="dropdown"
-                selectedValue={scheduleOption}
-                onValueChange={(itemValue) => setScheduleOption(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Every ___ days" value="interval" />
-                <Picker.Item label="Every ___ day of the week" value="weekly" />
-              </Picker>
-
-              {scheduleOption === 'interval' ? (
-                <View style={styles.intervalContainer}>
-                  <TextInput
-                    style={[styles.input, { flex: 1, color: '#333' }]}
-                    placeholder="Enter number"
-                    placeholderTextColor="#777"
-                    keyboardType="numeric"
-                    value={intervalDays}
-                    onChangeText={setIntervalDays}
-                  />
-                  <ThemedText style={[styles.daysText, styles.textDark]}>
-                    days
-                  </ThemedText>
-                </View>
-              ) : (
-                <View style={styles.weeklyContainer}>
-                  {daysOfWeek.map((day) => (
-                    <TouchableOpacity
-                      key={day}
-                      onPress={() => toggleDay(day)}
-                      style={[
-                        styles.dayButton,
-                        selectedDays.includes(day) && styles.selectedDayButton,
-                      ]}
-                    >
-                      <ThemedText
-                        style={[
-                          styles.dayButtonText,
-                          selectedDays.includes(day) && styles.selectedDayButtonText,
-                          styles.textDark,
-                        ]}
-                      >
-                        {day.slice(0, 3)}
-                      </ThemedText>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={handleAddHabit}>
-                  <ThemedText style={styles.buttonText}>Add Habit</ThemedText>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.cancelButton]}
-                  onPress={() => setModalVisible(false)}
-                >
-                  <ThemedText style={styles.buttonText}>Cancel</ThemedText>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
+        {/* New Habit Modal */}
+        <NewHabitModal
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
+          habitName={habitName}
+          setHabitName={setHabitName}
+          habitDescription={habitDescription}
+          setHabitDescription={setHabitDescription}
+          habitType={habitType}
+          setHabitType={setHabitType}
+          habitColor={habitColor}
+          setHabitColor={setHabitColor}
+          scheduleOption={scheduleOption}
+          setScheduleOption={setScheduleOption}
+          intervalDays={intervalDays}
+          setIntervalDays={setIntervalDays}
+          selectedDays={selectedDays}
+          setSelectedDays={setSelectedDays}
+          isGoalEnabled={isGoalEnabled}
+          setIsGoalEnabled={setIsGoalEnabled}
+          goalValue={goalValue}
+          setGoalValue={setGoalValue}
+          goalUnit={goalUnit}
+          setGoalUnit={setGoalUnit}
+          onAddHabit={handleAddHabit}
+        />
       </ScrollView>
     </SafeAreaView>
   );
