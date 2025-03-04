@@ -15,7 +15,6 @@ export interface Habit {
     isGoalEnabled: boolean;
     goalValue?: number | null;
     goalUnit?: string;
-    // etc.
   }
   
 

@@ -3,7 +3,7 @@
  * https://docs.expo.dev/guides/color-schemes/
  */
 
-import { Colors } from '../constants/Colors';
+import { Colors } from '../components/styles/Colors';
 import { useColorScheme } from './useColorScheme';
 
 type ThemeColors = keyof typeof Colors['light'];

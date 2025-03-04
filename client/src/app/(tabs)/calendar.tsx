@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from "react-native";
+import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar, DateData } from "react-native-calendars";
 import { ThemedText } from "../../components/ThemedText";
-import { ThemedView } from "../../components/ThemedView";
 import { Svg, Circle } from "react-native-svg";
+import { CalendarPageStyles } from "../../components/styles/CalendarPageStyles";
+import { SharedStyles } from "../../components/styles/SharedStyles";
+import { useTheme } from "../../components/ThemeContext";
+import { Colors } from "../../components/styles/Colors";
 
 export default function CalendarScreen() {
+  const { theme } = useTheme();
   const today = new Date().toISOString().split("T")[0]; // Get today's date
   const [selectedDate, setSelectedDate] = useState(today);
   const completionPercentage = 69; // Example percentage for progress circle
@@ -39,20 +43,23 @@ export default function CalendarScreen() {
   const markedDates = getMarkedDates();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
-      <ScrollView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
+      <ScrollView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
         {/* Title Section */}
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="title" style={{ color: "#FFF" }}>
+        <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+          <ThemedText type="title" style={{ color: Colors[theme].text }}>
             Calendar
           </ThemedText>
-        </ThemedView>
+        </View>
 
         {/* Calendar Component */}
-        <View style={styles.calendarContainer}>
+        <View style={[
+          CalendarPageStyles.calendarContainer,
+          { backgroundColor: Colors[theme].background }
+        ]}>
           <Calendar
             onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
-            dayComponent={({ date, state }) => {
+            dayComponent={({ date, state }: { date: DateData, state: any }) => {
               const progress = markedDates[date.dateString]?.progress || 0;
               const radius = 18;
               const strokeWidth = 3;
@@ -65,7 +72,14 @@ export default function CalendarScreen() {
                   <View style={{ alignItems: "center", justifyContent: "center" }}>
                     <Svg width={45} height={45} viewBox="0 0 45 45">
                       {/* Background Circle */}
-                      <Circle cx="22.5" cy="22.5" r={radius} stroke="#444444" strokeWidth={strokeWidth} fill="none" />
+                      <Circle
+                        cx="22.5"
+                        cy="22.5"
+                        r={radius}
+                        stroke={theme === 'dark' ? "#444444" : "#CCCCCC"}
+                        strokeWidth={strokeWidth}
+                        fill="none"
+                      />
                       {/* Golden Progress Circle */}
                       <Circle
                         cx="22.5"
@@ -80,12 +94,19 @@ export default function CalendarScreen() {
                       />
                       {/* Selection Circle */}
                       {isSelected && (
-                        <Circle cx="22.5" cy="22.5" r={radius - 5} fill="rgba(255, 255, 255, 0.3)" />
+                        <Circle
+                          cx="22.5"
+                          cy="22.5"
+                          r={radius - 5}
+                          fill={theme === 'dark' ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.1)"}
+                        />
                       )}
                     </Svg>
                     <Text
                       style={{
-                        color: date.dateString === today ? "#FFD700" : "#FFF",
+                        color: date.dateString === today
+                          ? "#FFD700"
+                          : Colors[theme].text,
                         fontSize: 14,
                         position: "absolute",
                         fontWeight: isSelected ? "bold" : "normal",
@@ -98,44 +119,57 @@ export default function CalendarScreen() {
               );
             }}
             theme={{
-              backgroundColor: "#121212",
-              calendarBackground: "#121212",
-              textSectionTitleColor: "#BBBBBB",
-              dayTextColor: "#FFFFFF",
-              todayTextColor: "#FF3B30",
-              arrowColor: "#FFFFFF",
-              monthTextColor: "#FFFFFF",
-              textDisabledColor: "#444444",
+              backgroundColor: Colors[theme].background,
+              calendarBackground: Colors[theme].background,
+              textSectionTitleColor: Colors[theme].text,
+              dayTextColor: Colors[theme].text,
+              todayTextColor: "#FFD700",
+              arrowColor: Colors[theme].text,
+              monthTextColor: Colors[theme].text,
+              textDisabledColor: theme === 'dark' ? "#444444" : "#CCCCCC",
             }}
           />
         </View>
 
         {/* Stats Box */}
-        <ThemedView style={styles.statsContainer}>
-          <ThemedText type="subtitle" style={{ color: "#FFF" }}>
+        <View style={[
+          CalendarPageStyles.statsContainer,
+          { backgroundColor: theme === 'dark' ? "#1E1E1E" : "#FFFFFF" }
+        ]}>
+          <ThemedText type="subtitle">
             🔥 Current Streak: <Text style={{ color: "#FFD700" }}>{17} days</Text>
           </ThemedText>
-          <ThemedText type="subtitle" style={{ color: "#FFF" }}>
+          <ThemedText type="subtitle">
             🏆 Longest Streak: <Text style={{ color: "#FFD700" }}>{38} days</Text>
           </ThemedText>
 
           {/* Separating Line */}
-          <View style={styles.separator} />
+          <View style={[
+            CalendarPageStyles.separator,
+            { backgroundColor: theme === 'dark' ? "#444444" : "#CCCCCC" }
+          ]} />
 
           {/* Habits Completed Header */}
-          <View style={styles.habitsContainer}>
-            <Text style={{ color: "#FFF", fontSize: 24, fontWeight: "bold" }}>
+          <View style={CalendarPageStyles.habitsContainer}>
+            <ThemedText style={{ fontSize: 24, fontWeight: "bold" }}>
               Habits completed{" "}
               <Text style={{ color: "#FFD700" }}>
                 {selectedDate === today ? "Today" : formatDate(selectedDate)}
               </Text>
-            </Text>
+            </ThemedText>
           </View>
 
           {/* Large Progress Circle */}
-          <View style={styles.progressContainer}>
+          <View style={CalendarPageStyles.progressContainer}>
             <Svg width={120} height={120} viewBox="0 0 120 120">
-              <Circle cx="60" cy="60" r="50" stroke="#444444" strokeWidth="10" fill="none" />
+              <Circle
+                cx="60"
+                cy="60"
+                r="50"
+                stroke={theme === 'dark' ? "#444444" : "#CCCCCC"}
+                strokeWidth="10"
+                fill="none"
+              />
               <Circle
                 cx="60"
                 cy="60"
@@ -148,67 +182,19 @@ export default function CalendarScreen() {
                 strokeLinecap="round"
               />
             </Svg>
-            <View style={styles.progressTextContainer}>
-              <Text style={styles.percentageText}>{completionPercentage}%</Text>
-              <Text style={styles.fractionText}>{completionPercentage}/100</Text>
+            <View style={CalendarPageStyles.progressTextContainer}>
+              <ThemedText style={[CalendarPageStyles.percentageText, { color: "#FFD700" }]}>
+                {completionPercentage}%
+              </ThemedText>
+              <ThemedText style={CalendarPageStyles.fractionText}>
+                {completionPercentage}/100
+              </ThemedText>
             </View>
           </View>
-        </ThemedView>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
-    gap: 8,
-    padding: 16,
-  },
-  calendarContainer: {
-    padding: 16,
-  },
-  statsContainer: {
-    marginTop: 20,
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "#1E1E1E",
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  habitsContainer: {
-    marginTop: 10,
-    alignItems: "center",
-  },
-  separator: {
-    width: "100%",
-    height: 1,
-    backgroundColor: "#444444",
-    marginVertical: 10,
-  },
-  progressContainer: {
-    alignItems: "center",
-    marginTop: 20,
-  },
-  progressTextContainer: {
-    position: "absolute",
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-between", // Aligns left and right
-    paddingHorizontal: 20, // Adds spacing on both sides
-    top: "45%", // Positions text correctly
-  },
-  percentageText: {
-    color: "#FFD700",
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-  fractionText: {
-    color: "#FFF",
-    fontSize: 18,
-  },
-});
+
