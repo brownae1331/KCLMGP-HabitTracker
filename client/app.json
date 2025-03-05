@@ -40,8 +40,8 @@
     "experiments": {
       "typedRoutes": true
     },
-    
-    "assetBundlePatterns": ["assets/**/*"] 
-  
+    "assetBundlePatterns": [
+      "assets/**/*"
+    ]
   }
 }
