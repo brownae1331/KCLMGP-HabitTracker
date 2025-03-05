@@ -46,12 +46,8 @@ const initDatabase = async () => {
       habitType ENUM('build','quit') NOT NULL,
       habitColor VARCHAR(7) NOT NULL,
       scheduleOption ENUM('interval','weekly') NOT NULL,
-      isGoalEnabled BOOLEAN DEFAULT FALSE,
       goalValue DOUBLE,
       goalUnit VARCHAR(50),
-      -- dummy or default for now
-      notification_sound VARCHAR(100) DEFAULT 'default_ringtone',
-      streak INT DEFAULT 0,
       PRIMARY KEY (user_email, habitName),
       FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
     );
