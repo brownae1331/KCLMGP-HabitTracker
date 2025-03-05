@@ -8,7 +8,7 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock the logIn function
-jest.mock('../../lib/client', () => ({
+jest.mock('../../../lib/client', () => ({
   logIn: jest.fn()
 }));
 
