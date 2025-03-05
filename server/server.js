@@ -46,12 +46,8 @@ const initDatabase = async () => {
       habitType ENUM('build','quit') NOT NULL,
       habitColor VARCHAR(7) NOT NULL,
       scheduleOption ENUM('interval','weekly') NOT NULL,
-      isGoalEnabled BOOLEAN DEFAULT FALSE,
       goalValue DOUBLE,
       goalUnit VARCHAR(50),
-      -- dummy or default for now
-      notification_sound VARCHAR(100) DEFAULT 'default_ringtone',
-      streak INT DEFAULT 0,
       PRIMARY KEY (user_email, habitName),
       FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
     );
@@ -645,23 +641,3 @@ const migrateTodaysInstances = async (userEmail) => {
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
-
-
-// Get a user by username (Returns email & username)
-app.get('/users/:username', async (req, res) => {
-  const { username } = req.params;
-  
-  try {
-    const [users] = await pool.query('SELECT email, username FROM users WHERE username = ?', [username]);
-
-    if (users.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json(users[0]); // Returns { email, username }
-  } catch (error) {
-    console.error('Error fetching user details:', error);
-    res.status(500).json({ error: 'Error retrieving user details' });
-  }
-});
-
