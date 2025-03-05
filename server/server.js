@@ -62,8 +62,8 @@ const initDatabase = async () => {
         user_email VARCHAR(255) NOT NULL,
         habitName VARCHAR(255) NOT NULL,
         progressDate DATE NOT NULL DEFAULT (CURRENT_DATE),
-        actualValue DOUBLE DEFAULT 0,
-        habitCompleted BOOLEAN DEFAULT FALSE,
+        progress DOUBLE DEFAULT 0,
+        completed BOOLEAN DEFAULT FALSE,
         PRIMARY KEY (user_email, habitName, progressDate),
         FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
       );
@@ -370,6 +370,62 @@ app.delete('/habits/:username/:name', async (req, res) => {
   }
 });
 
+//log progress of a specific habit
+app.post('/habit-progress', async () => {
+  const { email, habitName, progress } = req.body
+  const today = new Date().toISOString().split('T')[0];
+
+  try {
+    const [existingProgress] = await pool.query(
+      `SELECT * FROM habit_progress 
+      WHERE user_email = ? AND habitName = ? AND progressDate = ?`, 
+      [email, habitName, today]
+    );
+
+    let streak = 0;
+    if (existingProgress.length > 0) {
+      // for if the habits are implemented such that you can add progress
+      // on top of previous progress (e.g. +1 glass of water towards the goalValue)
+        // const prevProgress = existingProgress[0].progress;
+        // const newProgress = prevProgress + progress;
+        // const completed = newProgress >= existingProgress[0].goalValue;
+
+      const completed = progress >= existingProgress[0].goalValue;
+
+      if (completed) {
+        const [yesterday] = await pool.query(`
+          SELECT completed, streak 
+          FROM habit_progress 
+          WHERE user_email = ? AND habitName = ? 
+          AND progressDate = DATE_SUB(?, INTERVAL 1 DAY)`,
+          [email, habitName, today]
+        );
+        // if habit was completed yesterday, then streak = prevStreak + 1, else 1
+        //streak = (yesterday.length > 0 && yesterday[0].completed) ? yesterday[0].streak + 1 : 1;
+        streak = yesterday[0].streak + 1;
+      }
+
+      await pool.query(
+        `UPDATE habit_progress SET progress = ?, completed = ?, streak = ?
+        WHERE user_email = ? AND habitName = ? AND progressDate = ?`,
+        [progress, completed, streak, email, habitName, today]
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO habit_progress (user_email, habitName, progressDate, progress, completed, streak)
+        VALUES (?, ?, ?, ?, ?, ?)`,
+        [email, habitName, today, progress, false, 0]
+      );
+    }
+
+    res.status(200).json({ message: 'Progress updated' });
+    
+  } catch (error) {
+    console.error('Error updating progress:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // Get habit progress data for a specific user and habit
 app.get('/habit-progress/:username/:habitName', async (req, res) => {
@@ -386,7 +442,7 @@ app.get('/habit-progress/:username/:habitName', async (req, res) => {
     let queryParams = [userEmail, habitName];
     if (range === '7' || range === '30') {
       query = `
-        SELECT progressDate, actualValue
+        SELECT progressDate, progress
         FROM habit_progress
         WHERE user_email = ? AND habitName = ?
         AND progressDate BETWEEN CURDATE() - INTERVAL ? DAY AND CURDATE()
@@ -398,7 +454,7 @@ app.get('/habit-progress/:username/:habitName', async (req, res) => {
         SELECT 
           YEAR(progressDate) AS year,
           MONTH(progressDate) AS month,
-          AVG(actualValue) AS avg_value
+          AVG(progress) AS avg_value
         FROM habit_progress
         WHERE user_email = ? AND habitName = ?
         AND progressDate BETWEEN ? AND ?
@@ -416,6 +472,7 @@ app.get('/habit-progress/:username/:habitName', async (req, res) => {
     res.status(500).json({ error: 'Error fetching habit progress data' });
   }
 });
+
 
 
 
