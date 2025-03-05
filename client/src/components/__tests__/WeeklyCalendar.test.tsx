@@ -1,10 +1,10 @@
 import React from "react";
-import { render, fireEvent } from "@testing-library/react-native"
+import { render, fireEvent, waitFor } from "@testing-library/react-native"
 import { WeeklyCalendar } from "../WeeklyCalendar";
 
 
 describe("WeeklyCalendar", () => {
-  test("loads without crashing", () => {
+  test("loads without crashing", async () => {
     const mockSetSelectedDate = jest.fn();
     const selectedDate = { date: 15, fullDate: new Date() };
 
@@ -13,12 +13,14 @@ describe("WeeklyCalendar", () => {
     );
 
     // Check that the days load correctly by finding a match
-    expect(getAllByText("Su")[0]).toBeTruthy();
-    expect(getAllByText("Mo")[0]).toBeTruthy();
-    expect(getAllByText("Tu")[0]).toBeTruthy();
+    await waitFor(() => {
+      expect(getAllByText("Su")[0]).toBeTruthy();
+      expect(getAllByText("Mo")[0]).toBeTruthy();
+      expect(getAllByText("Tu")[0]).toBeTruthy();
+    });
   });
 
-  test("selecting a date", () => {
+  test("selecting a date", async () => {
     const mockSetSelectedDate = jest.fn();
     const selectedDate = { date: 15, fullDate: new Date() };
 
@@ -26,13 +28,13 @@ describe("WeeklyCalendar", () => {
       <WeeklyCalendar selectedDate={selectedDate} setSelectedDate={mockSetSelectedDate} />
     );
 
-    const targetDate = getAllByText("15")[0];
+    const targetDate = await waitFor (() =>getAllByText("15")[0]);
     fireEvent.press(targetDate);
 
     expect(mockSetSelectedDate).toHaveBeenCalledWith(expect.objectContaining({ date: 15 }));
   });
 
-  test("swiping through weeks", () => {
+  test("swiping through weeks", async () => {
     const mockSetSelectedDate = jest.fn();
     const selectedDate = { date: 15, fullDate: new Date() };
 
@@ -40,7 +42,7 @@ describe("WeeklyCalendar", () => {
       <WeeklyCalendar selectedDate={selectedDate} setSelectedDate={mockSetSelectedDate} />
     );
 
-    const flatList = getByTestId("weekly-calendar-list");
+    const flatList = await waitFor(() => getByTestId("weekly-calendar-list"));
 
     fireEvent.scroll(flatList, {
       nativeEvent: {

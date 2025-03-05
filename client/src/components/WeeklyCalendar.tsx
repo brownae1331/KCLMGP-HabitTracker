@@ -111,6 +111,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, se
                 // Phone is swipeable
                 <FlatList
                     ref={flatListRef}
+                    testID='weekly-calendar-list'
                     data={[...Array(1000)].map((_, i) => getWeekDates(i - 500))}
                     keyExtractor={(_, index) => index.toString()}
                     horizontal
