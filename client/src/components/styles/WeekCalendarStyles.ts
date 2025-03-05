@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -11,6 +11,7 @@ export const WeekCalendarStyles = StyleSheet.create({
         width: SCREEN_WIDTH,
         flexDirection: "row",
         justifyContent: "space-around",
+        alignItems: "center",
         paddingHorizontal: 20,
         paddingBottom: 15,
     },
@@ -42,5 +43,19 @@ export const WeekCalendarStyles = StyleSheet.create({
         height: 30,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    arrowButton: {
+        padding: 10,
+        marginHorizontal: 10,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: Platform.OS === 'web' ? "#f0f0f0" : "transparent",
+        borderRadius: 10,
+        minWidth: 40,  
+    },
+    arrowText: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: "#007AFF",
     },
 });
