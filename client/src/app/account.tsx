@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '../components/ThemedText';
-import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../components/ThemeContext';
 import { Colors } from '../components/styles/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,14 +11,14 @@ export default function AccountScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
       {/* Account */}
-      <ThemedView style={[styles.section, { backgroundColor: Colors[theme].background }]}>
+      <View style={[styles.section, { backgroundColor: Colors[theme].background }]}>
         <ThemedText type="title" style={[styles.headerText, { color: Colors[theme].text }]}>
           Account Information
         </ThemedText>
-      </ThemedView>
+      </View>
 
       {/* Username */}
-      <ThemedView style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
+      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
         <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Username</ThemedText>
         <TextInput
           style={[
@@ -34,10 +33,10 @@ export default function AccountScreen() {
           placeholderTextColor={Colors[theme].placeholder}
           editable={false} // Username is not editable
         />
-      </ThemedView>
+      </View>
 
       {/* Email Section */}
-      <ThemedView style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
+      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
         <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Email Address</ThemedText>
         <View style={styles.row}>
           <TextInput
@@ -55,10 +54,10 @@ export default function AccountScreen() {
             </ThemedText>
           </TouchableOpacity>
         </View>
-      </ThemedView>
+      </View>
 
       {/* Password Section */}
-      <ThemedView style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
+      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
         <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Password</ThemedText>
         <View style={styles.row}>
           <TextInput
@@ -77,7 +76,7 @@ export default function AccountScreen() {
             </ThemedText>
           </TouchableOpacity>
         </View>
-      </ThemedView>
+      </View>
     </SafeAreaView>
   );
 }

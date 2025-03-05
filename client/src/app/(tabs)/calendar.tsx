@@ -3,9 +3,9 @@ import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar, DateData } from "react-native-calendars";
 import { ThemedText } from "../../components/ThemedText";
-import { ThemedView } from "../../components/ThemedView";
 import { Svg, Circle } from "react-native-svg";
 import { CalendarPageStyles } from "../../components/styles/CalendarPageStyles";
+import { SharedStyles } from "../../components/styles/SharedStyles";
 import { useTheme } from "../../components/ThemeContext";
 import { Colors } from "../../components/styles/Colors";
 
@@ -46,11 +46,11 @@ export default function CalendarScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
       <ScrollView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
         {/* Title Section */}
-        <ThemedView style={[CalendarPageStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+        <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
           <ThemedText type="title" style={{ color: Colors[theme].text }}>
             Calendar
           </ThemedText>
-        </ThemedView>
+        </View>
 
         {/* Calendar Component */}
         <View style={[
@@ -132,7 +132,7 @@ export default function CalendarScreen() {
         </View>
 
         {/* Stats Box */}
-        <ThemedView style={[
+        <View style={[
           CalendarPageStyles.statsContainer,
           { backgroundColor: theme === 'dark' ? "#1E1E1E" : "#FFFFFF" }
         ]}>
@@ -191,7 +191,7 @@ export default function CalendarScreen() {
               </ThemedText>
             </View>
           </View>
-        </ThemedView>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

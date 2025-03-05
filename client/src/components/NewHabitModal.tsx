@@ -95,12 +95,9 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
             visible={modalVisible}
             onRequestClose={() => setModalVisible(false)}
         >
-            <View style={SharedStyles.modalOverlay}>
-                <View style={[SharedStyles.modalContent, { backgroundColor: Colors[theme].background }]}>
-                    <ScrollView
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={SharedStyles.scrollContent}
-                    >
+            <View style={HabitModalStyles.modalOverlay}>
+                <View style={[HabitModalStyles.modalContent, { backgroundColor: Colors[theme].background }]}>
+                    <ScrollView showsVerticalScrollIndicator={false} style={{ padding: 20 }}>
                         <ThemedText type="title" style={{ color: Colors[theme].text }}>
                             Add New Habit
                         </ThemedText>
@@ -124,14 +121,10 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                             multiline
                         />
 
-                        <ThemedText type="subtitle" style={[SharedStyles.sectionLabel, { color: Colors[theme].text }]}>
+                        <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
                             Pick a Color
                         </ThemedText>
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={HabitModalStyles.colorPickerContainer}
-                        >
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 8 }}>
                             {colorOptions.map((color) => (
                                 <TouchableOpacity
                                     key={color}
@@ -143,7 +136,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
 
                         {habitType === 'build' && (
                             <>
-                                <ThemedText type="subtitle" style={[SharedStyles.sectionLabel, { color: Colors[theme].text }]}>
+                                <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
                                     Goal
                                 </ThemedText>
                                 <View style={HabitModalStyles.goalToggleContainer}>
@@ -158,7 +151,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                 {isGoalEnabled && (
                                     <View style={HabitModalStyles.goalFieldsContainer}>
                                         <TextInput
-                                            style={[SharedStyles.input, { flex: 0.4, color: '#333' }]}
+                                            style={[SharedStyles.input, { flex: 0.6, color: '#777' }]}
                                             placeholder="Number"
                                             placeholderTextColor="#777"
                                             keyboardType="numeric"
@@ -166,42 +159,43 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                             onChangeText={setGoalValue}
                                         />
                                         <TextInput
-                                            style={[SharedStyles.input, { flex: 0.6, color: '#333', marginLeft: 8 }]}
+                                            style={[SharedStyles.input, { flex: 0.4, color: '#777', marginLeft: 8 }]}
                                             placeholder="Unit (e.g. minutes, pages)"
                                             placeholderTextColor="#777"
                                             value={goalUnit}
                                             onChangeText={setGoalUnit}
                                         />
-                                        <ThemedText style={[SharedStyles.daysText, SharedStyles.textDark]}>per day</ThemedText>
+                                        <ThemedText style={{ color: Colors[theme].text, marginLeft: 8 }}>per day</ThemedText>
                                     </View>
                                 )}
                             </>
                         )}
 
-                        <ThemedText type="subtitle" style={[SharedStyles.sectionLabel, { color: Colors[theme].text }]}>
+                        <ThemedText type="subtitle" style={{ color: Colors[theme].text, marginBottom: 8 }}>
                             Schedule
                         </ThemedText>
                         <Picker
                             mode="dropdown"
                             selectedValue={scheduleOption}
                             onValueChange={(itemValue) => setScheduleOption(itemValue)}
-                            style={[HabitModalStyles.picker, { backgroundColor: Colors[theme].background }]}
+                            style={[HabitModalStyles.picker, { backgroundColor: Colors[theme].background, color: Colors[theme].text }]}
+                            dropdownIconColor={Colors[theme].text}
                         >
-                            <Picker.Item label="Every ___ days" value="interval" />
-                            <Picker.Item label="Every ___ day of the week" value="weekly" />
+                            <Picker.Item label="Every ___ days" value="interval" color={Colors[theme].text} />
+                            <Picker.Item label="Every ___ day of the week" value="weekly" color={Colors[theme].text} />
                         </Picker>
 
                         {scheduleOption === 'interval' ? (
                             <View style={HabitModalStyles.intervalContainer}>
                                 <TextInput
-                                    style={[SharedStyles.input, { flex: 1, color: '#333' }]}
+                                    style={[SharedStyles.input, { flex: 1, color: '#777' }]}
                                     placeholder="Enter number"
                                     placeholderTextColor="#777"
                                     keyboardType="numeric"
                                     value={intervalDays}
                                     onChangeText={setIntervalDays}
                                 />
-                                <ThemedText style={[SharedStyles.daysText, { color: Colors[theme].text }]}>days</ThemedText>
+                                <ThemedText style={{ color: Colors[theme].text, marginLeft: 8 }}>days</ThemedText>
                             </View>
                         ) : (
                             <View style={HabitModalStyles.weeklyContainer}>
@@ -218,7 +212,6 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                             style={[
                                                 HabitModalStyles.dayButtonText,
                                                 selectedDays.includes(day) && HabitModalStyles.selectedDayButtonText,
-                                                SharedStyles.textDark,
                                             ]}
                                         >
                                             {day.slice(0, 3)}
@@ -231,13 +224,13 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
 
                     <View style={[HabitModalStyles.buttonContainer, { backgroundColor: Colors[theme].background }]}>
                         <TouchableOpacity style={SharedStyles.button} onPress={onAddHabit}>
-                            <ThemedText style={SharedStyles.buttonText}>Add Habit</ThemedText>
+                            <ThemedText type="defaultSemiBold" style={{ color: Colors[theme].text }}>Add Habit</ThemedText>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={[SharedStyles.button, SharedStyles.cancelButton]}
+                            style={[SharedStyles.button, { backgroundColor: '#CCCCCC' }]}
                             onPress={() => setModalVisible(false)}
                         >
-                            <ThemedText style={SharedStyles.buttonText}>Cancel</ThemedText>
+                            <ThemedText type="defaultSemiBold" style={{ color: Colors[theme].text }}>Cancel</ThemedText>
                         </TouchableOpacity>
                     </View>
                 </View>
