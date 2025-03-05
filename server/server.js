@@ -645,3 +645,23 @@ const migrateTodaysInstances = async (userEmail) => {
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+
+// Get a user by username (Returns email & username)
+app.get('/users/:username', async (req, res) => {
+  const { username } = req.params;
+  
+  try {
+    const [users] = await pool.query('SELECT email, username FROM users WHERE username = ?', [username]);
+
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(users[0]); // Returns { email, username }
+  } catch (error) {
+    console.error('Error fetching user details:', error);
+    res.status(500).json({ error: 'Error retrieving user details' });
+  }
+});
+
