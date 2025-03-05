@@ -1,6 +1,5 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ThemedText } from '../../components/ThemedText';
-import { ThemedView } from '../../components/ThemedView';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GoodHabitGraph from '../../components/GoodHabitGraph';
@@ -8,11 +7,11 @@ import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
 import { Colors } from '../../components/styles/Colors';
 import { useTheme } from '../../components/ThemeContext';
-import { CalendarPageStyles } from '../../components/styles/CalendarPageStyles';
+import { SharedStyles } from '../../components/styles/SharedStyles';
 
 interface Habit {
-  username: string;
-  name: string;
+  user_email: string;
+  habitName: string;
   description?: string;
   amount?: number;
   positive?: boolean;
@@ -25,9 +24,10 @@ interface Habit {
 }
 
 export default function StatsScreen() {
+  const [selectedHabit, setSelectedHabit ]= useState('');
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const username = 'your_username';
+  const username = 'user'; //hardcoded, need to change later
   const { theme } = useTheme();
 
   const pickerStyle = {
@@ -36,12 +36,21 @@ export default function StatsScreen() {
     backgroundColor: theme === 'dark' ? '#333333' : '#ffffff',
   };
 
+   //const [username, setUsername] = useState('');
+  // useEffect(() => {
+  //   const fetchUsername = async () => {
+
+  //   }
+  // }, []);
+  
+
   useEffect(() => {
     const fetchHabits = async () => {
       try {
         const response = await fetch(`http://localhost:3000/habits/${username}`);
-        const data: Habit[] = await response.json();
-        
+        const data = await response.json();
+
+
         if (Array.isArray(data)) {
           setHabits(data);
         } else {
@@ -56,15 +65,13 @@ export default function StatsScreen() {
       }
     };
     fetchHabits();
-  }, []);
+  }, [username]);
 
-  const [selectedHabit, setSelectedHabit] = useState<string>('');
-
-  useEffect(() => {
-    if (habits.length > 0) {
-      setSelectedHabit(habits[0].name);
-    }
-  }, [habits]);
+  // useEffect(() => {
+  //   if (habits.length > 0) {
+  //     setSelectedHabit(habits[0].habitName);
+  //   }
+  // }, [habits]);
 
   if (loading) {
     return (
@@ -77,40 +84,50 @@ export default function StatsScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={{ flex: 1 }}>
-        <ThemedView style={[CalendarPageStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+        <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
           <ThemedText type="title" style={{ color: Colors[theme].text }}>
             Stats
           </ThemedText>
-        </ThemedView>
+        </View>
 
-        <ThemedView>
-          <Picker
-            selectedValue={selectedHabit}
-            onValueChange={(itemValue) => setSelectedHabit(itemValue)}
-            style={pickerStyle}
-          >
-            {Array.isArray(habits) && habits.length > 0 ? (
-              habits.map((habit, index) => (
-                <Picker.Item label={habit.name} value={habit.name} key={habit.name + index} />
-              ))
+        {habits.length === 0 ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+            <ThemedText type="subtitle">
+            You don't have any habits yet! Create a habit before seeing statistics about it.
+            </ThemedText>
+          </View>
+        ) : (
+          <>
+            <View>
+              <Picker
+                selectedValue={selectedHabit}
+                onValueChange={(itemValue) => setSelectedHabit(itemValue)}
+                style={pickerStyle}
+              >
+                <Picker.Item label="Please select a habit..." value={null}/>
+                {habits.map((habit: Habit) => (
+                  <Picker.Item label={habit.habitName} value={habit.habitName} key={habit.habitName} />
+                ))}
+              </Picker>
+            </View>
+
+            {selectedHabit ? (
+              <GoodHabitGraph habit={selectedHabit} />
             ) : (
-              <Picker.Item label="No habits available" value="" />
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ThemedText type="subtitle">
+                  Please select a habit to see statistics about your progress!
+                </ThemedText>
+              </View>
             )}
-          </Picker>
-        </ThemedView>
-
-        <GoodHabitGraph habit={selectedHabit} />
+          </>
+        )}        
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    padding: 10,
-  },
   picker: {
     height: 50,
     width: '100%',

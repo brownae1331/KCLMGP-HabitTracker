@@ -3,8 +3,8 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  View,
 } from 'react-native';
-import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { WeeklyCalendar } from '../../components/WeeklyCalendar';
 import { SharedStyles } from '../../components/styles/SharedStyles';
@@ -13,6 +13,9 @@ import { ThemedText } from '../../components/ThemedText';
 import { Colors } from '../../components/styles/Colors';
 import { useTheme } from '../../components/ThemeContext';
 import { getHabitsByUser } from '../../lib/client';
+import HabitPanel, { Habit } from '../../components/HabitPanel'; // adjust the path as needed
+
+
 
 export default function HomeScreen() {
   const today = new Date();
@@ -20,7 +23,7 @@ export default function HomeScreen() {
     date: today.getDate(),
     fullDate: today
   });
-
+  const [email, setEmail] = useState('');
   // State for modal and habit form
   const [modalVisible, setModalVisible] = useState(false);
   const [habitName, setHabitName] = useState('');
@@ -37,26 +40,59 @@ export default function HomeScreen() {
   const [isGoalEnabled, setIsGoalEnabled] = useState(false);
   const [goalValue, setGoalValue] = useState('');
   const [goalUnit, setGoalUnit] = useState('');
-
   const { theme } = useTheme();
+  // Example array of color swatches
+  const colorOptions = [
+    '#FF0000', // Red
+    '#FF9500', // Orange
+    '#FFCC00', // Yellow
+    '#34C759', // Green
+    '#007AFF', // Blue
+    '#AF52DE', // Purple
+    '#8E8E93', // Gray
+  ];
 
-  const handleAddHabit = () => {
-    // Only add goal if "build" type is selected and isGoalEnabled is true
-    console.log('New Habit Added:', {
+  const toggleDay = (day: string) => {
+    if (selectedDays.includes(day)) {
+      setSelectedDays(selectedDays.filter((d) => d !== day));
+    } else {
+      setSelectedDays([...selectedDays, day]);
+    }
+  };
+
+  const handleAddHabit = async () => {
+    // Prepare the habit data object
+    const newHabit = {
+      email: email || 'hugo@gmail.com', // Ensure email is set (using your dummy email here)
       habitName,
       habitDescription,
       habitType,
       habitColor,
       scheduleOption,
-      intervalDays,
+      intervalDays: intervalDays ? parseInt(intervalDays, 10) : null,
       selectedDays,
-      goal:
-        habitType === 'build' && isGoalEnabled
-          ? { goalValue, goalUnit, period: 'per day' }
-          : null,
-    });
-
-    // Reset form
+      isGoalEnabled,
+      goalValue: goalValue ? parseFloat(goalValue) : null,
+      goalUnit,
+    };
+  
+    try {
+      const response = await fetch('http://localhost:3000/habits', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newHabit),
+      });
+      const data = await response.json();
+      console.log('Habit added successfully:', data);
+      // Optionally, refresh your habit list here
+    } catch (error) {
+      console.error('Error adding habit:', error);
+    }
+  
+    // Reset form values and close modal
+    setEmail('hugo@gmail.com'); // dummy email
     setHabitName('');
     setHabitDescription('');
     setHabitType('build');
@@ -67,61 +103,78 @@ export default function HomeScreen() {
     setIsGoalEnabled(false);
     setGoalValue('');
     setGoalUnit('');
-
     setModalVisible(false);
   };
-
+  
   const [dbHabits, setDbHabits] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchHabits = async () => {
       try {
-        // Replace 'user@example.com' with the current user's email (or pass it via props/context)
-        const habits = await getHabitsByUser('user@example.com');
-        // Filter habits by date:
+        const habits = await getHabitsByUser('hugo@gmail.com');
+  
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const selectedDayName = dayNames[selectedDate.fullDate.getDay()];
+  
         const filtered = habits.filter((habit: any) => {
-          if (!habit.date) return false;
-          const habitDate = new Date(habit.date);
-          return (
-            habitDate.getDate() === selectedDate.fullDate.getDate() &&
-            habitDate.getMonth() === selectedDate.fullDate.getMonth() &&
-            habitDate.getFullYear() === selectedDate.fullDate.getFullYear()
-          );
+          if (habit.scheduleOption === 'weekly') {
+            // For weekly habits, check if the selected day's name is in the selectedDays array.
+            return habit.selectedDays && habit.selectedDays.includes(selectedDayName);
+          } else {
+            // For interval (or date-specific) habits, check the habit.date.
+            if (!habit.date) return false;
+            const habitDate = new Date(habit.date);
+            return (
+              habitDate.getDate() === selectedDate.fullDate.getDate() &&
+              habitDate.getMonth() === selectedDate.fullDate.getMonth() &&
+              habitDate.getFullYear() === selectedDate.fullDate.getFullYear()
+            );
+          }
         });
         setDbHabits(filtered);
       } catch (error) {
         console.error('Error fetching habits for selected date:', error);
       }
     };
-
+  
     fetchHabits();
   }, [selectedDate]);
+  
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
       <ScrollView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
 
         {/* Today/Selected Date */}
-        <ThemedView style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+        <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
           <ThemedText type="title" style={{ color: Colors[theme].text, textAlign: 'center', width: '100%' }}>
             {selectedDate.date === today.getDate()
               ? "Today"
               : selectedDate.fullDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
           </ThemedText>
-        </ThemedView>
+        </View>
 
         {/* Weekly Calendar */}
         <WeeklyCalendar
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
-        />
+        /> 
+        <View>
+          {dbHabits.length > 0 ? (
+            dbHabits.map((habit: Habit) => (
+              <HabitPanel key={'$habit.email}-${habit.habitName'} habit={habit} />
+            ))
+          ) : (
+            <ThemedText>No habits found for this date.</ThemedText>
+          )}
+        </View>
 
         {/* Add Habit Button */}
-        <ThemedView style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
+        <View style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <IconSymbol name="plus" size={24} color="#007AFF" />
           </TouchableOpacity>
-        </ThemedView>
+        </View>
 
         {/* New Habit Modal */}
         <NewHabitModal
@@ -153,3 +206,8 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
+
+
+
+
+

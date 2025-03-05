@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedText } from '../components/ThemedText';
-import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../components/ThemeContext';
 import { Colors } from '../components/styles/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -46,7 +45,7 @@ export default function AccountScreen() {
         <ThemedText type="title" style={[styles.headerText, { color: Colors[theme].text }]}>
           Account Information
         </ThemedText>
-      </ThemedView>
+      </View>
 
       {/* Username Field */}
       <ThemedView style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
@@ -65,7 +64,8 @@ export default function AccountScreen() {
           value={username}
           editable={false}
         />
-      </ThemedView>
+      </View>
+
 
       {/* Email Field */}
       <ThemedView style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
@@ -81,7 +81,7 @@ export default function AccountScreen() {
             value={email}
             editable={false}
           />
-        </View>
+         </View>
       </ThemedView>
     </SafeAreaView>
   );

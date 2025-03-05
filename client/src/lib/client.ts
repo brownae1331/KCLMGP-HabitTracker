@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// const BASE_URL = 'https://kclmgp-habittracker-1.onrender.com';
+// const BASE_URL = 'https://kclmgp-habittracker-4.onrender.com';
 const BASE_URL = 'http://localhost:3000';
 
 // Define the Habit type
@@ -66,7 +66,7 @@ export async function getHabits(username: string): Promise<Habit[]> {
 // Get habits for a specific user (alias for getHabits)
 export const getHabitsByUser = getHabits;
 
-// 🔹 Create a new user
+// Create a new user
 export async function createUser(email: string, password: string, username: string) {
   const response = await fetch(`${BASE_URL}/users/signup`, {
     method: 'POST',
