@@ -4,7 +4,7 @@ import { ThemedText } from '../ThemedText';
 import { ThemeProvider } from '../ThemeContext'; // 
 
 describe('ThemedText Component', () => {
-  it('renders correctly with light theme', () => {
+  test('renders correctly with light theme', () => {
     const { getByText } = render(
       <ThemeProvider> 
         <ThemedText>Test Text</ThemedText>

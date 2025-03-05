@@ -17,14 +17,14 @@ import { router } from 'expo-router';
 import LoginScreen from '../../(auth)/login';
 
 describe('LoginScreen functionality tests', () => {
-  it('renders the component correctly', () => {
+  test('renders the component correctly', () => {
     const { getByText, getByPlaceholderText } = render(<LoginScreen />);
     expect(getByText('Log In')).toBeTruthy();
     expect(getByPlaceholderText('Email')).toBeTruthy();
     expect(getByText('Login')).toBeTruthy();
   });
 
-  it('calls logIn and navigates to the main screen on successful login', async () => {
+  test('calls logIn and navigates to the main screen on successful login', async () => {
     // Simulate a successful login
     (logIn as jest.Mock).mockResolvedValueOnce(undefined);
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
@@ -43,7 +43,7 @@ describe('LoginScreen functionality tests', () => {
     });
   });
 
-  it('displays an error message on failed login', async () => {
+  test('displays an error message on failed login', async () => {
     // Simulate a failed login
     (logIn as jest.Mock).mockRejectedValueOnce(new Error('Invalid credentials'));
     const { getByPlaceholderText, getByText, findByText } = render(<LoginScreen />);
