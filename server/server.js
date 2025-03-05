@@ -64,7 +64,18 @@ const initDatabase = async () => {
         progressDate DATE NOT NULL DEFAULT (CURRENT_DATE),
         progress DOUBLE DEFAULT 0,
         completed BOOLEAN DEFAULT FALSE,
+        streak INT DEFAULT 0,
         PRIMARY KEY (user_email, habitName, progressDate),
+        FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
+      );
+    `);
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS habit_instances(
+        user_email VARCHAR(255) NOT NULL,
+        habitName VARCHAR(255) NOT NULL,
+        dueDate DATE NOT NULL,
+        PRIMARY KEY (user_email, habitName, dueDate),
         FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
       );
     `);
@@ -346,6 +357,10 @@ app.post('/habits', async (req, res) => {
       );
     }
 
+    await generateIntervalInstances(email, habitName, 7);
+    await generateDayInstances(email, habitName, 7)
+    migrateTodaysInstances(email);
+
     res.status(201).json({ message: 'Habit added successfully' });
   } catch (error) {
     console.error('Error adding habit:', error);
@@ -371,7 +386,7 @@ app.delete('/habits/:username/:name', async (req, res) => {
 });
 
 //log progress of a specific habit
-app.post('/habit-progress', async () => {
+app.post('/habit-progress', async (req, res) => {
   const { email, habitName, progress } = req.body
   const today = new Date().toISOString().split('T')[0];
 
@@ -419,7 +434,7 @@ app.post('/habit-progress', async () => {
     }
 
     res.status(200).json({ message: 'Progress updated' });
-    
+
   } catch (error) {
     console.error('Error updating progress:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -474,6 +489,156 @@ app.get('/habit-progress/:username/:habitName', async (req, res) => {
 });
 
 
+//
+app.post('/habits/sync', async (req, res) => {
+  const { userEmail } = req.body;
+  if (!userEmail) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+  try {
+    await migrateTodaysInstances(userEmail);
+
+    const [habits] = await pool.query(
+      `SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`,
+      [userEmail]
+    );
+
+    for (const habit of habits) {
+      if (habit.scheduleOption === 'interval') {
+        await generateIntervalInstances(userEmail, habit.habitName);
+      } else if (habit.scheduleOption === 'weekly') {
+        await generateDayInstances(userEmail, habit.habitName);
+      }
+
+    }
+    res.json({ message: 'Habits synchronized successfully' });
+  } catch (error) {
+    console.error('Error synchronizing habits:', error);
+    res.status(500).json({ error: 'Error synchronizing habits' });
+  }
+});
+
+
+//generate missing habit instances for interval habits 
+//pregenerates up to 7 days worth of interval habits
+const generateIntervalInstances = async (userEmail, habitName, daysAhead = 7) => {
+  try {
+    const [habitRows] = await pool.query(
+      `SELECT h.scheduleOption, hi.increment
+      FROM habits h
+      LEFT JOIN habit_intervals hi
+        ON h.user_email = hi.user_email AND h.habitName = hi.habitName
+      WHERE h.user_email = ? AND h.habitName = ?`,
+      [userEmail, habitName]
+    );
+    //table will have rows for user_email, habitName, scheduleOption and increment
+
+    if (!habitRows.length) return;
+    const habit = habitRows[0];
+    if (habit.scheduleOption !== 'interval' || !habit.increment) return;
+
+    const increment = habit.increment;
+    const today = new Date();
+    const cutoff = new Date();
+    cutoff.setDate(today.getDate() + daysAhead);
+
+    const [instanceRows] = await pool.query(
+      `SELECT MAX(dueDate) as lastDate
+      FROM habit_instances
+      WHERE user_email = ? AND habitName = ?`,
+      [userEmail, habitName]
+    );
+
+    let lastDate;
+    if (instanceRows[0].lastDate) {
+      lastDate = new Date(instanceRows[0].lastDate);
+    } else {
+      lastDate = new Date(today);
+    }
+
+    let nextDate = new Date(lastDate);
+    //nextDate.setDate(nextDate.getDate() + increment);
+    while (nextDate <= cutoff) {
+      const dueDateStr = nextDate.toISOString().split('T')[0];
+      await pool.query(
+        `INSERT IGNORE INTO habit_instances (user_email, habitName, dueDate)
+        VALUES (?, ?, ?)`,
+        [userEmail, habitName, dueDateStr]
+      );
+      nextDate.setDate(nextDate.getDate() + increment);
+    }
+    console.log(`Generated missing interval instances for habit "${habitName}" for user ${userEmail}`);
+  } catch (error) {
+    console.error('Error generating missing interval instances:', error);
+  }
+};
+
+const generateDayInstances = async (userEmail, habitName, daysAhead = 7) => {
+  try {
+    const [dayRows] = await pool.query(
+      `SELECT day FROM habit_days WHERE user_email = ? AND habitName = ?`,
+      [userEmail, habitName]
+    );
+    if (!dayRows.length) {
+      console.log(`No scheduled days found for habit "${habitName}" for user ${userEmail}`);
+      return;
+    }
+    const selectedDays = dayRows.map(row => row.day);
+    const today = new Date();
+    const cutoff = new Date();
+    cutoff.setDate(today.getDate() + daysAhead);
+
+    let currentDate = new Date(today);
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    while (currentDate <= cutoff) {
+      const dayName = dayNames[currentDate.getDay()];
+      if (selectedDays.includes(dayName)) {
+        const dueDateStr = currentDate.toISOString().split('T')[0];
+
+        await pool.query(
+          `INSERT IGNORE INTO habit_instances (user_email, habitName, dueDate)
+          VALUES (?, ?, ?)`,
+          [userEmail, habitName, dueDateStr]
+        );
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    console.log(`Generated missing day instances for habit "${habitName}" for user ${userEmail}`);
+  }
+  catch (error) {
+    console.error('Error generating missing day instances:', error);
+  }
+};
+
+const migrateTodaysInstances = async (userEmail) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    const [instances] = await pool.query(
+      `SELECT habitName FROM habit_instances
+      WHERE user_email = ? AND dueDate = ?`,
+      [userEmail, today]
+    );
+
+    for (const instance of instances) {
+      const habitName = instance.habitName;
+      await pool.query(
+        `INSERT IGNORE INTO habit_progress (user_email, habitName, progressDate, progress, completed, streak)
+        VALUES (?, ?, ?, ?, ?, ?)`,
+        [userEmail, habitName, today, 0, false, 0]
+      );
+      await pool.query(
+        `DELETE FROM habit_instances
+        WHERE user_email = ? AND habitName = ? AND dueDate = ?`,
+        [userEmail, habitName, today]
+      );
+    }
+    console.log(`Migrated today’s instances for user ${userEmail}`);
+  } catch (error) {
+    console.error('Error migrating today instances:', error);
+  }
+};
 
 
 // Start the server
