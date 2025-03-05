@@ -17,16 +17,16 @@ export default function AccountScreen() {
       try {
         const storedUsername = await AsyncStorage.getItem('username');
         const storedEmail = await AsyncStorage.getItem('email');
-  
+
         if (storedUsername) {
           setUsername(storedUsername);
         }
-  
+
         if (storedEmail) {
           setEmail(storedEmail);
         } else if (storedUsername) {
           const userDetails = await getUserDetails(storedUsername);
-  
+
           setEmail(userDetails.email);
           await AsyncStorage.setItem('email', userDetails.email);
         }
@@ -34,21 +34,21 @@ export default function AccountScreen() {
         console.error('Error loading user data:', error);
       }
     };
-  
+
     loadUserData();
   }, []);
-  
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
-      <ThemedView style={[styles.section, { backgroundColor: Colors[theme].background }]}>
+      <View style={[styles.section, { backgroundColor: Colors[theme].background }]}>
         <ThemedText type="title" style={[styles.headerText, { color: Colors[theme].text }]}>
           Account Information
         </ThemedText>
       </View>
 
       {/* Username Field */}
-      <ThemedView style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
+      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
         <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Username</ThemedText>
         <TextInput
           style={[
@@ -68,7 +68,7 @@ export default function AccountScreen() {
 
 
       {/* Email Field */}
-      <ThemedView style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
+      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
         <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Email Address</ThemedText>
         <View style={styles.row}>
           <TextInput
@@ -81,8 +81,8 @@ export default function AccountScreen() {
             value={email}
             editable={false}
           />
-         </View>
-      </ThemedView>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
