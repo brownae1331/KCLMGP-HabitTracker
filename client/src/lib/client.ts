@@ -164,3 +164,28 @@ export async function deleteUser(username: string) {
   }
   return response.json();
 }
+
+// Change password
+export async function updatePassword(username: string, oldPassword: string, newPassword: string) {
+  try {
+    const response = await fetch(`${BASE_URL}/users/update-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, oldPassword, newPassword }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to update password');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error updating password:', error);
+    throw error;
+  }
+}
+
