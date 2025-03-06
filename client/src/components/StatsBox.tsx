@@ -21,26 +21,16 @@ export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
     const today = new Date().toISOString().split("T")[0];
 
     return (
-        <View
-            style={[
-                CalendarPageStyles.statsContainer,
-                { backgroundColor: theme === "dark" ? "#1E1E1E" : "#FFFFFF" },
-            ]}
-        >
-            <ThemedText type="subtitle">
+        <View style={[CalendarPageStyles.statsContainer, { backgroundColor: Colors[theme].background2 }]}>
+            <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
                 🔥 Current Streak: <Text style={{ color: "#FFD700" }}>{17} days</Text>
             </ThemedText>
-            <ThemedText type="subtitle">
+            <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
                 🏆 Longest Streak: <Text style={{ color: "#FFD700" }}>{38} days</Text>
             </ThemedText>
 
             {/* Separating Line */}
-            <View
-                style={[
-                    CalendarPageStyles.separator,
-                    { backgroundColor: theme === "dark" ? "#444444" : "#CCCCCC" },
-                ]}
-            />
+            <View style={[CalendarPageStyles.separator, { backgroundColor: Colors[theme].border }]} />
 
             {/* Habits Completed Header */}
             <View style={CalendarPageStyles.habitsContainer}>
@@ -59,7 +49,7 @@ export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
                         cx="60"
                         cy="60"
                         r="50"
-                        stroke={theme === "dark" ? "#444444" : "#CCCCCC"}
+                        stroke={Colors[theme].border}
                         strokeWidth="10"
                         fill="none"
                     />
@@ -75,14 +65,9 @@ export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
                         strokeLinecap="round"
                     />
                 </Svg>
-                <View style={CalendarPageStyles.progressTextContainer}>
-                    <ThemedText
-                        style={[CalendarPageStyles.percentageText, { color: "#FFD700" }]}
-                    >
+                <View style={CalendarPageStyles.percentageTextContainer}>
+                    <ThemedText style={CalendarPageStyles.percentageText}>
                         {completionPercentage}%
-                    </ThemedText>
-                    <ThemedText style={CalendarPageStyles.fractionText}>
-                        {completionPercentage}/100
                     </ThemedText>
                 </View>
             </View>

@@ -83,7 +83,7 @@ export default function CalendarScreen() {
         </View>
 
         {/* Calendar Component */}
-        <View style={[CalendarPageStyles.calendarContainer, { backgroundColor: Colors[theme].background }]}>
+        <View style={[CalendarPageStyles.calendarContainer, { backgroundColor: Colors[theme].background2 }]}>
           <CalendarComponent
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}

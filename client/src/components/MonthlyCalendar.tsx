@@ -66,11 +66,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
                                         cx="22.5"
                                         cy="22.5"
                                         r={radius - 5}
-                                        fill={
-                                            theme === "dark"
-                                                ? "rgba(255, 255, 255, 0.3)"
-                                                : "rgba(0, 0, 0, 0.1)"
-                                        }
+                                        fill={Colors[theme].border}
                                     />
                                 )}
                             </Svg>
@@ -92,14 +88,14 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
                 );
             }}
             theme={{
-                backgroundColor: Colors[theme].background,
-                calendarBackground: Colors[theme].background,
+                backgroundColor: Colors[theme].background2,
+                calendarBackground: Colors[theme].background2,
                 textSectionTitleColor: Colors[theme].text,
                 dayTextColor: Colors[theme].text,
                 todayTextColor: "#FFD700",
                 arrowColor: Colors[theme].text,
                 monthTextColor: Colors[theme].text,
-                textDisabledColor: theme === "dark" ? "#444444" : "#CCCCCC",
+                textDisabledColor: Colors[theme].text,
             }}
         />
     );
