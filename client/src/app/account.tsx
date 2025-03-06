@@ -16,6 +16,7 @@ export default function AccountScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -53,9 +54,10 @@ export default function AccountScreen() {
     }
 
     try {
-      const response = await updatePassword(username, oldPassword, newPassword);
+      await updatePassword(username, oldPassword, newPassword);
       
       Alert.alert('Success', 'Password updated successfully');
+      setSuccessMessage('Password change successful');
       
       setModalVisible(false);
       setOldPassword('');
@@ -74,9 +76,10 @@ export default function AccountScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
       <View style={[styles.section, { backgroundColor: Colors[theme].background }]}> 
-        <ThemedText type="title" style={[styles.headerText, { color: Colors[theme].text }]}>
-          Account Information
-        </ThemedText>
+        <ThemedText type="title" style={[styles.headerText, { color: Colors[theme].text }]}>Account Information</ThemedText>
+        {successMessage ? (
+          <Text style={{ color: 'green', marginTop: 5 }}>{successMessage}</Text>
+        ) : null}
       </View>
 
       {/* Username Field */}
@@ -104,9 +107,7 @@ export default function AccountScreen() {
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: Colors[theme].background2 }]}>
-            <ThemedText type="title" style={{ color: Colors[theme].text, fontWeight: 'bold' }}>
-              Change Password
-            </ThemedText>
+            <ThemedText type="title" style={{ color: Colors[theme].text, fontWeight: 'bold' }}>Change Password</ThemedText>
 
             {error ? <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text> : null}
 
@@ -147,6 +148,7 @@ export default function AccountScreen() {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   section: {
