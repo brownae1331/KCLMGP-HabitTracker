@@ -1,18 +1,31 @@
-import React, { useState } from "react";
-import { ScrollView, View } from "react-native";
+import React, { useState, useEffect } from "react";
+import { ScrollView, View, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "../../components/ThemedText";
 import { CalendarComponent } from "../../components/MonthlyCalendar";
 import { StatsBoxComponent } from "../../components/StatsBox";
 import { SharedStyles } from "../../components/styles/SharedStyles";
+import { CalendarPageStyles } from "../../components/styles/CalendarPageStyles";
 import { useTheme } from "../../components/ThemeContext";
 import { Colors } from "../../components/styles/Colors";
 
 export default function CalendarScreen() {
   const { theme } = useTheme();
+  const [isThemeLoaded, setIsThemeLoaded] = useState(false);
   const today = new Date().toISOString().split("T")[0]; // Get today's date
   const [selectedDate, setSelectedDate] = useState(today);
   const completionPercentage = 69; // Example percentage for progress circle
+  const [markedDates, setMarkedDates] = useState<{ [key: string]: any }>({});
+
+  // Ensure theme is fully loaded before rendering calendar
+  useEffect(() => {
+    // Short timeout to ensure theme context is fully initialized
+    const timer = setTimeout(() => {
+      setIsThemeLoaded(true);
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [theme]);
 
   const formatDate = (date: string) => {
     const dateObj = new Date(date);
@@ -25,21 +38,39 @@ export default function CalendarScreen() {
   // Generate random progress for each day (10% to 100%)
   const generateRandomProgress = () => Math.floor(Math.random() * 91) + 10;
 
-  const getMarkedDates = () => {
-    let markedDates: { [key: string]: any } = {};
-    for (let i = 1; i <= 31; i++) {
-      let day = i < 10 ? `0${i}` : i.toString();
-      let date = `2025-02-${day}`;
+  // Generate marked dates when theme changes
+  useEffect(() => {
+    const getMarkedDates = () => {
+      let dates: { [key: string]: any } = {};
+      for (let i = 1; i <= 31; i++) {
+        let day = i < 10 ? `0${i}` : i.toString();
+        let date = `2025-02-${day}`;
 
-      // 30% chance for 100% progress, 70% for random progress
-      const progress = Math.random() < 0.3 ? 100 : generateRandomProgress();
+        // 30% chance for 100% progress, 70% for random progress
+        const progress = Math.random() < 0.3 ? 100 : generateRandomProgress();
 
-      markedDates[date] = { progress };
-    }
-    return markedDates;
-  };
+        dates[date] = {
+          progress,
+          // Add theme-specific properties to ensure calendar respects theme
+          selected: date === selectedDate,
+          selectedColor: theme === 'dark' ? '#333333' : '#f0f0f0',
+          marked: true,
+          dotColor: theme === 'dark' ? '#FFFFFF' : '#000000'
+        };
+      }
+      return dates;
+    };
 
-  const markedDates = getMarkedDates();
+    setMarkedDates(getMarkedDates());
+  }, [theme, selectedDate]);
+
+  if (!isThemeLoaded) {
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors[theme].background }}>
+        <ActivityIndicator size="large" color={Colors[theme].tint} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
@@ -52,11 +83,13 @@ export default function CalendarScreen() {
         </View>
 
         {/* Calendar Component */}
-        <CalendarComponent
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          markedDates={markedDates}
-        />
+        <View style={[CalendarPageStyles.calendarContainer, { backgroundColor: Colors[theme].background }]}>
+          <CalendarComponent
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            markedDates={markedDates}
+          />
+        </View>
 
         {/* Stats Box */}
         <StatsBoxComponent
