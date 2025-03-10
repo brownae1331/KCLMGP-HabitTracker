@@ -39,22 +39,18 @@ const initDatabase = async () => {
 
 
     await connection.query(`
-    CREATE TABLE IF NOT EXISTS habits (
-      user_email VARCHAR(255) NOT NULL,
-      habitName VARCHAR(255) NOT NULL,
-      habitDescription TEXT,
-      habitType ENUM('build','quit') NOT NULL,
-      habitColor VARCHAR(7) NOT NULL,
-      scheduleOption ENUM('interval','weekly') NOT NULL,
-      isGoalEnabled BOOLEAN DEFAULT FALSE,
-      goalValue DOUBLE,
-      goalUnit VARCHAR(50),
-      -- dummy or default for now
-      notification_sound VARCHAR(100) DEFAULT 'default_ringtone',
-      streak INT DEFAULT 0,
-      PRIMARY KEY (user_email, habitName),
-      FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
-    );
+      CREATE TABLE IF NOT EXISTS habits (
+        user_email VARCHAR(255) NOT NULL,
+        habitName VARCHAR(255) NOT NULL,
+        habitDescription TEXT,
+        habitType ENUM('build','quit') NOT NULL,
+        habitColor VARCHAR(7) NOT NULL,
+        scheduleOption ENUM('interval','weekly') NOT NULL,
+        goalValue DOUBLE,
+        goalUnit VARCHAR(50),
+        PRIMARY KEY (user_email, habitName),
+        FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
+      );
     `);
 
     await connection.query(`
