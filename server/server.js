@@ -39,18 +39,18 @@ const initDatabase = async () => {
 
 
     await connection.query(`
-      CREATE TABLE IF NOT EXISTS habits (
-        user_email VARCHAR(255) NOT NULL,
-        habitName VARCHAR(255) NOT NULL,
-        habitDescription TEXT,
-        habitType ENUM('build','quit') NOT NULL,
-        habitColor VARCHAR(7) NOT NULL,
-        scheduleOption ENUM('interval','weekly') NOT NULL,
-        goalValue DOUBLE,
-        goalUnit VARCHAR(50),
-        PRIMARY KEY (user_email, habitName),
-        FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
-      );
+    CREATE TABLE IF NOT EXISTS habits (
+      user_email VARCHAR(255) NOT NULL,
+      habitName VARCHAR(255) NOT NULL,
+      habitDescription TEXT,
+      habitType ENUM('build','quit') NOT NULL,
+      habitColor VARCHAR(7) NOT NULL,
+      scheduleOption ENUM('interval','weekly') NOT NULL,
+      goalValue DOUBLE,
+      goalUnit VARCHAR(50),
+      PRIMARY KEY (user_email, habitName),
+      FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
+    );
     `);
 
     await connection.query(`
@@ -242,7 +242,7 @@ app.get('/habits/:email', async (req, res) => {
     // Get habits plus any associated day
     const [rows] = await pool.query(`
       SELECT h.user_email, h.habitName, h.habitDescription, h.habitType,
-             h.habitColor, h.scheduleOption, h.isGoalEnabled,
+             h.habitColor, h.scheduleOption, 
              h.goalValue, h.goalUnit, 
              hd.day
       FROM habits h
@@ -272,7 +272,7 @@ app.get('/habits/:email', async (req, res) => {
           habitType: row.habitType,
           habitColor: row.habitColor,
           scheduleOption: row.scheduleOption,
-          isGoalEnabled: !!row.isGoalEnabled,
+          isGoalEnabled: row.goalValue !== null,
           goalValue: row.goalValue,
           goalUnit: row.goalUnit,
           selectedDays: [],
@@ -288,7 +288,6 @@ app.get('/habits/:email', async (req, res) => {
     const habits = Array.from(habitMap.values());
 
     res.json(habits);
-
   } catch (error) {
     console.error('Error retrieving habits:', error);
     res.status(500).json({ error: 'Error retrieving habits' });
@@ -308,7 +307,6 @@ app.post('/habits', async (req, res) => {
     scheduleOption,
     intervalDays,
     selectedDays,
-    isGoalEnabled,
     goalValue,
     goalUnit
   } = req.body;
@@ -318,8 +316,8 @@ app.post('/habits', async (req, res) => {
     await pool.query(
       `INSERT INTO habits
       (user_email, habitName, habitDescription, habitType, habitColor,
-       scheduleOption, isGoalEnabled, goalValue, goalUnit)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       scheduleOption, goalValue, goalUnit)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         email,
         habitName,
@@ -327,7 +325,6 @@ app.post('/habits', async (req, res) => {
         habitType,
         habitColor,
         scheduleOption,
-        isGoalEnabled ? 1 : 0,
         goalValue || null,
         goalUnit || null
       ]
@@ -630,7 +627,7 @@ const migrateTodaysInstances = async (userEmail) => {
         [userEmail, habitName, today]
       );
     }
-    console.log(`Migrated today’s instances for user ${userEmail}`);
+    console.log(`Migrated today's instances for user ${userEmail}`);
   } catch (error) {
     console.error('Error migrating today instances:', error);
   }

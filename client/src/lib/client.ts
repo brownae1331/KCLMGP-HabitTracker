@@ -1,4 +1,6 @@
-// const BASE_URL = 'https://kclmgp-habittracker-4.onrender.com';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// const BASE_URL = 'https://kclmgp-habittracker-master.onrender.com';
 const BASE_URL = 'http://localhost:3000';
 
 // Define the Habit type
@@ -14,6 +16,12 @@ export type Habit = {
   notifications?: boolean;
   notification_sound?: string;
   streak?: number;
+};
+
+// Define the User type
+export type User = {
+  username: string;
+  email: string;
 };
 
 // Initialize the client, ensuring the server is reachable
@@ -32,6 +40,20 @@ export async function init() {
   }
 }
 
+// Fetch user details (email & username)
+export async function getUserDetails(username: string) {
+  const response = await fetch(`${BASE_URL}/users/${username}`);
+
+  if (!response.ok) {
+    throw new Error('Error fetching user details');
+  }
+
+  const data = await response.json();
+
+  return data;
+}
+
+
 // Fetch habits for a given username.
 export async function getHabits(username: string): Promise<Habit[]> {
   const response = await fetch(`${BASE_URL}/habits/${username}`);
@@ -44,7 +66,7 @@ export async function getHabits(username: string): Promise<Habit[]> {
 // Get habits for a specific user (alias for getHabits)
 export const getHabitsByUser = getHabits;
 
-// Create a new user.
+// Create a new user
 export async function createUser(email: string, password: string, username: string) {
   const response = await fetch(`${BASE_URL}/users/signup`, {
     method: 'POST',
@@ -61,7 +83,7 @@ export async function createUser(email: string, password: string, username: stri
   return data;
 }
 
-// Sign in a user.
+// Sign in a user & store user details in AsyncStorage
 export async function logIn(email: string, password: string) {
   const response = await fetch(`${BASE_URL}/users/login`, {
     method: 'POST',
@@ -75,10 +97,40 @@ export async function logIn(email: string, password: string) {
     throw new Error(data.error || 'Error logging in');
   }
 
+  await AsyncStorage.setItem('username', data.username);
+  await AsyncStorage.setItem('email', data.email);
+
   return data;
 }
 
-// Add a habit.
+// Retrieve user details from AsyncStorage
+export async function getStoredUser(): Promise<User | null> {
+  try {
+    const username = await AsyncStorage.getItem('username');
+    const email = await AsyncStorage.getItem('email');
+
+    if (username && email) {
+      return { username, email };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Error retrieving stored user data:', error);
+    return null;
+  }
+}
+
+// Logout user & clear stored data
+export async function logout() {
+  try {
+    await AsyncStorage.removeItem('username');
+    await AsyncStorage.removeItem('email');
+  } catch (error) {
+    console.error('Error clearing user data:', error);
+  }
+}
+
+// Add a habit
 export async function addHabit(habitData: Habit) {
   const response = await fetch(`${BASE_URL}/habits`, {
     method: 'POST',
@@ -91,7 +143,7 @@ export async function addHabit(habitData: Habit) {
   return response.json();
 }
 
-// Delete a habit.
+// Delete a habit
 export async function deleteHabit(username: string, name: string) {
   const response = await fetch(`${BASE_URL}/habits/${username}/${name}`, {
     method: 'DELETE',
@@ -102,7 +154,7 @@ export async function deleteHabit(username: string, name: string) {
   return response.json();
 }
 
-// Delete a specific user by username.
+// Delete a specific user by username
 export async function deleteUser(username: string) {
   const response = await fetch(`${BASE_URL}/users/${username}`, {
     method: 'DELETE',

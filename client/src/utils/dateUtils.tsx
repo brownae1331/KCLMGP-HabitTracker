@@ -1,21 +1,19 @@
-export const getWeekDates = (weekIndex: number): { day: string; date: number; fullDate: Date }[] => {
+export const getWeekDates = (offset = 0) => {
     const today = new Date();
+    today.setDate(today.getDate() + offset * 7);
 
-    today.setDate(today.getDate() + weekIndex * 7);
-    const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+    const dayOfWeek = today.getDay(); // 0 = Sunday
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - dayOfWeek);
 
-    // Set Sunday as the first day of the week
-    const firstDayOfWeek = new Date(today);
-    firstDayOfWeek.setDate(today.getDate() - today.getDay());
+    return [...Array(7)].map((_, i) => {
+        const date = new Date(sunday);
+        date.setDate(sunday.getDate() + i);
 
-    // Loop over weekDays array to get the full weeks dates
-    return weekDays.map((day, index) => {
-        const date = new Date(firstDayOfWeek);
-        date.setDate(firstDayOfWeek.getDate() + index);
         return {
-            day,
+            day: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'][i],
             date: date.getDate(),
-            fullDate: new Date(date),
+            fullDate: date,
         };
     });
 };

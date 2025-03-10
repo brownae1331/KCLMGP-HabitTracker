@@ -71,9 +71,8 @@ export default function HomeScreen() {
       scheduleOption,
       intervalDays: intervalDays ? parseInt(intervalDays, 10) : null,
       selectedDays,
-      isGoalEnabled,
-      goalValue: goalValue ? parseFloat(goalValue) : null,
-      goalUnit,
+      goalValue: isGoalEnabled ? parseFloat(goalValue) : null,
+      goalUnit: isGoalEnabled ? goalUnit : null,
     };
 
     try {

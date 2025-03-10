@@ -4,19 +4,19 @@ import { ThemedText } from './ThemedText'; // Adjust path if needed
 
 // Define the Habit interface (adjust if your structure is different)
 export interface Habit {
-    email: string;
-    habitName: string;
-    habitDescription: string;
-    habitType: 'build' | 'quit';
-    habitColor: string;
-    scheduleOption: 'interval' | 'weekly';
-    intervalDays?: number;
-    selectedDays?: string[];
-    isGoalEnabled: boolean;
-    goalValue?: number | null;
-    goalUnit?: string;
-  }
-  
+  email: string;
+  habitName: string;
+  habitDescription: string;
+  habitType: 'build' | 'quit';
+  habitColor: string;
+  scheduleOption: 'interval' | 'weekly';
+  intervalDays?: number;
+  selectedDays?: string[];
+  isGoalEnabled: boolean;
+  goalValue?: number | null;
+  goalUnit?: string;
+}
+
 
 interface HabitPanelProps {
   habit: Habit;
@@ -40,7 +40,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit }) => {
     <View style={[styles.habitPanel, { backgroundColor: habit.habitColor }]}>
       <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
       <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
-      {habit.isGoalEnabled && habit.goalValue != null && (
+      {habit.goalValue != null && (
         <ThemedText style={styles.habitGoal}>
           Goal: {habit.goalValue} {habit.goalUnit}
         </ThemedText>
