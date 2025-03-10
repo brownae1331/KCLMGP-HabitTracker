@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-//const BASE_URL = 'https://kclmgp-habittracker-4.onrender.com';
+// const BASE_URL = 'https://kclmgp-habittracker-master.onrender.com';
 const BASE_URL = 'http://localhost:3000';
 
 // Define the Habit type
@@ -50,7 +50,7 @@ export async function getUserDetails(username: string) {
 
   const data = await response.json();
 
-  return data; 
+  return data;
 }
 
 

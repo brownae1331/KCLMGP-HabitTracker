@@ -71,13 +71,12 @@ export default function HomeScreen() {
       scheduleOption,
       intervalDays: intervalDays ? parseInt(intervalDays, 10) : null,
       selectedDays,
-      isGoalEnabled,
-      goalValue: goalValue ? parseFloat(goalValue) : null,
-      goalUnit,
+      goalValue: isGoalEnabled ? parseFloat(goalValue) : null,
+      goalUnit: isGoalEnabled ? goalUnit : null,
     };
-  
+
     try {
-      const response = await fetch('http://localhost:3000/habits', { 
+      const response = await fetch('http://localhost:3000/habits', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -90,7 +89,7 @@ export default function HomeScreen() {
     } catch (error) {
       console.error('Error adding habit:', error);
     }
-  
+
     // Reset form values and close modal
     setEmail('hugo@gmail.com'); // dummy email
     setHabitName('');
@@ -105,17 +104,17 @@ export default function HomeScreen() {
     setGoalUnit('');
     setModalVisible(false);
   };
-  
+
   const [dbHabits, setDbHabits] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchHabits = async () => {
       try {
         const habits = await getHabitsByUser('hugo@gmail.com');
-  
+
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const selectedDayName = dayNames[selectedDate.fullDate.getDay()];
-  
+
         const filtered = habits.filter((habit: any) => {
           if (habit.scheduleOption === 'weekly') {
             // For weekly habits, check if the selected day's name is in the selectedDays array.
@@ -136,10 +135,10 @@ export default function HomeScreen() {
         console.error('Error fetching habits for selected date:', error);
       }
     };
-  
+
     fetchHabits();
   }, [selectedDate]);
-  
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
@@ -158,7 +157,7 @@ export default function HomeScreen() {
         <WeeklyCalendar
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
-        /> 
+        />
         <View>
           {dbHabits.length > 0 ? (
             dbHabits.map((habit: Habit) => (
