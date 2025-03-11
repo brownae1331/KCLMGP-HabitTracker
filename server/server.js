@@ -364,19 +364,20 @@ app.post('/habits', async (req, res) => {
 
 
 // Delete a habit
-app.delete('/habits/:username/:name', async (req, res) => {
-  const { username, name } = req.params;
+app.delete('/habits/:email/:habitName', async (req, res) => {
+  const { email, habitName } = req.params;
   try {
-    const [result] = await pool.query('DELETE FROM habits WHERE username = ? AND habitName = ?', [username, habitName]);
-    if (result.affectedRows > 0) {
-      res.json({ success: true, message: `Habit "${name}" deleted successfully.` });
-    } else {
-      res.status(404).json({ error: `Habit "${name}" not found.` });
-    }
+    await pool.query(
+      'DELETE FROM habits WHERE user_email = ? AND habitName = ?',
+      [email, habitName]
+    );
+    res.json({ success: true, message: 'Habit deleted successfully' });
   } catch (error) {
+    console.error('Error deleting habit:', error);
     res.status(500).json({ error: 'Error deleting habit' });
   }
 });
+
 
 //log progress of a specific habit
 app.post('/habit-progress', async (req, res) => {
