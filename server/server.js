@@ -237,12 +237,12 @@ app.delete('/users/:username', async (req, res) => {
 // Get all habits for a user
 app.get('/habits/:email', async (req, res) => {
   const { email } = req.params;
-  
+
   try {
     // Get habits plus any associated day
     const [rows] = await pool.query(`
       SELECT h.user_email, h.habitName, h.habitDescription, h.habitType,
-             h.habitColor, h.scheduleOption, h.isGoalEnabled,
+             h.habitColor, h.scheduleOption, 
              h.goalValue, h.goalUnit, 
              hd.day
       FROM habits h
@@ -251,7 +251,7 @@ app.get('/habits/:email', async (req, res) => {
          AND h.habitName = hd.habitName
       WHERE h.user_email = ?
     `, [email]);
-    
+
     // rows might look like this:
     // [
     //   { user_email: 'abc@gmail.com', habitName: 'Gym', ..., day: 'Monday' },
@@ -272,7 +272,7 @@ app.get('/habits/:email', async (req, res) => {
           habitType: row.habitType,
           habitColor: row.habitColor,
           scheduleOption: row.scheduleOption,
-          isGoalEnabled: !!row.isGoalEnabled,
+          isGoalEnabled: row.goalValue !== null,
           goalValue: row.goalValue,
           goalUnit: row.goalUnit,
           selectedDays: [],
@@ -283,12 +283,11 @@ app.get('/habits/:email', async (req, res) => {
         habitMap.get(key).selectedDays.push(row.day);
       }
     }
-    
+
     // Convert that map to an array
     const habits = Array.from(habitMap.values());
-    
-    res.json(habits);
 
+    res.json(habits);
   } catch (error) {
     console.error('Error retrieving habits:', error);
     res.status(500).json({ error: 'Error retrieving habits' });
@@ -308,7 +307,6 @@ app.post('/habits', async (req, res) => {
     scheduleOption,
     intervalDays,
     selectedDays,
-    isGoalEnabled,
     goalValue,
     goalUnit
   } = req.body;
@@ -318,8 +316,8 @@ app.post('/habits', async (req, res) => {
     await pool.query(
       `INSERT INTO habits
       (user_email, habitName, habitDescription, habitType, habitColor,
-       scheduleOption, isGoalEnabled, goalValue, goalUnit)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       scheduleOption, goalValue, goalUnit)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         email,
         habitName,
@@ -327,7 +325,6 @@ app.post('/habits', async (req, res) => {
         habitType,
         habitColor,
         scheduleOption,
-        isGoalEnabled ? 1 : 0,
         goalValue || null,
         goalUnit || null
       ]
@@ -389,7 +386,7 @@ app.post('/habit-progress', async (req, res) => {
   try {
     const [existingProgress] = await pool.query(
       `SELECT * FROM habit_progress 
-      WHERE user_email = ? AND habitName = ? AND progressDate = ?`, 
+      WHERE user_email = ? AND habitName = ? AND progressDate = ?`,
       [email, habitName, today]
     );
 
@@ -397,9 +394,9 @@ app.post('/habit-progress', async (req, res) => {
     if (existingProgress.length > 0) {
       // for if the habits are implemented such that you can add progress
       // on top of previous progress (e.g. +1 glass of water towards the goalValue)
-        // const prevProgress = existingProgress[0].progress;
-        // const newProgress = prevProgress + progress;
-        // const completed = newProgress >= existingProgress[0].goalValue;
+      // const prevProgress = existingProgress[0].progress;
+      // const newProgress = prevProgress + progress;
+      // const completed = newProgress >= existingProgress[0].goalValue;
 
       const completed = progress >= existingProgress[0].goalValue;
 
@@ -442,11 +439,11 @@ app.post('/habit-progress', async (req, res) => {
 app.get('/habit-progress/:username/:habitName', async (req, res) => {
   const { username, habitName } = req.params;
   const { range } = req.query; // "7" for past 7 days, "30" for past 30 days/month, or 'month' for monthly average
-  
+
   try {
     const [user] = await pool.query('SELECT email FROM users WHERE username = ?', [username]);
-    if (user.length === 0) { 
-      return res.status(404).json({ error: 'User not found' }); 
+    if (user.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
     }
     const userEmail = user[0].email;
     let query = '';
@@ -630,7 +627,7 @@ const migrateTodaysInstances = async (userEmail) => {
         [userEmail, habitName, today]
       );
     }
-    console.log(`Migrated today’s instances for user ${userEmail}`);
+    console.log(`Migrated today's instances for user ${userEmail}`);
   } catch (error) {
     console.error('Error migrating today instances:', error);
   }
