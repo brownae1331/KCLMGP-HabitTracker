@@ -4,7 +4,7 @@ export const getWeekDates = (offset = 0) => {
 
     const dayOfWeek = today.getDay(); // 0 = Sunday
     const sunday = new Date(today);
-    sunday.setDate(today.getDate() - dayOfWeek); 
+    sunday.setDate(today.getDate() - dayOfWeek);
 
     return [...Array(7)].map((_, i) => {
         const date = new Date(sunday);

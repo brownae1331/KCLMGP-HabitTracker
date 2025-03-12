@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, TextInput, Text, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText'; // Adjust path if needed
+import { updateHabitProgress } from '../lib/client';
 
 // Define the Habit interface (adjust if your structure is different)
 export interface Habit {
@@ -30,10 +31,14 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit }) => {
   // Local flag to indicate an update was made
   const [updated, setUpdated] = useState(false);
 
-  const handleUpdate = () => {
-    // In a real app, send the update to your backend.
-    // Here, we only update the local state.
-    setUpdated(true);
+  const handleUpdate = async () => {
+    try {
+      const progressValue = habit.habitType === 'build' ? parseFloat(buildProgress) : quitStatus === 'yes' ? 1 : 0;
+      await updateHabitProgress(habit.email, habit.habitName, progressValue);
+      setUpdated(true);
+    } catch (error) {
+      console.error('Error updating habit:', error);
+    }
   };
 
   return (

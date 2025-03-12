@@ -5,17 +5,16 @@ const BASE_URL = 'http://localhost:3000';
 
 // Define the Habit type
 export type Habit = {
-  username: string;
-  name: string;
-  description?: string;
-  amount?: number;
-  positive?: boolean;
-  date?: string;
-  increment?: string;
-  location?: string;
-  notifications?: boolean;
-  notification_sound?: string;
-  streak?: number;
+  email: string;
+  habitName: string;
+  habitDescription: string;
+  habitType: 'build' | 'quit';
+  habitColor: string;
+  scheduleOption: 'interval' | 'weekly';
+  intervalDays: number | null;
+  selectedDays: string[];
+  goalValue: number | null;
+  goalUnit: string | null;
 };
 
 // Define the User type
@@ -53,19 +52,6 @@ export async function getUserDetails(username: string) {
   return data;
 }
 
-
-// Fetch habits for a given username.
-export async function getHabits(username: string): Promise<Habit[]> {
-  const response = await fetch(`${BASE_URL}/habits/${username}`);
-  if (!response.ok) {
-    throw new Error('Error fetching habits');
-  }
-  return response.json();
-}
-
-// Get habits for a specific user (alias for getHabits)
-export const getHabitsByUser = getHabits;
-
 // Create a new user
 export async function createUser(email: string, password: string, username: string) {
   const response = await fetch(`${BASE_URL}/users/signup`, {
@@ -79,6 +65,9 @@ export async function createUser(email: string, password: string, username: stri
   if (!response.ok) {
     throw new Error(data.error || 'Error creating user');
   }
+
+  await AsyncStorage.setItem('username', data.username);
+  await AsyncStorage.setItem('email', data.email);
 
   return data;
 }
@@ -130,6 +119,26 @@ export async function logout() {
   }
 }
 
+//Fetch habits for a given username.
+// export async function getHabits(username: string): Promise<Habit[]> {
+//   const response = await fetch(`${BASE_URL}/habits/${username}`);
+//   if (!response.ok) {
+//     throw new Error('Error fetching habits');
+//   }
+//   return response.json();
+// }
+
+// Fetch habits for a particular user on a particular date
+export async function getHabitsForDate(email: string, date: string): Promise<Habit[]> {
+  const response = await fetch(`${BASE_URL}/habits/${email}/${date}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habits');
+  }
+
+  const habits: Habit[] = await response.json();
+  return habits;
+}
+
 // Add a habit
 export async function addHabit(habitData: Habit) {
   const response = await fetch(`${BASE_URL}/habits`, {
@@ -164,3 +173,55 @@ export async function deleteUser(username: string) {
   }
   return response.json();
 }
+
+// Update a habit's progress
+export async function updateHabitProgress(email: string, habitName: string, progress: number) {
+  const response = await fetch(`${BASE_URL}/habit-progress`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, habitName, progress }),
+  });
+  if (!response.ok) {
+    throw new Error('Error updating habit progress');
+  }
+  return response.json();
+}
+
+// Get habit progress data for all habits of a specific user on a specific date
+export async function getHabitProgressByDate(email: string, date: string) {
+  const encodedEmail = encodeURIComponent(email);
+
+  // Ensure date is in MySQL-compatible format (YYYY-MM-DD)
+  const formattedDate = new Date(date).toISOString().split('T')[0];
+
+  const response = await fetch(`${BASE_URL}/habit-progress/${encodedEmail}/${formattedDate}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit progress');
+  }
+  return response.json();
+}
+
+// Change password
+export async function updatePassword(username: string, oldPassword: string, newPassword: string) {
+  try {
+    const response = await fetch(`${BASE_URL}/users/update-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, oldPassword, newPassword }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to update password');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error updating password:', error);
+    throw error;
+  }
+}
+
