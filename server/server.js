@@ -409,6 +409,27 @@ app.post('/habits', async (req, res) => {
   }
 });
 
+// Get the names of all habits for a user
+app.get('/habits/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    const [user] = await pool.query('SELECT email FROM users WHERE username = ?', [username]);
+    if (user.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const userEmail = user[0].email;
+    const [habits] = await pool.query('SELECT habitName FROM habits WHERE user_email = ?',[userEmail]);
+
+    if (habits.length === 0) {
+      return res.json([]);
+    }
+
+    res.json(habits);
+  } catch (error) {
+    console.error('Error fetching habits:', error);
+    res.status(500).json({ error: 'Error fetching habit names' });
+  }
+});
 
 // Delete a habit
 app.delete('/habits/:username/:name', async (req, res) => {
@@ -613,6 +634,8 @@ const generateIntervalInstances = async (userEmail, habitName, daysAhead = 7) =>
   }
 };
 
+// Calculates future due dates for weekly habits for the next 7 days
+// unless a different daysAhead is passed as a parameter
 const generateDayInstances = async (userEmail, habitName, daysAhead = 7) => {
   try {
     const [dayRows] = await pool.query(
@@ -651,6 +674,7 @@ const generateDayInstances = async (userEmail, habitName, daysAhead = 7) => {
   }
 };
 
+// Moves habits from habit_instances to habit_progress if the due date is today
 const migrateTodaysInstances = async (userEmail) => {
   try {
     const today = new Date().toISOString().split('T')[0];
