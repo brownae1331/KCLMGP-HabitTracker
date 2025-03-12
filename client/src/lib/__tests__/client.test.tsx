@@ -1,5 +1,21 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { init, logIn, logout, createUser, getStoredUser, getUserDetails, getHabits, addHabit, deleteHabit, deleteUser } from '../client';
+import {
+    init,
+    getUserDetails,
+    createUser,
+    logIn,
+    getStoredUser,
+    logout,
+    getHabitsForDate,
+    addHabit,
+    deleteHabit,
+    deleteUser,
+    updateHabitProgress,
+    getHabitProgressByDate,
+    updatePassword,
+    Habit
+} from '../client';
+import * as client from '../client';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -8,102 +24,167 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
     removeItem: jest.fn(),
 }));
 
-// Mock Client API functions with proper TypeScript typings
-jest.mock('../client', () => ({
-    init: jest.fn() as jest.MockedFunction<() => Promise<{ success: boolean }>>,
-    logIn: jest.fn() as jest.MockedFunction<(email: string, password: string) => Promise<string>>,
-    logout: jest.fn() as jest.MockedFunction<() => Promise<void>>,
-    createUser: jest.fn() as jest.MockedFunction<(email: string, password: string, username: string) => Promise<string>>,
-    getStoredUser: jest.fn() as jest.MockedFunction<() => Promise<{ username: string; email: string }>>,
-    getUserDetails: jest.fn() as jest.MockedFunction<(username: string) => Promise<{ username: string; email: string }>>,
-    getHabits: jest.fn() as jest.MockedFunction<(username: string) => Promise<{ name: string; username: string }[]>>,
-    addHabit: jest.fn() as jest.MockedFunction<(habit: { username: string; name: string }) => Promise<{ success: boolean }>>,
-    deleteHabit: jest.fn() as jest.MockedFunction<(username: string, habitName: string) => Promise<{ success: boolean }>>,
-    deleteUser: jest.fn() as jest.MockedFunction<(username: string) => Promise<{ success: boolean }>>,
-}));
-
-// Utility function to mock fetch
-const setupFetchMock = (data: unknown, ok: boolean = true, status: number = 200): void => {
+// simulate a fetch response
+const setupFetchMock = (data: unknown, ok: boolean = true, status: number = 200) => {
     global.fetch = jest.fn(() =>
         Promise.resolve({
             ok,
             status,
             json: async () => data,
-        }) as Promise<Response>
+        }as Response)
     );
 };
 
-describe('Client API Functions', () => {
+describe('Client API Integration Tests', () => {
     const mockEmail = 'test@example.com';
     const mockPassword = 'password123';
     const mockUsername = 'testuser';
+    const testDate = '2025-03-15';
+    const mockHabit : Habit = {
+        email: 'test@example.com',
+        habitName: 'Exercise',
+        habitDescription: 'Morning workout',
+        habitType: 'build',
+        habitColor: '#ff0000',
+        scheduleOption: 'weekly',
+        intervalDays: null,
+        selectedDays: ['Monday', 'Wednesday', 'Friday'],
+        goalValue: 30,
+        goalUnit: 'minutes',
+    };
 
     afterEach(() => {
         jest.clearAllMocks();
     });
 
-    test('init() should connect to the server', async () => {
-        (init as jest.Mock).mockResolvedValueOnce({ success: true });
-        
+    test('init() should initialise client', async () => {
+        const responseData = { success: true };
+        setupFetchMock(responseData);
         const response = await init();
-        expect(response).toEqual({ success: true });
+        expect(response).toEqual(responseData);
+        expect(global.fetch).toHaveBeenCalled();
     });
 
-    test('logIn() should be called with email and password', async () => {
-        (logIn as jest.Mock).mockResolvedValueOnce('Success');
+    test('init() should handle fetch errors correctly', async () => {
+        setupFetchMock({ error: 'Failed' }, false, 500);
+        await expect(init()).rejects.toThrow();
+    });
 
-        await logIn(mockEmail, mockPassword);
+    test('logIn() should be called with email and password, store user info into AsyncStorage', async () => {
+        const token = 'token123';
+        setupFetchMock({ token, username: mockUsername, email: mockEmail });
+        const response = await logIn(mockEmail, mockPassword);
 
-        expect(logIn).toHaveBeenCalledTimes(1);
-        expect(logIn).toHaveBeenCalledWith(mockEmail, mockPassword);
+        expect(response.token).toEqual(token);
+        expect(AsyncStorage.setItem).toHaveBeenCalledWith('username', mockUsername);
+        expect(AsyncStorage.setItem).toHaveBeenCalledWith('email', mockEmail);
+    });
+
+    test('logIn() should handle incorrect credentials', async () => {
+        setupFetchMock({ error: 'Unauthorized' }, false, 401);
+        await expect(logIn(mockEmail, 'wrongpassword')).rejects.toThrow();
     });
 
     test('createUser() should be called with correct parameters', async () => {
-        (createUser as jest.Mock).mockResolvedValueOnce('User created');
-        
-        await createUser(mockEmail, mockPassword, mockUsername);
-
-        expect(createUser).toHaveBeenCalledWith(mockEmail, mockPassword, mockUsername);
+        const message = 'User created';
+        setupFetchMock({ message });
+        const response = await createUser(mockEmail, mockPassword, mockUsername);
+        expect(response.message).toEqual(message);
+        expect(global.fetch).toHaveBeenCalled();
     });
 
     test('getStoredUser() should retrieve user data from AsyncStorage', async () => {
-        (getStoredUser as jest.Mock).mockResolvedValueOnce({ username: 'testUser', email: 'test@example.com' });
-    
+        (AsyncStorage.getItem as jest.Mock)
+            .mockResolvedValueOnce(mockUsername)
+            .mockResolvedValueOnce(mockEmail);
         const user = await getStoredUser();
-        expect(user).toEqual({ username: 'testUser', email: 'test@example.com' });
+        expect(user).toEqual({ username: mockUsername, email: mockEmail });
+        expect(AsyncStorage.getItem).toHaveBeenCalledTimes(2);
+    });
+
+    test('getStoredUser() should handle empty AsyncStorage', async () => {
+        (AsyncStorage.getItem as jest.Mock)
+            .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce(null);
+        const user = await getStoredUser();
+        expect(user).toBeNull();
     });
 
     test('getUserDetails() should fetch user details', async () => {
-        (getUserDetails as jest.Mock).mockResolvedValueOnce({ username: 'testUser', email: 'test@example.com' });
-    
-        const user = await getUserDetails('testUser');
-        expect(user).toEqual({ username: 'testUser', email: 'test@example.com' });
+        const userData = { username: mockUsername, email: mockEmail };
+        setupFetchMock(userData);
+        const response = await getUserDetails(mockUsername);
+        expect(response).toEqual(userData);
+        expect(global.fetch).toHaveBeenCalled();
     });
 
-    test('getHabits() should fetch user habits', async () => {
-        (getHabits as jest.Mock).mockResolvedValueOnce([{ name: 'Exercise', username: 'testUser' }]);
-    
-        const habits = await getHabits('testUser');
-        expect(habits).toEqual([{ name: 'Exercise', username: 'testUser' }]);
+    test('getHabitsForDate() should fetch user habits for specific date', async () => {
+        const habits = [{ name: 'Exercise', username: mockUsername, date: testDate }];
+        setupFetchMock(habits);
+        const response = await getHabitsForDate(mockUsername, testDate);
+        expect(response).toEqual(habits);
+        expect(global.fetch).toHaveBeenCalled();
     });
 
-    test('addHabit() should send a POST request', async () => {
-        (addHabit as jest.Mock).mockResolvedValueOnce({ success: true });
-        const newHabit = { username: 'testUser', name: 'Reading' };
-    
-        const response = await addHabit(newHabit);
+    test('addHabit should send a POST request and return response data', async () => {
+        const responseData = { success: true };
+        setupFetchMock(responseData);
+        const response = await addHabit(mockHabit);        
+        expect(global.fetch).toHaveBeenCalledWith(
+            'http://localhost:3000/habits',
+            expect.objectContaining({
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(mockHabit),
+            })
+        );
+        expect(response).toEqual(responseData);
+    });
+
+    test('addHabit() should handle fetch error', async () => {
+        setupFetchMock({ error: 'Habit creation failed' }, false, 400);
+        await expect(addHabit(mockHabit)).rejects.toThrow();
+    });
+
+    test('deleteHabit should send a DELETE request and return response data', async () => {
+        setupFetchMock({ success: true });
+        const response = await deleteHabit(mockUsername, mockHabit.habitName);
+
+        expect(global.fetch).toHaveBeenCalledWith(
+            `http://localhost:3000/habits/${mockUsername}/${mockHabit.habitName}`,
+            expect.objectContaining({method: 'DELETE',})
+        );
         expect(response).toEqual({ success: true });
     });
 
-    test('deleteHabit() should send a DELETE request', async () => {
-        (deleteHabit as jest.Mock).mockResolvedValueOnce({ success: true });
-    
-        const response = await deleteHabit('testUser', 'Reading');
+    test('deleteHabit() should handle habit not found', async () => {
+        setupFetchMock({ error: 'Habit not found' }, false, 404);
+        await expect(deleteHabit(mockUsername, 'NonExistentHabit')).rejects.toThrow();
+    });
+
+    test('deleteUser should send a DELETE request and return response data (success scenario)', async () => {
+        // succecc scenario: return { success: true }
+        setupFetchMock({ success: true });
+        const response = await deleteUser(mockUsername);
+        expect(global.fetch).toHaveBeenCalledWith(
+            `http://localhost:3000/users/${mockUsername}`,
+            expect.objectContaining({ method: 'DELETE' })
+        );
         expect(response).toEqual({ success: true });
+    });
+    
+    test('deleteUser() should throw an error when deletion fails', async () => {
+        const errorMessage = 'Error deleting user';
+        
+        jest.spyOn(client, 'deleteUser').mockRejectedValueOnce(new Error(errorMessage));
+
+        await expect(client.deleteUser('testUser')).rejects.toThrow(errorMessage);
+
+        expect(client.deleteUser).toHaveBeenCalledWith('testUser');
     });
 
     test('logout() should remove stored user data', async () => {
-        const { logout } = jest.requireActual('../client');
+        // const { logout } = jest.requireActual('../client');
         await logout();
         expect(AsyncStorage.removeItem).toHaveBeenCalledWith('username');
         expect(AsyncStorage.removeItem).toHaveBeenCalledWith('email');
@@ -114,4 +195,40 @@ describe('Client API Functions', () => {
     
         await expect(deleteUser('testUser')).rejects.toThrow('Error deleting user');
     });
+
+    test('updateHabitProgress() should update process of habit', async () => {
+        const responseData = { success: true };
+        setupFetchMock(responseData);
+        
+        const response = await updateHabitProgress(mockEmail, mockHabit.habitName, 50);
+        expect(response).toEqual(responseData);
+        expect(global.fetch).toHaveBeenCalled();
+    });
+
+    test('updateHabitProgress() should handle fetch errors', async () => {
+        setupFetchMock({ error: 'Update failed' }, false, 500);
+        await expect(updateHabitProgress(mockEmail, mockHabit.habitName, 50)).rejects.toThrow();
+    });
+
+    test('getHabitProgressByDate() should get process of specific date', async () => {
+        const progressData = { habit: 'Exercise', date: testDate, progress: 75 };
+        setupFetchMock(progressData);
+        const response = await getHabitProgressByDate(mockEmail, testDate);
+        expect(response).toEqual(progressData);
+        expect(global.fetch).toHaveBeenCalled();
+    });
+
+    test('updatePassword() should update password of user', async () => {
+        const responseData = { success: true };
+        setupFetchMock(responseData);
+        const response = await updatePassword(mockUsername, mockPassword, 'newPassword456');
+        expect(response).toEqual(responseData);
+        expect(global.fetch).toHaveBeenCalled();
+    });
+
+    test('updatePassword() should handle incorrect current password', async () => {
+        setupFetchMock({ error: 'Incorrect current password' }, false, 403);
+        await expect(updatePassword(mockUsername, 'wrongOldPassword', 'newPassword')).rejects.toThrow();
+    });    
+
 });
