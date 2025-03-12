@@ -43,6 +43,22 @@ describe('LoginScreen functionality tests', () => {
     });
   });
 
+  // test('shows error when email or password is empty', async () => {
+  //   const { getByPlaceholderText, getByText, findByText } = render(<LoginScreen />);
+
+  //   // ensure that the email and password fields are empty
+  //   fireEvent.changeText(getByPlaceholderText('Email'), '');
+  //   fireEvent.changeText(getByPlaceholderText('Password'), '');
+
+  //   // Press the login button
+  //   fireEvent.press(getByText('Login'));
+
+  //   // Wait for the error message to appear
+  //   const errorMessage = await findByText('An unknown error occurred');
+  //   expect(errorMessage).toBeTruthy();
+  // });
+
+
   test('displays an error message on failed login', async () => {
     // Simulate a failed login
     (logIn as jest.Mock).mockRejectedValueOnce(new Error('Invalid credentials'));
@@ -59,4 +75,20 @@ describe('LoginScreen functionality tests', () => {
     const errorMessage = await findByText('Invalid credentials');
     expect(errorMessage).toBeTruthy();
   });
+
+  test('shows "An unknown error occurred" when error is not an instance of Error', async () => {
+    // Simulate an unknown error
+    (logIn as jest.Mock).mockRejectedValueOnce('Some unknown error');
+
+    const { getByPlaceholderText, getByText, findByText } = render(<LoginScreen />);
+
+    fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
+    fireEvent.changeText(getByPlaceholderText('Password'), 'password123');
+    fireEvent.press(getByText('Login'));
+
+    // check for the error message
+    const errorMessage = await findByText('An unknown error occurred');
+    expect(errorMessage).toBeTruthy();
+  });
+
 });

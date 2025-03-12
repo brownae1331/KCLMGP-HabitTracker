@@ -11,7 +11,7 @@
     "build": "expo build",
     "lint": "expo lint",
     "reset-project": "node ./scripts/reset-project.js",
-    "test": "jest --watchAll"
+    "test": "jest"
   },
   "dependencies": {
     "@babel/plugin-transform-react-jsx": "^7.25.9",
