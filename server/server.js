@@ -661,3 +661,37 @@ const migrateTodaysInstances = async (userEmail) => {
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+// Change password
+app.post('/users/update-password', async (req, res) => {
+  const { username, oldPassword, newPassword } = req.body;
+
+  try {
+    // Retrieve user by username
+    const [users] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = users[0];
+
+    // Verify old password
+    const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!passwordMatch) {
+      return res.status(400).json({ error: 'Incorrect old password' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password in database
+    await pool.query('UPDATE users SET password = ? WHERE username = ?', [hashedPassword, username]);
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
