@@ -12,8 +12,9 @@ import { NewHabitModal } from '../../components/NewHabitModal';
 import { ThemedText } from '../../components/ThemedText';
 import { Colors } from '../../components/styles/Colors';
 import { useTheme } from '../../components/ThemeContext';
-import { addHabit, getHabits } from '../../lib/client';
-import HabitPanel, { Habit } from '../../components/HabitPanel'; // adjust the path as needed
+import { addHabit, getHabitsForDate } from '../../lib/client';
+//import { getHabits } from '../../lib/client';
+import HabitPanel, { Habit } from '../../components/HabitPanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
@@ -79,29 +80,39 @@ export default function HomeScreen() {
 
   const [dbHabits, setDbHabits] = useState<any[]>([]);
 
+  // const fetchHabits = async () => {
+  //   try {
+  //     const habits = await getHabits(email);
+
+  //     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  //     const selectedDayName = dayNames[selectedDate.fullDate.getDay()];
+
+  //     const filtered = habits.filter((habit: any) => {
+  //       if (habit.scheduleOption === 'weekly') {
+  //         // For weekly habits, check if the selected day's name is in the selectedDays array.
+  //         return habit.selectedDays && habit.selectedDays.includes(selectedDayName);
+  //       } else {
+  //         // For interval (or date-specific) habits, check the habit.date.
+  //         if (!habit.date) return false;
+  //         const habitDate = new Date(habit.date);
+  //         return (
+  //           habitDate.getDate() === selectedDate.fullDate.getDate() &&
+  //           habitDate.getMonth() === selectedDate.fullDate.getMonth() &&
+  //           habitDate.getFullYear() === selectedDate.fullDate.getFullYear()
+  //         );
+  //       }
+  //     });
+  //     setDbHabits(filtered);
+  //   } catch (error) {
+  //     console.error('Error fetching habits for selected date:', error);
+  //   }
+  // };
+
   const fetchHabits = async () => {
     try {
-      const habits = await getHabits(email);
-
-      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const selectedDayName = dayNames[selectedDate.fullDate.getDay()];
-
-      const filtered = habits.filter((habit: any) => {
-        if (habit.scheduleOption === 'weekly') {
-          // For weekly habits, check if the selected day's name is in the selectedDays array.
-          return habit.selectedDays && habit.selectedDays.includes(selectedDayName);
-        } else {
-          // For interval (or date-specific) habits, check the habit.date.
-          if (!habit.date) return false;
-          const habitDate = new Date(habit.date);
-          return (
-            habitDate.getDate() === selectedDate.fullDate.getDate() &&
-            habitDate.getMonth() === selectedDate.fullDate.getMonth() &&
-            habitDate.getFullYear() === selectedDate.fullDate.getFullYear()
-          );
-        }
-      });
-      setDbHabits(filtered);
+      const dateString = selectedDate.fullDate.toISOString().split('T')[0];
+      const habits = await getHabitsForDate(email, dateString);
+      setDbHabits(habits);
     } catch (error) {
       console.error('Error fetching habits for selected date:', error);
     }
