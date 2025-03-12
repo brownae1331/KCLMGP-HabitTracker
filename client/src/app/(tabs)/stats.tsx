@@ -24,7 +24,7 @@ interface Habit {
 }
 
 export default function StatsScreen() {
-  const [selectedHabit, setSelectedHabit ]= useState('');
+  const [selectedHabit, setSelectedHabit] = useState('');
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const username = 'user'; //hardcoded, need to change later
@@ -36,13 +36,13 @@ export default function StatsScreen() {
     backgroundColor: theme === 'dark' ? '#333333' : '#ffffff',
   };
 
-   //const [username, setUsername] = useState('');
+  //const [username, setUsername] = useState('');
   // useEffect(() => {
   //   const fetchUsername = async () => {
 
   //   }
   // }, []);
-  
+
 
   useEffect(() => {
     const fetchHabits = async () => {
@@ -93,7 +93,7 @@ export default function StatsScreen() {
         {habits.length === 0 ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
             <ThemedText type="subtitle">
-            You don't have any habits yet! Create a habit before seeing statistics about it.
+              You don't have any habits yet! Create a habit before seeing statistics about it.
             </ThemedText>
           </View>
         ) : (
@@ -104,7 +104,7 @@ export default function StatsScreen() {
                 onValueChange={(itemValue) => setSelectedHabit(itemValue)}
                 style={pickerStyle}
               >
-                <Picker.Item label="Please select a habit..." value={null}/>
+                <Picker.Item label="Please select a habit..." value={null} />
                 {habits.map((habit: Habit) => (
                   <Picker.Item label={habit.habitName} value={habit.habitName} key={habit.habitName} />
                 ))}
@@ -121,7 +121,7 @@ export default function StatsScreen() {
               </View>
             )}
           </>
-        )}        
+        )}
       </ScrollView>
     </SafeAreaView>
   );

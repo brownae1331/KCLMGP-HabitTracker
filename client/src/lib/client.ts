@@ -5,17 +5,16 @@ const BASE_URL = 'http://localhost:3000';
 
 // Define the Habit type
 export type Habit = {
-  username: string;
-  name: string;
-  description?: string;
-  amount?: number;
-  positive?: boolean;
-  date?: string;
-  increment?: string;
-  location?: string;
-  notifications?: boolean;
-  notification_sound?: string;
-  streak?: number;
+  email: string;
+  habitName: string;
+  habitDescription: string;
+  habitType: 'build' | 'quit';
+  habitColor: string;
+  scheduleOption: 'interval' | 'weekly';
+  intervalDays: number | null;
+  selectedDays: string[];
+  goalValue: number | null;
+  goalUnit: string | null;
 };
 
 // Define the User type
@@ -53,19 +52,6 @@ export async function getUserDetails(username: string) {
   return data;
 }
 
-
-// Fetch habits for a given username.
-export async function getHabits(username: string): Promise<Habit[]> {
-  const response = await fetch(`${BASE_URL}/habits/${username}`);
-  if (!response.ok) {
-    throw new Error('Error fetching habits');
-  }
-  return response.json();
-}
-
-// Get habits for a specific user (alias for getHabits)
-export const getHabitsByUser = getHabits;
-
 // Create a new user
 export async function createUser(email: string, password: string, username: string) {
   const response = await fetch(`${BASE_URL}/users/signup`, {
@@ -79,6 +65,9 @@ export async function createUser(email: string, password: string, username: stri
   if (!response.ok) {
     throw new Error(data.error || 'Error creating user');
   }
+
+  await AsyncStorage.setItem('username', data.username);
+  await AsyncStorage.setItem('email', data.email);
 
   return data;
 }
@@ -128,6 +117,15 @@ export async function logout() {
   } catch (error) {
     console.error('Error clearing user data:', error);
   }
+}
+
+// Fetch habits for a given username.
+export async function getHabits(username: string): Promise<Habit[]> {
+  const response = await fetch(`${BASE_URL}/habits/${username}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habits');
+  }
+  return response.json();
 }
 
 // Add a habit

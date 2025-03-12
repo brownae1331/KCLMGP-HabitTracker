@@ -51,7 +51,7 @@ export const WeekCalendarStyles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: Platform.OS === 'web' ? "#f0f0f0" : "transparent",
         borderRadius: 10,
-        minWidth: 40,  
+        minWidth: 40,
     },
     arrowText: {
         fontSize: 24,

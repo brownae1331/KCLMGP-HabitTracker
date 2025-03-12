@@ -24,7 +24,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, se
     const todayDate = today.getDate();
     const todayMonth = today.getMonth();
     const todayYear = today.getFullYear();
-    
+
     const [weekIndex, setWeekIndex] = useState<number>(0);
     const [currentWeek, setCurrentWeek] = useState<DayType[]>(getWeekDates(0));
 

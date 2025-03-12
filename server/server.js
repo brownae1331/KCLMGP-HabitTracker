@@ -436,18 +436,17 @@ app.post('/habit-progress', async (req, res) => {
 
 
 // Get habit progress data for a specific user and habit
-app.get('/habit-progress/:username/:habitName', async (req, res) => {
-  const { username, habitName } = req.params;
+app.get('/habit-progress/:email/:habitName', async (req, res) => {
+  const { email, habitName } = req.params;
   const { range } = req.query; // "7" for past 7 days, "30" for past 30 days/month, or 'month' for monthly average
 
   try {
-    const [user] = await pool.query('SELECT email FROM users WHERE username = ?', [username]);
+    const [user] = await pool.query('SELECT email FROM users WHERE email = ?', [email]);
     if (user.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
-    const userEmail = user[0].email;
     let query = '';
-    let queryParams = [userEmail, habitName];
+    let queryParams = [email, habitName];
     if (range === '7' || range === '30') {
       query = `
         SELECT progressDate, progress
@@ -474,6 +473,30 @@ app.get('/habit-progress/:username/:habitName', async (req, res) => {
       return res.status(400).json({ error: 'Invalid range parameter' });
     }
     const [progressData] = await pool.query(query, queryParams);
+    res.json(progressData);
+  } catch (error) {
+    console.error('Error fetching habit progress:', error);
+    res.status(500).json({ error: 'Error fetching habit progress data' });
+  }
+});
+
+// Get habit progress data for all habits of a specific user on a specific date
+app.get('/habit-progress/:email/:date', async (req, res) => {
+  const { email, date } = req.params;
+
+  try {
+    const [user] = await pool.query('SELECT email FROM users WHERE email = ?', [email]);
+    if (user.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const [progressData] = await pool.query(
+      `SELECT hp.progress, hp.completed, hp.streak, h.goalValue, h.habitType
+       FROM habit_progress hp
+       JOIN habits h ON hp.user_email = h.user_email AND hp.habitName = h.habitName
+       WHERE hp.user_email = ? AND hp.progressDate = ?`,
+      [email, date]
+    );
     res.json(progressData);
   } catch (error) {
     console.error('Error fetching habit progress:', error);
