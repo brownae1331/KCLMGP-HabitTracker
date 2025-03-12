@@ -8,26 +8,14 @@ import React, { useEffect, useState } from 'react';
 import { Colors } from '../../components/styles/Colors';
 import { useTheme } from '../../components/ThemeContext';
 import { SharedStyles } from '../../components/styles/SharedStyles';
-
-interface Habit {
-  user_email: string;
-  habitName: string;
-  description?: string;
-  amount?: number;
-  positive?: boolean;
-  date?: string;
-  increment?: number;
-  location?: string;
-  notifications_allowed?: boolean;
-  notification_sound?: string;
-  streak?: number;
-}
+import { Habit } from '../../lib/client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function StatsScreen() {
   const [selectedHabit, setSelectedHabit] = useState('');
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const username = 'user'; //hardcoded, need to change later
+  const [username, setUsername] = useState<string | null>(null);
   const { theme } = useTheme();
 
   const pickerStyle = {
@@ -36,25 +24,37 @@ export default function StatsScreen() {
     backgroundColor: theme === 'dark' ? '#333333' : '#ffffff',
   };
 
-  //const [username, setUsername] = useState('');
-  // useEffect(() => {
-  //   const fetchUsername = async () => {
-
-  //   }
-  // }, []);
-
+  useEffect(() => {
+    const fetchUsername = async () => {
+      try {
+        const storedUsername = await AsyncStorage.getItem('username');
+        if (storedUsername) {
+          setUsername(storedUsername);
+        }
+      } catch (error) {
+        console.error('Error retrieving username:', error);
+      }
+    };
+    fetchUsername();
+  }, []);
 
   useEffect(() => {
+    if (!username) return;
+  
     const fetchHabits = async () => {
       try {
         const response = await fetch(`http://localhost:3000/habits/${username}`);
+  
+        if (!response.ok) {
+          throw new Error(`Failed to fetch habits: ${response.statusText}`);
+        }
+  
         const data = await response.json();
-
-
+  
         if (Array.isArray(data)) {
           setHabits(data);
         } else {
-          console.error("Invalid response format:", data);
+          console.error('Invalid habits response format:', data);
           setHabits([]);
         }
       } catch (error) {
@@ -64,6 +64,7 @@ export default function StatsScreen() {
         setLoading(false);
       }
     };
+  
     fetchHabits();
   }, [username]);
 

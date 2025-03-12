@@ -119,13 +119,24 @@ export async function logout() {
   }
 }
 
-// Fetch habits for a given username.
-export async function getHabits(username: string): Promise<Habit[]> {
-  const response = await fetch(`${BASE_URL}/habits/${username}`);
+//Fetch habits for a given username.
+// export async function getHabits(username: string): Promise<Habit[]> {
+//   const response = await fetch(`${BASE_URL}/habits/${username}`);
+//   if (!response.ok) {
+//     throw new Error('Error fetching habits');
+//   }
+//   return response.json();
+// }
+
+// Fetch habits for a particular user on a particular date
+export async function getHabitsForDate(email: string, date: string): Promise<Habit[]> {
+  const response = await fetch(`${BASE_URL}/habits/${email}/${date}`);
   if (!response.ok) {
     throw new Error('Error fetching habits');
   }
-  return response.json();
+
+  const habits: Habit[] = await response.json();
+  return habits;
 }
 
 // Add a habit
