@@ -162,3 +162,30 @@ export async function deleteUser(username: string) {
   }
   return response.json();
 }
+
+// Update a habit's progress
+export async function updateHabitProgress(email: string, habitName: string, progress: number) {
+  const response = await fetch(`${BASE_URL}/habit-progress`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, habitName, progress }),
+  });
+  if (!response.ok) {
+    throw new Error('Error updating habit progress');
+  }
+  return response.json();
+}
+
+// Get habit progress data for all habits of a specific user on a specific date
+export async function getHabitProgressByDate(email: string, date: string) {
+  const encodedEmail = encodeURIComponent(email);
+
+  // Ensure date is in MySQL-compatible format (YYYY-MM-DD)
+  const formattedDate = new Date(date).toISOString().split('T')[0];
+
+  const response = await fetch(`${BASE_URL}/habit-progress/${encodedEmail}/${formattedDate}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit progress');
+  }
+  return response.json();
+}
