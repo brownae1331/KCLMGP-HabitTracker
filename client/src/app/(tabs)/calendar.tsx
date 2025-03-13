@@ -92,6 +92,8 @@ export default function CalendarScreen() {
         try {
           setIsLoading(true);
           let newMarkedDates: { [key: string]: any } = {};
+          let totalProgressPercentage = 0;
+          let validDatesCount = 0;
 
           for (const date of visibleCalendarDates) {
             const progressData = await getHabitProgressByDate(email, date);
@@ -108,7 +110,13 @@ export default function CalendarScreen() {
             // Calculate progress percentage or set to 0 if no goals
             const progressPercentage = totalGoalValue > 0
               ? Math.round((totalProgress / totalGoalValue) * 100)
-              : 100;
+              : 0;
+
+            // Only count dates that have goals
+            if (totalGoalValue > 0) {
+              totalProgressPercentage += progressPercentage;
+              validDatesCount++;
+            }
 
             // Store the data for this date
             newMarkedDates[date] = {
@@ -123,10 +131,13 @@ export default function CalendarScreen() {
           // Update the markedDates state with real data
           setMarkedDates(newMarkedDates);
 
-          // Update the selected date's completion percentage for the stats box
-          if (newMarkedDates[selectedDate]) {
-            setCompletionPercentage(newMarkedDates[selectedDate].progress);
-          }
+          // Calculate average completion percentage across all valid dates
+          const averagePercentage = validDatesCount > 0
+            ? Math.round(totalProgressPercentage / validDatesCount)
+            : 0;
+
+          // Update the completion percentage state
+          setCompletionPercentage(averagePercentage);
 
           setIsLoading(false);
         } catch (error) {
@@ -139,13 +150,6 @@ export default function CalendarScreen() {
     fetchProgressData();
   }, [email, visibleCalendarDates, selectedDate, theme]);
 
-  // Add this useEffect to update the completion percentage when selectedDate changes
-  useEffect(() => {
-    if (markedDates[selectedDate]) {
-      setCompletionPercentage(markedDates[selectedDate].progress);
-    }
-  }, [selectedDate, markedDates]);
-
   const formatDate = (date: string) => {
     const dateObj = new Date(date);
     const day = String(dateObj.getDate()).padStart(2, "0");
@@ -153,31 +157,6 @@ export default function CalendarScreen() {
     const year = dateObj.getFullYear().toString().slice(-2);
     return `${day}/${month}/${year}`;
   };
-
-
-  // useEffect(() => {
-  //   const getMarkedDates = () => {
-  //     let dates: { [key: string]: any } = {};
-
-  //     visibleCalendarDates.forEach(dateString => {
-  //       const progress = Math.random() < 0.3 ? 100 : generateRandomProgress();
-
-  //       dates[dateString] = {
-  //         progress,
-  //         selected: dateString === selectedDate,
-  //         selectedColor: theme === 'dark' ? '#333333' : '#f0f0f0',
-  //         marked: true,
-  //         dotColor: theme === 'dark' ? '#FFFFFF' : '#000000'
-  //       };
-  //     });
-
-  //     return dates;
-  //   };
-
-  //   if (visibleCalendarDates.length > 0) {
-  //     setMarkedDates(getMarkedDates());
-  //   }
-  // }, [theme, selectedDate, visibleCalendarDates]);
 
   if (!isThemeLoaded) {
     return (

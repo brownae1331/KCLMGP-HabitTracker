@@ -418,7 +418,7 @@ app.get('/habits/:username', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     const userEmail = user[0].email;
-    const [habits] = await pool.query('SELECT habitName FROM habits WHERE user_email = ?',[userEmail]);
+    const [habits] = await pool.query('SELECT habitName FROM habits WHERE user_email = ?', [userEmail]);
 
     if (habits.length === 0) {
       return res.json([]);
@@ -549,7 +549,7 @@ app.get('/habit-progress/:email/:habitName', async (req, res) => {
 });
 
 // Get habit progress data for all habits of a specific user on a specific date
-app.get('/habit-progress/:email/:date', async (req, res) => {
+app.get('/habit-progress-by-date/:email/:date', async (req, res) => {
   const { email, date } = req.params;
 
   try {

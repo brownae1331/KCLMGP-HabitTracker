@@ -35,10 +35,7 @@ export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
             {/* Habits Completed Header */}
             <View style={CalendarPageStyles.habitsContainer}>
                 <ThemedText style={{ fontSize: 24, fontWeight: "bold" }}>
-                    Habits completed{" "}
-                    <Text style={{ color: "#FFD700" }}>
-                        {selectedDate === today ? "Today" : formatDate(selectedDate)}
-                    </Text>
+                    Average Completion Percentage
                 </ThemedText>
             </View>
 

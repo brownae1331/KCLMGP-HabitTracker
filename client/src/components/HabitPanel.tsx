@@ -5,7 +5,7 @@ import { updateHabitProgress } from '../lib/client';
 
 // Define the Habit interface (adjust if your structure is different)
 export interface Habit {
-  email: string;
+  user_email: string;
   habitName: string;
   habitDescription: string;
   habitType: 'build' | 'quit';
@@ -34,7 +34,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit }) => {
   const handleUpdate = async () => {
     try {
       const progressValue = habit.habitType === 'build' ? parseFloat(buildProgress) : quitStatus === 'yes' ? 1 : 0;
-      await updateHabitProgress(habit.email, habit.habitName, progressValue);
+      await updateHabitProgress(habit.user_email, habit.habitName, progressValue);
       setUpdated(true);
     } catch (error) {
       console.error('Error updating habit:', error);
