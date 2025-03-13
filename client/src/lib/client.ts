@@ -194,7 +194,7 @@ export async function getHabitProgressByDate(email: string, date: string) {
   // Ensure date is in MySQL-compatible format (YYYY-MM-DD)
   const formattedDate = new Date(date).toISOString().split('T')[0];
 
-  const response = await fetch(`${BASE_URL}/habit-progress/${encodedEmail}/${formattedDate}`);
+  const response = await fetch(`${BASE_URL}/habit-progress-by-date/${encodedEmail}/${formattedDate}`);
   if (!response.ok) {
     throw new Error('Error fetching habit progress');
   }
