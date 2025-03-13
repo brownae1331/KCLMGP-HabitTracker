@@ -14,7 +14,7 @@ Notifications.setNotificationHandler({
 });
 
 // Helper function: calculate next Sunday at 9:00 AM
-const getNextSundayAtNine = () => {
+export const getNextSundayAtNine = () => {
   const now = new Date();
   const day = now.getDay(); // Sunday = 0, Monday = 1, etc.
   const diff = day === 0 ? 7 : 7 - day; // If today is Sunday, schedule for next week
