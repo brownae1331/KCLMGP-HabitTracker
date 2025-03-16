@@ -81,6 +81,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
     isEditMode = false,
 }) => {
     const toggleDay = (day: string) => {
+        console.log(selectedDays);
         if (selectedDays.includes(day)) {
             setSelectedDays(selectedDays.filter((d) => d !== day));
         } else {
@@ -109,7 +110,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                         <TextInput
                             style={[SharedStyles.input, { color: Colors[theme].text }]}
                             placeholder="Habit Name"
-                            placeholderTextColor="#777"
+                            placeholderTextColor={Colors[theme].placeholder}
                             value={habitName}
                             onChangeText={setHabitName}
                         />
@@ -117,7 +118,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                         <TextInput
                             style={[SharedStyles.input, HabitModalStyles.descriptionInput, { color: Colors[theme].text }]}
                             placeholder="Habit Description"
-                            placeholderTextColor="#777"
+                            placeholderTextColor={Colors[theme].placeholder}
                             value={habitDescription}
                             onChangeText={setHabitDescription}
                             multiline
@@ -163,7 +164,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                         <TextInput
                                             style={[SharedStyles.input, { flex: 0.4, color: Colors[theme].text, marginLeft: 8 }]}
                                             placeholder="Unit (e.g. minutes, pages)"
-                                            placeholderTextColor="#777"
+                                            placeholderTextColor={Colors[theme].placeholder}
                                             value={goalUnit}
                                             onChangeText={setGoalUnit}
                                         />
@@ -192,7 +193,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                 <TextInput
                                     style={[SharedStyles.input, { flex: 1, color: Colors[theme].text }]}
                                     placeholder="Enter number"
-                                    placeholderTextColor="#777"
+                                    placeholderTextColor={Colors[theme].placeholder}
                                     keyboardType="numeric"
                                     value={intervalDays}
                                     onChangeText={setIntervalDays}

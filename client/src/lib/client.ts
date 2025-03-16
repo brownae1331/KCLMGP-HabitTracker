@@ -225,3 +225,20 @@ export async function updatePassword(username: string, oldPassword: string, newP
   }
 }
 
+// Get interval days for a habit
+export async function getHabitInterval(email: string, habitName: string) {
+  const response = await fetch(`${BASE_URL}/habit-interval/${email}/${habitName}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit interval');
+  }
+  return response.json();
+}
+
+// Get habit days for a habit
+export async function getHabitDays(email: string, habitName: string) {
+  const response = await fetch(`${BASE_URL}/habit-days/${email}/${habitName}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit days');
+  }
+  return response.json();
+}

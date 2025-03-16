@@ -12,7 +12,7 @@ import { NewHabitModal } from '../../components/NewHabitModal';
 import { ThemedText } from '../../components/ThemedText';
 import { Colors } from '../../components/styles/Colors';
 import { useTheme } from '../../components/ThemeContext';
-import { addHabit, getHabitsForDate } from '../../lib/client';
+import { addHabit, getHabitDays, getHabitInterval, getHabitsForDate } from '../../lib/client';
 //import { getHabits } from '../../lib/client';
 import HabitPanel, { Habit } from '../../components/HabitPanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -141,7 +141,7 @@ export default function HomeScreen() {
   }, [selectedDate, email]);
 
   // Add a function to handle editing a habit
-  const handleEditHabit = (habit: Habit) => {
+  const handleEditHabit = async (habit: Habit) => {
     // Pre-fill the form with the habit's data
     setHabitName(habit.habitName);
     setHabitDescription(habit.habitDescription);
@@ -149,14 +149,18 @@ export default function HomeScreen() {
     setHabitColor(habit.habitColor);
     setScheduleOption(habit.scheduleOption);
 
-    if (habit.intervalDays) {
-      setIntervalDays(habit.intervalDays.toString());
-      console.log(habit.intervalDays);
-    }
-
-    if (habit.selectedDays) {
-      setSelectedDays(habit.selectedDays);
-      console.log(habit.selectedDays);
+    try {
+      if (habit.scheduleOption === 'interval') {
+        const interval = await getHabitInterval(email, habit.habitName);
+        setIntervalDays(interval.increment.toString());
+      } else if (habit.scheduleOption === 'weekly') {
+        const daysResponse = await getHabitDays(email, habit.habitName);
+        // Extract just the day names from the response objects
+        const dayNames = daysResponse.map((dayObj: { day: string }) => dayObj.day);
+        setSelectedDays(dayNames);
+      }
+    } catch (error) {
+      console.error('Error fetching habit interval or days:', error);
     }
 
     const hasGoal = habit.goalValue !== null && habit.goalUnit !== null;
@@ -192,6 +196,8 @@ export default function HomeScreen() {
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
         />
+
+        {/* Habit Panel */}
         <View>
           {dbHabits.length > 0 ? (
             dbHabits.map((habit: Habit) => (

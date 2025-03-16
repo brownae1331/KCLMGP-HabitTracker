@@ -807,3 +807,32 @@ app.post('/users/update-password', async (req, res) => {
   }
 });
 
+app.get('/habit-days/:email/:habitName', async (req, res) => {
+  const { email, habitName } = req.params;
+  try {
+    const [rows] = await pool.query(
+      `SELECT day FROM habit_days 
+       WHERE user_email = ? AND habitName = ?`,
+      [email, habitName]
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching habit days:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/habit-interval/:email/:habitName', async (req, res) => {
+  const { email, habitName } = req.params;
+  try {
+    const [rows] = await pool.query(
+      `SELECT increment FROM habit_intervals 
+       WHERE user_email = ? AND habitName = ?`,
+      [email, habitName]
+    );
+    res.json(rows[0] || { increment: null });
+  } catch (error) {
+    console.error('Error fetching habit interval:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
