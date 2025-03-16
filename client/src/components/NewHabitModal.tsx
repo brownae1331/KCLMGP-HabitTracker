@@ -39,6 +39,7 @@ interface NewHabitModalProps {
     goalUnit: string;
     setGoalUnit: (unit: string) => void;
     onAddHabit: () => void;
+    isEditMode?: boolean;
 }
 
 const colorOptions = [
@@ -77,6 +78,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
     goalUnit,
     setGoalUnit,
     onAddHabit,
+    isEditMode = false,
 }) => {
     const toggleDay = (day: string) => {
         if (selectedDays.includes(day)) {
@@ -99,7 +101,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                 <View style={[HabitModalStyles.modalContent, { backgroundColor: Colors[theme].background }]}>
                     <ScrollView showsVerticalScrollIndicator={false} style={{ padding: 20 }}>
                         <ThemedText type="title" style={{ color: Colors[theme].text }}>
-                            Add New Habit
+                            {isEditMode ? "Edit Habit" : "Add New Habit"}
                         </ThemedText>
 
                         <HabitTypeSlider habitType={habitType} setHabitType={setHabitType} />
@@ -151,15 +153,15 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                 {isGoalEnabled && (
                                     <View style={HabitModalStyles.goalFieldsContainer}>
                                         <TextInput
-                                            style={[SharedStyles.input, { flex: 0.6, color: '#777' }]}
+                                            style={[SharedStyles.input, { flex: 0.6, color: Colors[theme].text }]}
                                             placeholder="Number"
-                                            placeholderTextColor="#777"
+                                            placeholderTextColor={Colors[theme].placeholder}
                                             keyboardType="numeric"
                                             value={goalValue}
                                             onChangeText={setGoalValue}
                                         />
                                         <TextInput
-                                            style={[SharedStyles.input, { flex: 0.4, color: '#777', marginLeft: 8 }]}
+                                            style={[SharedStyles.input, { flex: 0.4, color: Colors[theme].text, marginLeft: 8 }]}
                                             placeholder="Unit (e.g. minutes, pages)"
                                             placeholderTextColor="#777"
                                             value={goalUnit}
@@ -188,7 +190,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                         {scheduleOption === 'interval' ? (
                             <View style={HabitModalStyles.intervalContainer}>
                                 <TextInput
-                                    style={[SharedStyles.input, { flex: 1, color: '#777' }]}
+                                    style={[SharedStyles.input, { flex: 1, color: Colors[theme].text }]}
                                     placeholder="Enter number"
                                     placeholderTextColor="#777"
                                     keyboardType="numeric"
@@ -224,7 +226,9 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
 
                     <View style={[HabitModalStyles.buttonContainer, { backgroundColor: Colors[theme].background }]}>
                         <TouchableOpacity style={SharedStyles.button} onPress={onAddHabit}>
-                            <ThemedText type="defaultSemiBold" style={{ color: Colors[theme].text }}>Add Habit</ThemedText>
+                            <ThemedText type="defaultSemiBold" style={{ color: Colors[theme].text }}>
+                                {isEditMode ? "Edit Habit" : "Add Habit"}
+                            </ThemedText>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[SharedStyles.button, { backgroundColor: '#CCCCCC' }]}

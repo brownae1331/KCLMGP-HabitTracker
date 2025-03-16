@@ -42,6 +42,8 @@ export default function HomeScreen() {
   const [goalUnit, setGoalUnit] = useState('');
   const { theme } = useTheme();
 
+  const [isEditMode, setIsEditMode] = useState(false);
+
   const handleAddHabit = async () => {
     try {
       const newHabit = {
@@ -75,6 +77,7 @@ export default function HomeScreen() {
     setIsGoalEnabled(false);
     setGoalValue('');
     setGoalUnit('');
+    setIsEditMode(false);
     setModalVisible(false);
   };
 
@@ -137,6 +140,39 @@ export default function HomeScreen() {
     fetchHabits();
   }, [selectedDate, email]);
 
+  // Add a function to handle editing a habit
+  const handleEditHabit = (habit: Habit) => {
+    // Pre-fill the form with the habit's data
+    setHabitName(habit.habitName);
+    setHabitDescription(habit.habitDescription);
+    setHabitType(habit.habitType);
+    setHabitColor(habit.habitColor);
+    setScheduleOption(habit.scheduleOption);
+
+    if (habit.intervalDays) {
+      setIntervalDays(habit.intervalDays.toString());
+      console.log(habit.intervalDays);
+    }
+
+    if (habit.selectedDays) {
+      setSelectedDays(habit.selectedDays);
+      console.log(habit.selectedDays);
+    }
+
+    const hasGoal = habit.goalValue !== null && habit.goalUnit !== null;
+    setIsGoalEnabled(hasGoal);
+
+    if (habit.goalValue) {
+      setGoalValue(habit.goalValue.toString());
+    }
+
+    if (habit.goalUnit) {
+      setGoalUnit(habit.goalUnit);
+    }
+
+    setIsEditMode(true);
+    setModalVisible(true);
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
@@ -159,7 +195,11 @@ export default function HomeScreen() {
         <View>
           {dbHabits.length > 0 ? (
             dbHabits.map((habit: Habit) => (
-              <HabitPanel key={'$habit.email}-${habit.habitName'} habit={habit} />
+              <HabitPanel
+                key={`${habit.user_email}-${habit.habitName}`}
+                habit={habit}
+                onEdit={handleEditHabit}
+              />
             ))
           ) : (
             <ThemedText>No habits found for this date.</ThemedText>
@@ -168,7 +208,10 @@ export default function HomeScreen() {
 
         {/* Add Habit Button */}
         <View style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <TouchableOpacity onPress={() => {
+            setIsEditMode(false);
+            setModalVisible(true);
+          }}>
             <IconSymbol name="plus" size={24} color="#007AFF" />
           </TouchableOpacity>
         </View>
@@ -198,6 +241,7 @@ export default function HomeScreen() {
           goalUnit={goalUnit}
           setGoalUnit={setGoalUnit}
           onAddHabit={handleAddHabit}
+          isEditMode={isEditMode}
         />
       </ScrollView>
     </SafeAreaView>
