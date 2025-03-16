@@ -10,6 +10,7 @@ import { useTheme } from "../../components/ThemeContext";
 import { Colors } from "../../components/styles/Colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getHabitProgressByDate } from "../../lib/client";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function CalendarScreen() {
   const { theme } = useTheme();
@@ -21,6 +22,7 @@ export default function CalendarScreen() {
   const [email, setEmail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [visibleCalendarDates, setVisibleCalendarDates] = useState<string[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Ensure theme is fully loaded before rendering calendar
   useEffect(() => {
@@ -86,6 +88,15 @@ export default function CalendarScreen() {
     setVisibleCalendarDates(dates);
   };
 
+  // Add useFocusEffect to refresh data when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      // Increment the refresh key to trigger a re-fetch
+      setRefreshKey(prevKey => prevKey + 1);
+      return () => { }; // cleanup function
+    }, [])
+  );
+
   useEffect(() => {
     const fetchProgressData = async () => {
       if (email && visibleCalendarDates.length > 0) {
@@ -97,23 +108,26 @@ export default function CalendarScreen() {
 
           for (const date of visibleCalendarDates) {
             const progressData = await getHabitProgressByDate(email, date);
-            let totalProgress = 0;
-            let totalGoalValue = 0;
+
+            let totalHabitPercentages = 0;
 
             for (const habit of progressData) {
               if (habit.habitType === "build") {
-                totalProgress += Math.min(habit.progress, habit.goalValue);
-                totalGoalValue += habit.goalValue;
+                const habitPercentage = Math.min(100, Math.round((habit.progress / habit.goalValue) * 100));
+                totalHabitPercentages += habitPercentage;
+              }
+              else if (habit.habitType === "quit") {
+                totalHabitPercentages += habit.progress * 100;
               }
             }
 
-            // Calculate progress percentage or set to 0 if no goals
-            const progressPercentage = totalGoalValue > 0
-              ? Math.round((totalProgress / totalGoalValue) * 100)
+            // Calculate average of habit percentages for this date
+            const progressPercentage = progressData.length > 0
+              ? Math.round(totalHabitPercentages / progressData.length)
               : 0;
 
             // Only count dates that have goals
-            if (totalGoalValue > 0) {
+            if (progressData.length > 0) {
               totalProgressPercentage += progressPercentage;
               validDatesCount++;
             }
@@ -148,7 +162,7 @@ export default function CalendarScreen() {
     };
 
     fetchProgressData();
-  }, [email, visibleCalendarDates, selectedDate, theme]);
+  }, [email, visibleCalendarDates, selectedDate, theme, refreshKey]);
 
   const formatDate = (date: string) => {
     const dateObj = new Date(date);
