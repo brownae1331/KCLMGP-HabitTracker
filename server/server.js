@@ -744,7 +744,7 @@ export const generateDayInstances = async (userEmail, habitName, daysAhead = 7) 
 // Moves habits from habit_instances to habit_progress if the due date is today or in the past
 // depending on what dateContidion is passed in 
 //change name to migrateInstances pls
-const migrateInstances = async (userEmail, dateCondition = '=', dateValue = new Date().toISOString().split('T')[0]) => {
+export const migrateInstances = async (userEmail, dateCondition = '=', dateValue = new Date().toISOString().split('T')[0]) => {
   try {
     const [instances] = await pool.query(
       `SELECT habitName, dueDate FROM habit_instances

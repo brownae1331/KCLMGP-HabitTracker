@@ -14,7 +14,7 @@ jest.mock('mysql2/promise', () => ({
 
 import request from 'supertest';
 import bcrypt from 'bcrypt';
-import app, { initDatabase, generateIntervalInstances, generateDayInstances, getHabitsForDate, migrateTodaysInstances } from '../server';
+import app, { initDatabase, generateIntervalInstances, generateDayInstances, getHabitsForDate, migrateInstances } from '../server';
 
 // for ensuring the server is closed after all tests
 beforeEach(() => {
@@ -108,16 +108,18 @@ describe('Server API Endpoints', () => {
             const plainPassword = 'correctpassword';
             const hash = await bcrypt.hash(plainPassword, 10);
             const user = { email: 'test@example.com', username: 'testuser', password: hash };
-
+        
             mPool.query.mockResolvedValueOnce([[user]]);
-
+            mPool.query.mockResolvedValueOnce([[]]);
+            mPool.query.mockResolvedValueOnce([[]]);
+        
             const res = await request(app)
                 .post('/users/login')
                 .send({ email: 'test@example.com', password: plainPassword });
             expect(res.statusCode).toBe(200);
             expect(res.body).toEqual({ email: 'test@example.com', username: 'testuser' });
         });
-
+        
         test('should return 500 on query error', async () => {
             mPool.query.mockRejectedValueOnce(new Error('query error'));
 
@@ -247,7 +249,7 @@ describe('Server API Endpoints', () => {
 
         test('should fetch habits for future date (instances)', async () => {
             const fakeRows = [{ habitName: 'Habit1' }];
-            // when the requested date is in the future, the code should fetch instances
+            mPool.query.mockResolvedValueOnce([[]]);
             mPool.query.mockResolvedValueOnce([fakeRows]);
             const res = await request(app).get('/habits/test@example.com/2050-01-01');
             expect(res.statusCode).toBe(200);
@@ -256,12 +258,12 @@ describe('Server API Endpoints', () => {
 
         test('should fetch habits for past date (progress)', async () => {
             const fakeRows = [{ habitName: 'Habit2' }];
-            // when the requested date is in the past, the code should fetch progress
+            mPool.query.mockResolvedValueOnce([[]]);
             mPool.query.mockResolvedValueOnce([fakeRows]);
             const res = await request(app).get('/habits/test@example.com/2000-01-01');
             expect(res.statusCode).toBe(200);
             expect(res.body).toEqual(fakeRows);
-        });
+        });    
 
         test('should return 500 on error', async () => {
             mPool.query.mockRejectedValueOnce(new Error('query error'));
@@ -401,7 +403,7 @@ describe('Server API Endpoints', () => {
             mPool.query.mockResolvedValueOnce([[{ email: 'test@example.com' }]]);
             const res = await request(app).get('/habit-progress/test@example.com/Habit1?range=invalid');
             expect(res.statusCode).toBe(400);
-            expect(res.body).toHaveProperty('error', 'Invalid range parameter');
+            expect(res.body).toHaveProperty('error', 'Invalid range parameter (use 7, 30, or month)');
         });
 
         test('should return 500 for range "month" due to undefined startDate', async () => {
@@ -601,11 +603,11 @@ describe('Server API Endpoints', () => {
             .mockResolvedValueOnce([[{ lastDate: null }]])
             // third query: simulate INSERT IGNORE operation
             .mockResolvedValueOnce([{ affectedRows: 1 }])
-            // fourth query: simulate empty array returned by query inside migrateTodaysInstances
+            // fourth query: simulate empty array returned by query inside migrateInstances
             .mockResolvedValueOnce([[]]);
       
           await generateIntervalInstances('test@example.com', 'Habit1', 7);
-          // 3 query calls (1st: get habitRows; 2nd: get lastDate; 3rd: INSERT) + query inside migrateTodaysInstances
+          // 3 query calls (1st: get habitRows; 2nd: get lastDate; 3rd: INSERT) + query inside migrateInstances
           expect(mPool.query).toHaveBeenCalled();
         });
     });
@@ -655,7 +657,7 @@ describe('Server API Endpoints', () => {
         });
     });
     
-    describe('migrateTodaysInstances', () => {
+    describe('migratInstances', () => {
         beforeEach(() => {
           mPool.query.mockReset();
         });
@@ -663,7 +665,7 @@ describe('Server API Endpoints', () => {
         test('should do nothing if no instances found', async () => {
           // mock SELECT returning empty array
           mPool.query.mockResolvedValueOnce([[]]);
-          await migrateTodaysInstances('test@example.com');
+          await migrateInstances('test@example.com');
           expect(mPool.query).toHaveBeenCalledTimes(1);
         });
       
@@ -676,7 +678,7 @@ describe('Server API Endpoints', () => {
             .mockResolvedValueOnce([{ affectedRows: 1 }])
             // mock DELETE from habit_instances
             .mockResolvedValueOnce([{ affectedRows: 1 }]);
-          await migrateTodaysInstances('test@example.com');
+          await migrateInstances('test@example.com');
           expect(mPool.query).toHaveBeenCalledTimes(3);
         });
       });
