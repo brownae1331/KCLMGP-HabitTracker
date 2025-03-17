@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Modal, Text, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemedText } from '../components/ThemedText';
-import { useTheme } from '../components/ThemeContext';
-import { Colors } from '../components/styles/Colors';
+import { ThemedText } from '../../components/ThemedText';
+import { useTheme } from '../../components/ThemeContext';
+import { Colors } from '../../components/styles/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getUserDetails, updatePassword } from '../lib/client';
+import { getUserDetails, updatePassword } from '../../lib/client';
 
 export default function AccountScreen() {
   const { theme } = useTheme();
@@ -23,7 +23,7 @@ export default function AccountScreen() {
       try {
         const storedUsername = await AsyncStorage.getItem('username');
         const storedEmail = await AsyncStorage.getItem('email');
-        
+
         if (storedUsername) {
           setUsername(storedUsername);
         }
@@ -55,10 +55,10 @@ export default function AccountScreen() {
 
     try {
       await updatePassword(username, oldPassword, newPassword);
-      
+
       Alert.alert('Success', 'Password updated successfully');
       setSuccessMessage('Password change successful');
-      
+
       setModalVisible(false);
       setOldPassword('');
       setNewPassword('');
@@ -69,13 +69,13 @@ export default function AccountScreen() {
         setError(err.message);
       } else {
         setError('Error updating password');
-      }      
+      }
     }
   };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
-      <View style={[styles.section, { backgroundColor: Colors[theme].background }]}> 
+      <View style={[styles.section, { backgroundColor: Colors[theme].background }]}>
         <ThemedText type="title" style={[styles.headerText, { color: Colors[theme].text }]}>Account Information</ThemedText>
         {successMessage ? (
           <Text style={{ color: 'green', marginTop: 5 }}>{successMessage}</Text>
@@ -83,19 +83,19 @@ export default function AccountScreen() {
       </View>
 
       {/* Username Field */}
-      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}> 
+      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
         <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Username</ThemedText>
         <TextInput style={[styles.input, { color: Colors[theme].text }]} value={username} editable={false} />
       </View>
 
       {/* Email Field */}
-      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}> 
+      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
         <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Email Address</ThemedText>
         <TextInput style={[styles.input, { color: Colors[theme].text }]} value={email} editable={false} />
       </View>
 
       {/* Password Field */}
-      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}> 
+      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
         <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Password</ThemedText>
         <TextInput style={[styles.input, { color: Colors[theme].text }]} value="******" editable={false} secureTextEntry />
         <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.changeButton}>
@@ -111,29 +111,29 @@ export default function AccountScreen() {
 
             {error ? <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text> : null}
 
-            <TextInput 
-              style={[styles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]} 
-              placeholder="Old Password" 
+            <TextInput
+              style={[styles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]}
+              placeholder="Old Password"
               placeholderTextColor={Colors[theme].placeholder}
-              secureTextEntry 
-              value={oldPassword} 
-              onChangeText={setOldPassword} 
+              secureTextEntry
+              value={oldPassword}
+              onChangeText={setOldPassword}
             />
-            <TextInput 
-              style={[styles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]} 
-              placeholder="New Password" 
+            <TextInput
+              style={[styles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]}
+              placeholder="New Password"
               placeholderTextColor={Colors[theme].placeholder}
-              secureTextEntry 
-              value={newPassword} 
-              onChangeText={setNewPassword} 
+              secureTextEntry
+              value={newPassword}
+              onChangeText={setNewPassword}
             />
-            <TextInput 
-              style={[styles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]} 
-              placeholder="Confirm Password" 
+            <TextInput
+              style={[styles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]}
+              placeholder="Confirm Password"
               placeholderTextColor={Colors[theme].placeholder}
-              secureTextEntry 
-              value={confirmPassword} 
-              onChangeText={setConfirmPassword} 
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
             />
 
             <TouchableOpacity style={styles.modalButton} onPress={handlePasswordChange}>
@@ -175,30 +175,30 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 5,
   },
-  changeButton: { 
-    marginTop: 10, 
-    alignSelf: 'flex-start', 
-    paddingVertical: 8, 
-    paddingHorizontal: 15, 
-    backgroundColor: 'blue', 
-    borderRadius: 5  
+  changeButton: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    backgroundColor: 'blue',
+    borderRadius: 5
   },
-  modalContainer: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    backgroundColor: '#00000080' 
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00000080'
   },
-  modalContent: { 
-    width: 300, 
-    padding: 20, 
+  modalContent: {
+    width: 300,
+    padding: 20,
     borderRadius: 10,
   },
-  modalButton: { 
-    marginTop: 10, 
-    padding: 10, 
-    backgroundColor: 'blue', 
-    alignItems: 'center', 
-    borderRadius: 5 
+  modalButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: 'blue',
+    alignItems: 'center',
+    borderRadius: 5
   }
 });
