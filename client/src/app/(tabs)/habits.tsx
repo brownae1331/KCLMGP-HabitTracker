@@ -12,7 +12,7 @@ import { NewHabitModal } from '../../components/NewHabitModal';
 import { ThemedText } from '../../components/ThemedText';
 import { Colors } from '../../components/styles/Colors';
 import { useTheme } from '../../components/ThemeContext';
-import { addHabit, getHabitDays, getHabitInterval, getHabitsForDate } from '../../lib/client';
+import { addHabit, getHabitDays, getHabitInterval, getHabitsForDate, updateHabit } from '../../lib/client';
 //import { getHabits } from '../../lib/client';
 import HabitPanel, { Habit } from '../../components/HabitPanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -44,9 +44,11 @@ export default function HomeScreen() {
 
   const [isEditMode, setIsEditMode] = useState(false);
 
+  const [currentEditHabit, setCurrentEditHabit] = useState<Habit | null>(null);
+
   const handleAddHabit = async () => {
     try {
-      const newHabit = {
+      const habitData = {
         email: email,
         habitName,
         habitDescription,
@@ -59,11 +61,18 @@ export default function HomeScreen() {
         goalUnit: isGoalEnabled ? goalUnit : null,
       };
 
-      await addHabit(newHabit);
-      fetchHabits(); // Refresh the habit list after adding a new habit
+      if (isEditMode && currentEditHabit) {
+        // If editing, update the existing habit
+        await updateHabit(habitData);
+      } else {
+        // If adding, create a new habit
+        await addHabit(habitData);
+      }
+
+      await fetchHabits();
 
     } catch (error) {
-      console.error('Error adding habit:', error);
+      console.error(`Error ${isEditMode ? 'updating' : 'adding'} habit:`, error);
     }
 
     // Reset form values and close modal
@@ -78,6 +87,7 @@ export default function HomeScreen() {
     setGoalValue('');
     setGoalUnit('');
     setIsEditMode(false);
+    setCurrentEditHabit(null);
     setModalVisible(false);
   };
 
@@ -142,6 +152,9 @@ export default function HomeScreen() {
 
   // Add a function to handle editing a habit
   const handleEditHabit = async (habit: Habit) => {
+    // Store the current habit being edited
+    setCurrentEditHabit(habit);
+
     // Pre-fill the form with the habit's data
     setHabitName(habit.habitName);
     setHabitDescription(habit.habitDescription);
