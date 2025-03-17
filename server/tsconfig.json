@@ -1,4 +1,7 @@
 {
-  "compilerOptions": {},
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "allowJs": true
+  },
   "extends": "expo/tsconfig.base"
 }

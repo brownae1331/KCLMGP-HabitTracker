@@ -25,7 +25,7 @@ const SALT_ROUNDS = 10;
 const pool = mysql.createPool(DB_CONFIG);
 
 // Initialize Database (Create Tables if Not Exists)
-const initDatabase = async () => {
+export const initDatabase = async () => {
   try {
     const connection = await pool.getConnection();
 
@@ -318,7 +318,7 @@ app.get('/habits/:email/:date', async (req, res) => {
 });
 
 // Adjust the get habit query to fetch from habit_progress or habit_instances depending on the date
-async function getHabitsForDate(email, date, type) {
+export async function getHabitsForDate(email, date, type) {
   let query;
   const queryParams = [email, date];
 
@@ -435,7 +435,7 @@ app.get('/habits/:username', async (req, res) => {
 app.delete('/habits/:username/:name', async (req, res) => {
   const { username, name } = req.params;
   try {
-    const [result] = await pool.query('DELETE FROM habits WHERE username = ? AND habitName = ?', [username, habitName]);
+    const [result] = await pool.query('DELETE FROM habits WHERE username = ? AND habitName = ?', [username, name]);
     if (result.affectedRows > 0) {
       res.json({ success: true, message: `Habit "${name}" deleted successfully.` });
     } else {
@@ -525,6 +525,8 @@ app.get('/habit-progress/:email/:habitName', async (req, res) => {
       `;
       queryParams.push(parseInt(range));
     } else if (range === 'month') {
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 1);
       query = `
         SELECT 
           YEAR(progressDate) AS year,
@@ -537,6 +539,7 @@ app.get('/habit-progress/:email/:habitName', async (req, res) => {
         ORDER BY YEAR(progressDate) DESC, MONTH(progressDate) DESC;
       `;
       queryParams.push(startDate.toISOString().split('T')[0]);
+      queryParams.push(new Date().toISOString().split('T')[0]);
     } else {
       return res.status(400).json({ error: 'Invalid range parameter' });
     }
@@ -587,6 +590,10 @@ app.post('/habits/sync', async (req, res) => {
       [userEmail]
     );
 
+    if (!Array.isArray(habits)) {
+      throw new Error('Invalid habits data');
+    }
+
     for (const habit of habits) {
       if (habit.scheduleOption === 'interval') {
         await generateIntervalInstances(userEmail, habit.habitName);
@@ -605,7 +612,7 @@ app.post('/habits/sync', async (req, res) => {
 
 //generate missing habit instances for interval habits 
 //pregenerates up to 7 days worth of interval habits
-const generateIntervalInstances = async (userEmail, habitName, daysAhead = 7) => {
+export const generateIntervalInstances = async (userEmail, habitName, daysAhead = 7) => {
   try {
     const [habitRows] = await pool.query(
       `SELECT h.scheduleOption, hi.increment
@@ -659,7 +666,7 @@ const generateIntervalInstances = async (userEmail, habitName, daysAhead = 7) =>
 
 // Calculates future due dates for weekly habits for the next 7 days
 // unless a different daysAhead is passed as a parameter
-const generateDayInstances = async (userEmail, habitName, daysAhead = 7) => {
+export const generateDayInstances = async (userEmail, habitName, daysAhead = 7) => {
   try {
     const [dayRows] = await pool.query(
       `SELECT day FROM habit_days WHERE user_email = ? AND habitName = ?`,
@@ -698,7 +705,7 @@ const generateDayInstances = async (userEmail, habitName, daysAhead = 7) => {
 };
 
 // Moves habits from habit_instances to habit_progress if the due date is today
-const migrateTodaysInstances = async (userEmail) => {
+export const migrateTodaysInstances = async (userEmail) => {
   try {
     const today = new Date().toISOString().split('T')[0];
 
@@ -766,3 +773,4 @@ app.post('/users/update-password', async (req, res) => {
   }
 });
 
+export default app;

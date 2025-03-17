@@ -7,22 +7,47 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "reset-db": "node scripts/reset-server.js"
+    "reset-db": "node scripts/reset-server.js",
+    "test": "jest --detectOpenHandles --forceExit"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "expo": "^52.0.38",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.6.2"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jest": "^29.5.14",
+    "@types/supertest": "^6.0.2",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.2.1",
+    "nodemon": "^3.0.2",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.6",
+    "typescript": "^5.3.3"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest",
+      "^.+\\.js$": "babel-jest"
+    },
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ]
   },
   "keywords": [
     "habit-tracker",
