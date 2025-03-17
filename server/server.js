@@ -440,12 +440,12 @@ app.get('/habits/:username', async (req, res) => {
 });
 
 // Delete a habit
-app.delete('/habits/:email/:habitName', async (req, res) => {
-  const { email, habitName } = req.params;
+app.delete('/habits/:user_email/:habitName', async (req, res) => {
+  const { user_email, habitName } = req.params;
   try {
     await pool.query(
       'DELETE FROM habits WHERE user_email = ? AND habitName = ?',
-      [email, habitName]
+      [user_email, habitName]
     );
     res.json({ success: true, message: 'Habit deleted successfully' });
   } catch (error) {
@@ -453,6 +453,7 @@ app.delete('/habits/:email/:habitName', async (req, res) => {
     res.status(500).json({ error: 'Error deleting habit' });
   }
 });
+
 
 
 //log progress of a specific habit

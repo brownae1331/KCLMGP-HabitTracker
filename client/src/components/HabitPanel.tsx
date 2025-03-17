@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, TextInput, Text, StyleSheet, Alert } from 'react-native';
 import { ThemedText } from './ThemedText'; // Adjust path if needed
-import { updateHabitProgress } from '../lib/client';
+import { deleteHabit } from '../lib/client';
+
 
 // Define the Habit interface (adjust if your structure is different)
 export interface Habit {
-  email: string; // this corresponds to user_email in your DB
+  user_email: string; // this corresponds to user_email in your DB
   habitName: string;
   habitDescription: string;
   habitType: 'build' | 'quit';
@@ -38,26 +39,17 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete }) => {
     setUpdated(true);
   };
 
-  const handleDelete = async () => {
-    try {
-      const response = await fetch(`http://localhost:3000/habits/${habit.email}/${encodeURIComponent(habit.habitName)}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if (response.ok) {
-        Alert.alert("Habit deleted successfully");
-        // Optionally call the parent's refresh callback
-        if (onDelete) onDelete();
-      } else {
-        Alert.alert("Error deleting habit");
-      }
-    } catch (error) {
-      console.error("Error deleting habit:", error);
-      Alert.alert("Error deleting habit");
-    }
-  };
+// HabitPanel.tsx
+const handleDelete = async () => {
+  try {
+    await deleteHabit(habit.user_email, habit.habitName); 
+    Alert.alert("Habit deleted successfully");
+    // onDelete callback if needed
+  } catch (error) {
+    Alert.alert("Error deleting habit");
+  }
+};
+
 
   return (
     <View style={[styles.habitPanel, { backgroundColor: habit.habitColor }]}>

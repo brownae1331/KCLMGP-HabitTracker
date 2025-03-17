@@ -153,15 +153,19 @@ export async function addHabit(habitData: Habit) {
 }
 
 // Delete a habit
-export async function deleteHabit(username: string, name: string) {
-  const response = await fetch(`${BASE_URL}/habits/${username}/${name}`, {
-    method: 'DELETE',
-  });
+export async function deleteHabit(user_email: string, habitName: string) {
+  const response = await fetch(
+    `${BASE_URL}/habits/${user_email}/${encodeURIComponent(habitName)}`, 
+    {
+      method: 'DELETE',
+    }
+  );
   if (!response.ok) {
     throw new Error('Error deleting habit');
   }
   return response.json();
 }
+
 
 // Delete a specific user by username
 export async function deleteUser(username: string) {
