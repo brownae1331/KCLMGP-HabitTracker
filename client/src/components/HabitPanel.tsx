@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, TextInput, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, TextInput, Text, StyleSheet, Alert } from 'react-native';
 import { ThemedText } from './ThemedText'; // Adjust path if needed
 import { updateHabitProgress } from '../lib/client';
 
 // Define the Habit interface (adjust if your structure is different)
 export interface Habit {
-  user_email: string;
+  email: string; // this corresponds to user_email in your DB
   habitName: string;
   habitDescription: string;
   habitType: 'build' | 'quit';
@@ -18,12 +18,13 @@ export interface Habit {
   goalUnit?: string;
 }
 
-
 interface HabitPanelProps {
   habit: Habit;
+  // Optional callback to refresh habits list after deletion
+  onDelete?: () => void;
 }
 
-const HabitPanel: React.FC<HabitPanelProps> = ({ habit }) => {
+const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete }) => {
   // For build habits: allow the user to enter progress
   const [buildProgress, setBuildProgress] = useState<string>('');
   // For quit habits: allow the user to select yes/no
@@ -31,13 +32,30 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit }) => {
   // Local flag to indicate an update was made
   const [updated, setUpdated] = useState(false);
 
-  const handleUpdate = async () => {
+  const handleUpdate = () => {
+    // In a real app, send the update to your backend.
+    // Here, we only update the local state.
+    setUpdated(true);
+  };
+
+  const handleDelete = async () => {
     try {
-      const progressValue = habit.habitType === 'build' ? parseFloat(buildProgress) : quitStatus === 'yes' ? 1 : 0;
-      await updateHabitProgress(habit.user_email, habit.habitName, progressValue);
-      setUpdated(true);
+      const response = await fetch(`http://localhost:3000/habits/${habit.email}/${encodeURIComponent(habit.habitName)}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.ok) {
+        Alert.alert("Habit deleted successfully");
+        // Optionally call the parent's refresh callback
+        if (onDelete) onDelete();
+      } else {
+        Alert.alert("Error deleting habit");
+      }
     } catch (error) {
-      console.error('Error updating habit:', error);
+      console.error("Error deleting habit:", error);
+      Alert.alert("Error deleting habit");
     }
   };
 
@@ -90,13 +108,15 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit }) => {
             : `Quit status updated to ${quitStatus}`}
         </ThemedText>
       )}
+      <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+        <ThemedText style={styles.deleteButtonText}>Delete Habit</ThemedText>
+      </TouchableOpacity>
     </View>
   );
 };
 
 export default HabitPanel;
 
-// Sample styles for HabitPanel. Adjust as needed.
 const styles = StyleSheet.create({
   habitPanel: {
     padding: 15,
@@ -167,5 +187,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: '#fff',
     fontStyle: 'italic',
+  },
+  deleteButton: {
+    padding: 10,
+    backgroundColor: '#ff4d4d',
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
