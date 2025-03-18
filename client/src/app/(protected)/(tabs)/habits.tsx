@@ -218,6 +218,7 @@ export default function HomeScreen() {
                 key={`${habit.user_email}-${habit.habitName}`}
                 habit={habit}
                 onEdit={handleEditHabit}
+                selectedDate={selectedDate.fullDate}
               />
             ))
           ) : (

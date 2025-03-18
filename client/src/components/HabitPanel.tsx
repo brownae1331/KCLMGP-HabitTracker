@@ -19,13 +19,13 @@ export interface Habit {
   goalUnit?: string;
 }
 
-
 interface HabitPanelProps {
   habit: Habit;
   onEdit?: (habit: Habit) => void;
+  selectedDate?: Date;
 }
 
-const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit }) => {
+const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit, selectedDate }) => {
   // For build habits: allow the user to enter progress
   const [buildProgress, setBuildProgress] = useState<string>('');
   // For quit habits: allow the user to select yes/no
@@ -34,20 +34,39 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit }) => {
   const [updated, setUpdated] = useState(false);
   // Track the habit streak
   const [streak, setStreak] = useState<number>(0);
-  const today = new Date().toISOString().split("T")[0];
+
+  const date = selectedDate
+    ? selectedDate.toISOString().split("T")[0]
+    : new Date().toISOString().split("T")[0];
+
+  // Check if selected date is in the future by comparing just the dates (ignoring time)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Create a copy of selectedDate with time set to midnight for proper comparison
+  const selectedDateCopy = selectedDate ? new Date(selectedDate) : null;
+  if (selectedDateCopy) {
+    selectedDateCopy.setHours(0, 0, 0, 0);
+  }
+
+  // Only consider a date future if it's strictly after today
+  const isDateInFuture = selectedDateCopy && selectedDateCopy > today;
 
   useEffect(() => {
     const fetchStreak = async () => {
       try {
-        const streakData = await getHabitStreak(habit.user_email, habit.habitName, today);
-        setStreak(streakData.streak || 0);
+        // Only fetch streak if date is not in the future
+        if (!isDateInFuture) {
+          const streakData = await getHabitStreak(habit.user_email, habit.habitName, date);
+          setStreak(streakData.streak || 0);
+        }
       } catch (error) {
         console.error('Error fetching habit streak:', error);
       }
     };
 
     fetchStreak();
-  }, [habit, updated]);
+  }, [habit, updated, date, isDateInFuture]);
 
   const handleUpdate = async () => {
     try {
@@ -55,8 +74,10 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit }) => {
       await updateHabitProgress(habit.user_email, habit.habitName, progressValue);
       setUpdated(true);
 
-      const streakData = await getHabitStreak(habit.user_email, habit.habitName, today);
-      setStreak(streakData.streak || 0);
+      if (!isDateInFuture) {
+        const streakData = await getHabitStreak(habit.user_email, habit.habitName, date);
+        setStreak(streakData.streak || 0);
+      }
     } catch (error) {
       console.error('Error updating habit:', error);
     }
@@ -68,8 +89,13 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit }) => {
         <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
         {onEdit && (
           <View style={styles.actionsContainer}>
-            <Text style={styles.fireEmoji}>🔥</Text>
-            <Text style={styles.streakCount}>{streak}</Text>
+            {/* Only show streak if date is not in the future */}
+            {!isDateInFuture && (
+              <>
+                <Text style={styles.fireEmoji}>🔥</Text>
+                <Text style={styles.streakCount}>{streak}</Text>
+              </>
+            )}
             <TouchableOpacity
               style={styles.editButton}
               onPress={() => onEdit(habit)}

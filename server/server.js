@@ -468,16 +468,19 @@ app.post('/habit-progress', async (req, res) => {
       [email, habitName, today]
     );
 
-    let streak = 0;
-    if (existingProgress.length > 0) {
-      // for if the habits are implemented such that you can add progress
-      // on top of previous progress (e.g. +1 glass of water towards the goalValue)
-      // const prevProgress = existingProgress[0].progress;
-      // const newProgress = prevProgress + progress;
-      // const completed = newProgress >= existingProgress[0].goalValue;
+    if (!existingProgress.length) {
+      return res.status(404).json({ error: 'Habit not found' });
+    }
 
-      // const completed = progress >= existingProgress[0].goalValue;
-      const completed = existingProgress[0].goalValue !== null && progress >= existingProgress[0].goalValue;
+    let streak = 0;
+    let completed = false;
+    const { goalValue } = existingProgress[0];
+    if (existingProgress.length > 0) {
+      if (goalValue !== null) {
+        completed = progress >= goalValue;
+      } else {
+        completed = progress >= 1;
+      }
 
       if (completed) {
         const [yesterday] = await pool.query(`
@@ -487,9 +490,7 @@ app.post('/habit-progress', async (req, res) => {
           AND progressDate = DATE_SUB(?, INTERVAL 1 DAY)`,
           [email, habitName, today]
         );
-        // if habit was completed yesterday, then streak = prevStreak + 1, else 1
         streak = (yesterday.length > 0 && yesterday[0].completed) ? yesterday[0].streak + 1 : 1;
-        //streak = yesterday[0].streak + 1;
       }
 
       await pool.query(
