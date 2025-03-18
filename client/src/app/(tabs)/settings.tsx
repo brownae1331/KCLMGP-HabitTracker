@@ -1,8 +1,8 @@
 import { StyleSheet, TouchableOpacity, Alert, FlatList, View, Switch } from 'react-native';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemedText } from '../../components/ThemedText';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, usePathname } from 'expo-router';
+import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'react-native';
@@ -10,13 +10,45 @@ import { useTheme } from '../../components/ThemeContext';
 import { Colors } from '../../components/styles/Colors';
 import { ScrollView } from 'react-native';
 import { SharedStyles } from '../../components/styles/SharedStyles';
+import { enableNotifications, disableNotifications, getNotificationStatus } from '../NotificationsHandler';
 
 export default function SettingsScreen() {
   const { theme, toggleTheme } = useTheme();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+  useEffect(() => {
+    async function fetchNotificationStatus() {
+      const status = await getNotificationStatus();
+      setNotificationsEnabled(status);
+    }
+    fetchNotificationStatus();
+  }, []);
+
+  const toggleNotifications = async () => {
+    console.log('Toggle function called on web!');
+  
+    try {
+      let newState = !notificationsEnabled; 
+      setNotificationsEnabled(newState); 
+  
+      if (newState) {
+        console.log('Enabling notifications...');
+        await enableNotifications();
+      } else {
+        console.log('Disabling notifications...');
+        await disableNotifications();
+      }
+  
+    } catch (error) {
+      console.error('Error toggling notifications:', error);
+      Alert.alert('Error', 'Failed to update notification settings.');
+    }
+  };
+  
+  
 
   const settingsOptions = [
     { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' as const },
-    { title: 'Notifications', icon: require('../../../assets/images/notifications.png'), route: '/notifications' as const },
   ] as const;
 
   type RouteType = (typeof settingsOptions)[number]['route'];
@@ -60,6 +92,14 @@ export default function SettingsScreen() {
           </View>
           <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>Dark Mode</ThemedText>
           <Switch value={theme === 'dark'} onValueChange={toggleTheme} />
+        </View>
+
+        <View style={styles.settingItem}>
+          <View style={styles.iconContainer}>
+            <Image source={require('../../../assets/images/notifications.png')} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
+          </View>
+          <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>Notifications</ThemedText>
+          <Switch value={notificationsEnabled} onValueChange={toggleNotifications} />
         </View>
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
