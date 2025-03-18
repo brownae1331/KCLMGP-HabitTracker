@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TouchableOpacity, TextInput, Text, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText'; // Adjust path if needed
 import { updateHabitProgress } from '../lib/client';
+import { IconSymbol } from './ui/IconSymbol';
 
 // Define the Habit interface (adjust if your structure is different)
 export interface Habit {
@@ -21,9 +22,10 @@ export interface Habit {
 
 interface HabitPanelProps {
   habit: Habit;
+  onEdit?: (habit: Habit) => void;
 }
 
-const HabitPanel: React.FC<HabitPanelProps> = ({ habit }) => {
+const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit }) => {
   // For build habits: allow the user to enter progress
   const [buildProgress, setBuildProgress] = useState<string>('');
   // For quit habits: allow the user to select yes/no
@@ -43,7 +45,17 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit }) => {
 
   return (
     <View style={[styles.habitPanel, { backgroundColor: habit.habitColor }]}>
-      <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
+      <View style={styles.headerContainer}>
+        <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
+        {onEdit && (
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => onEdit(habit)}
+          >
+            <IconSymbol name="pencil" size={16} color="#fff" />
+          </TouchableOpacity>
+        )}
+      </View>
       <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
       {habit.goalValue != null && (
         <ThemedText style={styles.habitGoal}>
@@ -167,5 +179,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: '#fff',
     fontStyle: 'italic',
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  editButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
 });

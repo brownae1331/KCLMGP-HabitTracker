@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// const BASE_URL = 'https://kclmgp-habittracker-master.onrender.com';
+// const BASE_URL = 'https://kclmgp-habittracker.onrender.com';
 const BASE_URL = 'http://localhost:3000';
 
 // Define the Habit type
@@ -225,3 +225,33 @@ export async function updatePassword(username: string, oldPassword: string, newP
   }
 }
 
+// Get interval days for a habit
+export async function getHabitInterval(email: string, habitName: string) {
+  const response = await fetch(`${BASE_URL}/habit-interval/${email}/${habitName}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit interval');
+  }
+  return response.json();
+}
+
+// Get habit days for a habit
+export async function getHabitDays(email: string, habitName: string) {
+  const response = await fetch(`${BASE_URL}/habit-days/${email}/${habitName}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit days');
+  }
+  return response.json();
+}
+
+// Update an existing habit
+export async function updateHabit(habitData: Habit) {
+  const response = await fetch(`${BASE_URL}/habits`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(habitData),
+  });
+  if (!response.ok) {
+    throw new Error('Error updating habit');
+  }
+  return response.json();
+}

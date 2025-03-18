@@ -1,14 +1,14 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { ThemedText } from '../../components/ThemedText';
+import { ThemedText } from '../../../components/ThemedText';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import GoodHabitGraph from '../../components/GoodHabitGraph';
+import GoodHabitGraph from '../../../components/GoodHabitGraph';
 import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
-import { Colors } from '../../components/styles/Colors';
-import { useTheme } from '../../components/ThemeContext';
-import { SharedStyles } from '../../components/styles/SharedStyles';
-import { Habit } from '../../lib/client';
+import { Colors } from '../../../components/styles/Colors';
+import { useTheme } from '../../../components/ThemeContext';
+import { SharedStyles } from '../../../components/styles/SharedStyles';
+import { Habit } from '../../../lib/client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function StatsScreen() {
@@ -40,17 +40,17 @@ export default function StatsScreen() {
 
   useEffect(() => {
     if (!username) return;
-  
+
     const fetchHabits = async () => {
       try {
         const response = await fetch(`http://localhost:3000/habits/${username}`);
-  
+
         if (!response.ok) {
           throw new Error(`Failed to fetch habits: ${response.statusText}`);
         }
-  
+
         const data = await response.json();
-  
+
         if (Array.isArray(data)) {
           setHabits(data);
         } else {
@@ -64,7 +64,7 @@ export default function StatsScreen() {
         setLoading(false);
       }
     };
-  
+
     fetchHabits();
   }, [username]);
 

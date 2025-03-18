@@ -5,29 +5,16 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import 'react-native-reanimated';
-import { ThemeProvider, useTheme } from '../components/ThemeContext'
-
+import { ThemeProvider, useTheme } from '../components/ThemeContext';
+import { AuthProvider } from '../components/AuthContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-
 export default function RootLayout() {
-  // const colorScheme = useColorScheme();
-  // const [theme] = useState<'light' | 'dark'>('light');
   const [loaded] = useFonts({
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });
-
-  // useEffect(() =>{
-  //   const loadThemePreference = async () =>{
-  //     const savedTheme = await AsyncStorage.getItem('theme');
-  //     if (savedTheme) {
-  //       setTheme(savedTheme as 'dark' | 'light');
-  //     };
-  //   };
-  //   loadThemePreference();
-  // },[]);
 
   useEffect(() => {
     if (loaded) {
@@ -41,7 +28,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
@@ -53,11 +42,11 @@ function AppContent() {
     <NavigationThemeProvider key={refreshKey} value={theme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack key={refreshKey}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(protected)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
     </NavigationThemeProvider>
   );
-};
+}
