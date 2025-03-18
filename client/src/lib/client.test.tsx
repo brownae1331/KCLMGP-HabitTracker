@@ -15,7 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 //     updatePassword,
 //     Habit
 // } from '../client';
-import * as client from '../client';
+import * as client from './client';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
