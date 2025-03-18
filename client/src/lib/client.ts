@@ -255,3 +255,12 @@ export async function updateHabit(habitData: Habit) {
   }
   return response.json();
 }
+
+// Get habit streak
+export async function getHabitStreak(email: string, habitName: string, date: string) {
+  const response = await fetch(`${BASE_URL}/habit-streak-by-date/${email}/${habitName}/${date}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit streak');
+  }
+  return response.json();
+}

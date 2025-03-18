@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, TextInput, Text, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText'; // Adjust path if needed
-import { updateHabitProgress } from '../lib/client';
+import { updateHabitProgress, getHabitStreak } from '../lib/client';
 import { IconSymbol } from './ui/IconSymbol';
 
 // Define the Habit interface (adjust if your structure is different)
@@ -32,12 +32,31 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit }) => {
   const [quitStatus, setQuitStatus] = useState<'yes' | 'no' | ''>('');
   // Local flag to indicate an update was made
   const [updated, setUpdated] = useState(false);
+  // Track the habit streak
+  const [streak, setStreak] = useState<number>(0);
+  const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    const fetchStreak = async () => {
+      try {
+        const streakData = await getHabitStreak(habit.user_email, habit.habitName, today);
+        setStreak(streakData.streak || 0);
+      } catch (error) {
+        console.error('Error fetching habit streak:', error);
+      }
+    };
+
+    fetchStreak();
+  }, [habit, updated]);
 
   const handleUpdate = async () => {
     try {
       const progressValue = habit.habitType === 'build' ? parseFloat(buildProgress) : quitStatus === 'yes' ? 1 : 0;
       await updateHabitProgress(habit.user_email, habit.habitName, progressValue);
       setUpdated(true);
+
+      const streakData = await getHabitStreak(habit.user_email, habit.habitName, today);
+      setStreak(streakData.streak || 0);
     } catch (error) {
       console.error('Error updating habit:', error);
     }
@@ -48,12 +67,16 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit }) => {
       <View style={styles.headerContainer}>
         <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
         {onEdit && (
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={() => onEdit(habit)}
-          >
-            <IconSymbol name="pencil" size={16} color="#fff" />
-          </TouchableOpacity>
+          <View style={styles.actionsContainer}>
+            <Text style={styles.fireEmoji}>🔥</Text>
+            <Text style={styles.streakCount}>{streak}</Text>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => onEdit(habit)}
+            >
+              <IconSymbol name="pencil" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
         )}
       </View>
       <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
@@ -189,5 +212,17 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  fireEmoji: {
+    marginRight: 5,
+  },
+  streakCount: {
+    color: '#FFD700',
+    fontWeight: 'bold',
+    marginRight: 8,
   },
 });

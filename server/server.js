@@ -585,6 +585,20 @@ app.get('/habit-progress-by-date/:email/:date', async (req, res) => {
   }
 });
 
+app.get('/habit-streak-by-date/:email/:habitName/:date', async (req, res) => {
+  const { email, habitName, date } = req.params;
+  try {
+    const [streakData] = await pool.query(
+      `SELECT streak FROM habit_progress 
+       WHERE user_email = ? AND habitName = ? AND progressDate = ?`,
+      [email, habitName, date]
+    );
+    res.json(streakData[0] || { streak: 0 });
+  } catch (error) {
+    console.error('Error fetching habit streak:', error);
+    res.status(500).json({ error: 'Error fetching habit streak data' });
+  }
+});
 
 //
 // app.post('/habits/sync', async (req, res) => {
