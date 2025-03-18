@@ -1,26 +1,23 @@
-import { StyleSheet, TouchableOpacity, Alert, FlatList, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, Alert, FlatList, View, Switch } from 'react-native';
 import React from 'react';
 import { ThemedText } from '../../components/ThemedText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, usePathname } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Feather } from '@expo/vector-icons'
+import { Feather } from '@expo/vector-icons';
 import { Image } from 'react-native';
 import { useTheme } from '../../components/ThemeContext';
 import { Colors } from '../../components/styles/Colors';
 import { ScrollView } from 'react-native';
 import { SharedStyles } from '../../components/styles/SharedStyles';
 
-
 export default function SettingsScreen() {
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   const settingsOptions = [
     { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' as const },
     { title: 'Notifications', icon: require('../../../assets/images/notifications.png'), route: '/notifications' as const },
-    { title: 'Appearance', icon: require('../../../assets/images/appearance.png'), route: '/appearance' as const },
   ] as const;
-
 
   type RouteType = (typeof settingsOptions)[number]['route'];
 
@@ -56,6 +53,14 @@ export default function SettingsScreen() {
           keyExtractor={(item) => item.title}
           contentContainerStyle={styles.listContainer}
         />
+
+        <View style={styles.settingItem}>
+          <View style={styles.iconContainer}>
+            <Image source={require('../../../assets/images/appearance.png')} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
+          </View>
+          <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>Dark Mode</ThemedText>
+          <Switch value={theme === 'dark'} onValueChange={toggleTheme} />
+        </View>
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
