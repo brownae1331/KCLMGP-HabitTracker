@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
-import HomeScreen from '../../(protected)/(tabs)/habits';
+import HomeScreen from '../../../(protected)/(tabs)/habits';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { addHabit, getHabitsForDate } from '../../../lib/client';
+import { addHabit, getHabitsForDate } from '../../../../lib/client';
 
 // mock lib/client methods
-jest.mock('../../../lib/client', () => ({
+jest.mock('../../../../lib/client', () => ({
     addHabit: jest.fn(),
     getHabitsForDate: jest.fn(),
 }));
@@ -16,7 +16,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 // mock components that are not in the scope of this test
-jest.mock('../../../components/WeeklyCalendar', () => {
+jest.mock('../../../../components/WeeklyCalendar', () => {
     return {
         WeeklyCalendar: (props: any) => {
             return <div testID="weekly-calendar" {...props} />;
@@ -24,7 +24,7 @@ jest.mock('../../../components/WeeklyCalendar', () => {
     };
 });
 
-jest.mock('../../../components/NewHabitModal', () => {
+jest.mock('../../../../components/NewHabitModal', () => {
     return {
         NewHabitModal: (props: any) => {
             // for checking modalVisible and onAddHabit callback, pass all props to a div
@@ -33,7 +33,7 @@ jest.mock('../../../components/NewHabitModal', () => {
     };
 });
 
-jest.mock('../../../components/WeeklyCalendar', () => {
+jest.mock('../../../../components/WeeklyCalendar', () => {
     return {
         WeeklyCalendar: (props: any) => {
             return <div data-testid="weekly-calendar" {...props} />;
@@ -41,13 +41,13 @@ jest.mock('../../../components/WeeklyCalendar', () => {
     };
 });
 
-jest.mock('../../../components/ui/IconSymbol', () => {
+jest.mock('../../../../components/ui/IconSymbol', () => {
     return {
         IconSymbol: (props: any) => <div testID="icon-symbol" {...props} />,
     };
 });
 
-jest.mock('../../../components/ThemedText', () => {
+jest.mock('../../../../components/ThemedText', () => {
     const React = require('react');
     const { Text } = require('react-native');
     return {
@@ -55,11 +55,11 @@ jest.mock('../../../components/ThemedText', () => {
     };
 });
 
-jest.mock('../../../components/styles/SharedStyles', () => ({
+jest.mock('../../../../components/styles/SharedStyles', () => ({
     SharedStyles: { titleContainer: {}, addButtonContainer: {} },
 }));
 
-jest.mock('../../../components/styles/Colors', () => ({
+jest.mock('../../../../components/styles/Colors', () => ({
     Colors: {
         light: {
             background: '#fff',
@@ -72,11 +72,11 @@ jest.mock('../../../components/styles/Colors', () => ({
     },
 }));
 
-jest.mock('../../../components/ThemeContext', () => ({
+jest.mock('../../../../components/ThemeContext', () => ({
     useTheme: () => ({ theme: 'light' }),
 }));
 
-jest.mock('../../../components/HabitPanel', () => {
+jest.mock('../../../../components/HabitPanel', () => {
     const React = require('react');
     const { Text } = require('react-native');
     return (props: any) => (

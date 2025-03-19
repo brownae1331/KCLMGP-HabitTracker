@@ -1,10 +1,10 @@
 import React from 'react';
-import NotificationScreen from '../notifications';
+import NotificationScreen from '../../(protected)/notifications';
 import { render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { useTheme } from '../../components/ThemeContext';
+import { useTheme } from '../../../components/ThemeContext';
 
-jest.mock('../../components/ThemeContext', () => ({
+jest.mock('../../../components/ThemeContext', () => ({
   useTheme: jest.fn(),
 }));
 

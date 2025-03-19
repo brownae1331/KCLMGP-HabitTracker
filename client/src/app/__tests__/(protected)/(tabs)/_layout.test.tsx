@@ -1,9 +1,9 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import TabLayout from '../../(tabs)/_layout';
+import TabLayout from '../../../(protected)/(tabs)/_layout';
 import { Platform, StyleSheet } from 'react-native';
-import { Colors } from '../../../components/styles/Colors';
-import { useTheme } from '../../../components/ThemeContext';
+import { Colors } from '../../../../components/styles/Colors';
+import { useTheme } from '../../../../components/ThemeContext';
 
 
 // Mock expo-router inside the module factory to avoid referencing out-of-scope variables.
@@ -28,15 +28,15 @@ jest.mock('expo-router', () => {
     return { Tabs: TabsMock };
 });
 
-jest.mock('../../../components/ThemeContext', () => ({
+jest.mock('../../../../components/ThemeContext', () => ({
     useTheme: () => ({ theme: 'light', refreshKey: '1', toggleTheme: jest.fn() }),
 }));
 
-jest.mock('../../../components/HapticTab', () => ({
+jest.mock('../../../../components/HapticTab', () => ({
     HapticTab: (props: any) => <>{props.children}</>,
 }));
 
-jest.mock('../../../components/ui/IconSymbol', () => {
+jest.mock('../../../../components/ui/IconSymbol', () => {
     const React = require('react');
     const { Text } = require('react-native');
     return {
@@ -48,11 +48,11 @@ jest.mock('../../../components/ui/IconSymbol', () => {
     };
 });
 
-jest.mock('../../../components/ui/TabBarBackground', () => ({
+jest.mock('../../../../components/ui/TabBarBackground', () => ({
     default: () => null,
 }));
 
-jest.mock('../../../components/styles/Colors', () => ({
+jest.mock('../../../../components/styles/Colors', () => ({
     Colors: {
         light: { tint: 'blue', background: 'white', tabIconDefault: 'gray' },
         dark: { tint: 'blue', background: 'black', tabIconDefault: 'gray' },
@@ -96,7 +96,7 @@ describe('TabLayout', () => {
         const mockedTabs = Tabs as unknown as jest.Mock;
         expect(mockedTabs).toHaveBeenCalledTimes(1);
         const props = mockedTabs.mock.calls[0][0];
-        const { Colors } = require('../../../components/styles/Colors');
+        const { Colors } = require('../../../../components/styles/Colors');
         // Remove key check since key is a special prop not accessible.
         // Use non-null assertion since screenOptions is defined in TabLayout.
         const screenOptions = props.screenOptions!;
@@ -128,7 +128,7 @@ describe('TabLayout - Additional Test', () => {
     it('renders correct icon color when not focused', () => {
         const { theme } = useTheme();
         // Dynamically import IconSymbol
-        const IconSymbolModule = require('../../../components/ui/IconSymbol');
+        const IconSymbolModule = require('../../../../components/ui/IconSymbol');
         const IconSymbol = IconSymbolModule.IconSymbol;
 
         // Define the tabBarIcon function as in _layout.tsx

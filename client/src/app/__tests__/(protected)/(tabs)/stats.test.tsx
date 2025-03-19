@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import StatsScreen from '../../(protected)/(tabs)/stats';
+import StatsScreen from '../../../(protected)/(tabs)/stats';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Mock AsyncStorage
@@ -9,12 +9,12 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 // Mock ThemeContext and allow overriding theme in tests
-jest.mock('../../../components/ThemeContext', () => ({
+jest.mock('../../../../components/ThemeContext', () => ({
     useTheme: jest.fn(() => ({ theme: 'light' })),
 }));
 
 // Mock ThemedText by dynamically requiring 'react-native' to get Text
-jest.mock('../../../components/ThemedText', () => {
+jest.mock('../../../../components/ThemedText', () => {
     const React = require('react');
     const { Text } = require('react-native');
     return {
@@ -23,7 +23,7 @@ jest.mock('../../../components/ThemedText', () => {
 });
 
 // Mock GoodHabitGraph similarly by dynamically requiring Text
-jest.mock('../../../components/GoodHabitGraph', () => {
+jest.mock('../../../../components/GoodHabitGraph', () => {
     const React = require('react');
     const { Text } = require('react-native');
     return (props: any) => (
@@ -32,13 +32,13 @@ jest.mock('../../../components/GoodHabitGraph', () => {
 });
 
 // Mock Colors and SharedStyles
-jest.mock('../../../components/styles/Colors', () => ({
+jest.mock('../../../../components/styles/Colors', () => ({
     Colors: {
         light: { background: '#fff', text: '#000' },
         dark: { background: '#000', text: '#fff' },
     },
 }));
-jest.mock('../../../components/styles/SharedStyles', () => ({
+jest.mock('../../../../components/styles/SharedStyles', () => ({
     SharedStyles: { titleContainer: { padding: 10 } },
 }));
 
@@ -170,7 +170,7 @@ describe('StatsScreen', () => {
 
     test('In dark theme, the Picker should apply the correct styles', async () => {
         // Override useTheme to return dark theme
-        const useTheme = require('../../../components/ThemeContext').useTheme;
+        const useTheme = require('../../../../components/ThemeContext').useTheme;
         useTheme.mockReturnValue({ theme: 'dark' });
 
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('testUser');

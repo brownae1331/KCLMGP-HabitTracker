@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import AppearanceScreen from '../(protected)/appearance';
-import { useTheme } from '../../components/ThemeContext';
-import { Colors } from '../../components/styles/Colors';
+import AppearanceScreen from '../../(protected)/appearance';
+import { useTheme } from '../../../components/ThemeContext';
+import { Colors } from '../../../components/styles/Colors';
 
 // Mock Theme Context
-jest.mock('../../components/ThemeContext', () => ({
+jest.mock('../../../components/ThemeContext', () => ({
     useTheme: jest.fn(),
 }));
 

@@ -3,7 +3,7 @@ import { render, waitFor, act } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 
 // mock Colors module, add "title" property
-jest.mock('../../../components/styles/Colors', () => ({
+jest.mock('../../../../components/styles/Colors', () => ({
     Colors: {
         light: { tint: 'blue', background: 'white', text: 'black', background2: 'gray', title: 'black' },
         dark: { tint: 'blue', background: 'black', text: 'white', background2: 'gray', title: 'white' },
@@ -11,7 +11,7 @@ jest.mock('../../../components/styles/Colors', () => ({
 }));
 
 // mock ThemedText component, use 'react-native' Text component in factory to avoid external reference
-jest.mock('../../../components/ThemedText', () => {
+jest.mock('../../../../components/ThemedText', () => {
     const React = require('react');
     const { Text } = require('react-native');
     return {
@@ -31,26 +31,26 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 // mock getHabitProgressByDate to return an empty array
-jest.mock('../../../lib/client', () => ({
+jest.mock('../../../../lib/client', () => ({
     getHabitProgressByDate: jest.fn(() => Promise.resolve([])),
 }));
 
 // mock useTheme hook in ThemeContext to return fixed theme data
-jest.mock('../../../components/ThemeContext', () => ({
+jest.mock('../../../../components/ThemeContext', () => ({
     useTheme: () => ({ theme: 'light', refreshKey: '1', toggleTheme: jest.fn() }),
 }));
 
 // mock CalendarComponent to return an empty component
-jest.mock('../../../components/MonthlyCalendar', () => ({
+jest.mock('../../../../components/MonthlyCalendar', () => ({
     CalendarComponent: (props: any) => <></>,
 }));
 
 // Mock StatsBoxComponent
-jest.mock('../../../components/StatsBox', () => ({
+jest.mock('../../../../components/StatsBox', () => ({
     StatsBoxComponent: (props: any) => <></>,
 }));
 
-import CalendarScreen from '../../(protected)/(tabs)/calendar';
+import CalendarScreen from '../../../(protected)/(tabs)/calendar';
 
 describe('CalendarScreen', () => {
     afterEach(() => {
@@ -84,7 +84,7 @@ describe('CalendarScreen', () => {
             jest.advanceTimersByTime(60);
         });
 
-        const { getHabitProgressByDate } = require('../../../lib/client');
+        const { getHabitProgressByDate } = require('../../../../lib/client');
         await waitFor(() => {
             expect(getHabitProgressByDate).toHaveBeenCalled();
         });

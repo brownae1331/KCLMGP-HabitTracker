@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import SettingsScreen from '../../(protected)/(tabs)/settings';
+import SettingsScreen from '../../../(protected)/(tabs)/settings';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, Image } from 'react-native';
 
@@ -19,12 +19,12 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock ThemeContext and allow overriding theme in tests
-jest.mock('../../../components/ThemeContext', () => ({
+jest.mock('../../../../components/ThemeContext', () => ({
     useTheme: jest.fn(() => ({ theme: 'light' })),
 }));
 
 // Mock ThemedText by dynamically requiring 'react-native' to get Text
-jest.mock('../../../components/ThemedText', () => {
+jest.mock('../../../../components/ThemedText', () => {
     const React = require('react');
     const { Text } = require('react-native');
     return {
@@ -42,14 +42,14 @@ jest.mock('@expo/vector-icons', () => {
 });
 
 // Mock Colors and SharedStyles
-jest.mock('../../../components/styles/Colors', () => ({
+jest.mock('../../../../components/styles/Colors', () => ({
     Colors: {
         light: { background: '#fff', text: '#000' },
         dark: { background: '#000', text: '#fff' },
     },
 }));
 
-jest.mock('../../../components/styles/SharedStyles', () => ({
+jest.mock('../../../../components/styles/SharedStyles', () => ({
     SharedStyles: { titleContainer: { padding: 10 } },
 }));
 
@@ -110,11 +110,11 @@ describe('SettingsScreen', () => {
 
     test('applies dark theme styles correctly', async () => {
         // Override useTheme to return dark theme
-        const useTheme = require('../../../components/ThemeContext').useTheme;
+        const useTheme = require('../../../../components/ThemeContext').useTheme;
         useTheme.mockReturnValue({ theme: 'dark' });
         const renderResult = render(<SettingsScreen />);
         const { getByText } = renderResult;
-        const { Colors } = require('../../../components/styles/Colors');
+        const { Colors } = require('../../../../components/styles/Colors');
         // Check that the title text has the dark theme text color
         const titleText = getByText('Settings');
         expect(titleText.props.style).toMatchObject({ color: Colors.dark.text });
