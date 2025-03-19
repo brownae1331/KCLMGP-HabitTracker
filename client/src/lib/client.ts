@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// const BASE_URL = 'https://kclmgp-habittracker-master.onrender.com';
+// const BASE_URL = 'https://kclmgp-habittracker.onrender.com';
 const BASE_URL = 'http://localhost:3000';
 
 // Define the Habit type
@@ -174,6 +174,33 @@ export async function deleteUser(email: string) {
   return response.json();
 }
 
+// Update a habit's progress
+export async function updateHabitProgress(email: string, habitName: string, progress: number) {
+  const response = await fetch(`${BASE_URL}/habit-progress`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, habitName, progress }),
+  });
+  if (!response.ok) {
+    throw new Error('Error updating habit progress');
+  }
+  return response.json();
+}
+
+// Get habit progress data for all habits of a specific user on a specific date
+export async function getHabitProgressByDate(email: string, date: string) {
+  const encodedEmail = encodeURIComponent(email);
+
+  // Ensure date is in MySQL-compatible format (YYYY-MM-DD)
+  const formattedDate = new Date(date).toISOString().split('T')[0];
+
+  const response = await fetch(`${BASE_URL}/habit-progress-by-date/${encodedEmail}/${formattedDate}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit progress');
+  }
+  return response.json();
+}
+
 // Change password
 export async function updatePassword(username: string, oldPassword: string, newPassword: string) {
   try {
@@ -198,3 +225,42 @@ export async function updatePassword(username: string, oldPassword: string, newP
   }
 }
 
+// Get interval days for a habit
+export async function getHabitInterval(email: string, habitName: string) {
+  const response = await fetch(`${BASE_URL}/habit-interval/${email}/${habitName}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit interval');
+  }
+  return response.json();
+}
+
+// Get habit days for a habit
+export async function getHabitDays(email: string, habitName: string) {
+  const response = await fetch(`${BASE_URL}/habit-days/${email}/${habitName}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit days');
+  }
+  return response.json();
+}
+
+// Update an existing habit
+export async function updateHabit(habitData: Habit) {
+  const response = await fetch(`${BASE_URL}/habits`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(habitData),
+  });
+  if (!response.ok) {
+    throw new Error('Error updating habit');
+  }
+  return response.json();
+}
+
+// Get habit streak
+export async function getHabitStreak(email: string, habitName: string, date: string) {
+  const response = await fetch(`${BASE_URL}/habit-streak-by-date/${email}/${habitName}/${date}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit streak');
+  }
+  return response.json();
+}
