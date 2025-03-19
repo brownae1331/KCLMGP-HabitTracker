@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, TextInput, Text, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText'; // Adjust path if needed
-import { updateHabitProgress } from '../lib/client';
+import { updateHabitProgress, getHabitStreak } from '../lib/client';
+import { IconSymbol } from './ui/IconSymbol';
 
 // Define the Habit interface (adjust if your structure is different)
 export interface Habit {
@@ -18,24 +19,65 @@ export interface Habit {
   goalUnit?: string;
 }
 
-
 interface HabitPanelProps {
   habit: Habit;
+  onEdit?: (habit: Habit) => void;
+  selectedDate?: Date;
 }
 
-const HabitPanel: React.FC<HabitPanelProps> = ({ habit }) => {
+const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit, selectedDate }) => {
   // For build habits: allow the user to enter progress
   const [buildProgress, setBuildProgress] = useState<string>('');
   // For quit habits: allow the user to select yes/no
   const [quitStatus, setQuitStatus] = useState<'yes' | 'no' | ''>('');
   // Local flag to indicate an update was made
   const [updated, setUpdated] = useState(false);
+  // Track the habit streak
+  const [streak, setStreak] = useState<number>(0);
+
+  const date = selectedDate
+    ? selectedDate.toISOString().split("T")[0]
+    : new Date().toISOString().split("T")[0];
+
+  // Check if selected date is in the future by comparing just the dates (ignoring time)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Create a copy of selectedDate with time set to midnight for proper comparison
+  const selectedDateCopy = selectedDate ? new Date(selectedDate) : null;
+  if (selectedDateCopy) {
+    selectedDateCopy.setHours(0, 0, 0, 0);
+  }
+
+  // Only consider a date future if it's strictly after today
+  const isDateInFuture = selectedDateCopy && selectedDateCopy > today;
+
+  useEffect(() => {
+    const fetchStreak = async () => {
+      try {
+        // Only fetch streak if date is not in the future
+        if (!isDateInFuture) {
+          const streakData = await getHabitStreak(habit.user_email, habit.habitName, date);
+          setStreak(streakData.streak || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching habit streak:', error);
+      }
+    };
+
+    fetchStreak();
+  }, [habit, updated, date, isDateInFuture]);
 
   const handleUpdate = async () => {
     try {
       const progressValue = habit.habitType === 'build' ? parseFloat(buildProgress) : quitStatus === 'yes' ? 1 : 0;
       await updateHabitProgress(habit.user_email, habit.habitName, progressValue);
       setUpdated(true);
+
+      if (!isDateInFuture) {
+        const streakData = await getHabitStreak(habit.user_email, habit.habitName, date);
+        setStreak(streakData.streak || 0);
+      }
     } catch (error) {
       console.error('Error updating habit:', error);
     }
@@ -43,7 +85,26 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit }) => {
 
   return (
     <View style={[styles.habitPanel, { backgroundColor: habit.habitColor }]}>
-      <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
+      <View style={styles.headerContainer}>
+        <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
+        {onEdit && (
+          <View style={styles.actionsContainer}>
+            {/* Only show streak if date is not in the future */}
+            {!isDateInFuture && (
+              <>
+                <Text style={styles.fireEmoji}>🔥</Text>
+                <Text style={styles.streakCount}>{streak}</Text>
+              </>
+            )}
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => onEdit(habit)}
+            >
+              <IconSymbol name="pencil" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
       <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
       {habit.goalValue != null && (
         <ThemedText style={styles.habitGoal}>
@@ -167,5 +228,27 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: '#fff',
     fontStyle: 'italic',
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  editButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  fireEmoji: {
+    marginRight: 5,
+  },
+  streakCount: {
+    color: '#FFD700',
+    fontWeight: 'bold',
+    marginRight: 8,
   },
 });

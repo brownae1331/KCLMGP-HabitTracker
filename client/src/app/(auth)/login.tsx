@@ -7,6 +7,7 @@ import { ThemedText } from '../../components/ThemedText';
 import { Colors } from '../../components/styles/Colors';
 import { useTheme } from '../../components/ThemeContext';
 import { AuthStyles } from '../../components/styles/AuthStyles';
+import { useAuth } from '../../components/AuthContext';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
@@ -14,11 +15,13 @@ export default function LoginScreen() {
     const [error, setError] = useState('');
 
     const { theme } = useTheme();
+    const { checkAuthStatus } = useAuth();
 
     const handleLogin = async () => {
         try {
             await logIn(email, password);
-            router.replace('/(tabs)/habits');
+            await checkAuthStatus();
+            router.replace('/(protected)/(tabs)/habits');
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message);
