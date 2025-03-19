@@ -55,7 +55,7 @@ jest.mock('../../../../components/ui/TabBarBackground', () => ({
 jest.mock('../../../../components/styles/Colors', () => ({
     Colors: {
         light: { tint: 'blue', background: 'white', tabIconDefault: 'gray' },
-        dark: { tint: 'blue', background: 'black', tabIconDefault: 'gray' },
+        dark: { tint: 'blue', background: 'black', tabIconDefault: 'blue' },
     },
 }));
 
@@ -68,7 +68,7 @@ describe('TabLayout', () => {
         (Tabs as unknown as jest.Mock).mockClear();
     });
 
-    it('renders tabs with correct titles', () => {
+    test('renders tabs with correct titles', () => {
         const { getByText } = render(<TabLayout />);
         // Verify that each Tabs.Screen title is rendered.
         expect(getByText('Habits')).toBeTruthy();
@@ -77,7 +77,7 @@ describe('TabLayout', () => {
         expect(getByText('Settings')).toBeTruthy();
     });
 
-    it('renders tab icons with focused true and correct color', () => {
+    test('renders tab icons with focused true and correct color', () => {
         const { getByTestId } = render(<TabLayout />);
         // For focused true, tabBarIcon should use Colors.light.tint as the color.
         const habitsIcon = getByTestId('icon-book.fill');
@@ -90,7 +90,7 @@ describe('TabLayout', () => {
         expect(settingsIcon.props.children).toBe('gearshape.fill');
     });
 
-    it('passes correct screenOptions to Tabs', () => {
+    test('passes correct screenOptions to Tabs', () => {
         render(<TabLayout />);
         // Access the first call of the Tabs mock.
         const mockedTabs = Tabs as unknown as jest.Mock;
@@ -109,7 +109,7 @@ describe('TabLayout', () => {
         expect(tabBarStyle).toHaveProperty('backgroundColor', Colors.light.background);
     });
 
-    it('applies correct tabBarStyle for iOS via Platform.select', () => {
+    test('applies correct tabBarStyle for iOS via Platform.select', () => {
         // Override Platform.select to simulate the iOS branch.
         const originalSelect = Platform.select;
         Platform.select = (obj) => obj.ios || {};
@@ -122,46 +122,27 @@ describe('TabLayout', () => {
         // Restore Platform.select.
         Platform.select = originalSelect;
     });
-});
 
-describe('TabLayout - Additional Test', () => {
-    it('renders correct icon color when not focused', () => {
-        const { theme } = useTheme();
-        // Dynamically import IconSymbol
-        const IconSymbolModule = require('../../../../components/ui/IconSymbol');
-        const IconSymbol = IconSymbolModule.IconSymbol;
+    test('renders tab icons with focused false and uses tabIconDefault color', () => {
 
-        // Define the tabBarIcon function as in _layout.tsx
-        const tabBarIcon = ({ focused }: { focused: boolean }) => (
-            <IconSymbol
-                size={28}
-                name="book.fill"
-                color={focused ? Colors[theme].tint : Colors[theme].tabIconDefault}
-            />
-        );
+        const TabsMock = Tabs as unknown as jest.Mock;
+        const originalImpl = TabsMock.getMockImplementation();
 
-        // Render the icon with focused=false
-        const element = tabBarIcon({ focused: false });
-        const { getByTestId } = render(element);
-        const icon = getByTestId('icon-book.fill');
+        TabsMock.mockImplementation(({ children, ...props }: { children: React.ReactNode } & Record<string, any>) => {
+            return React.Children.map(children, (child: any) => {
+                if (child.props.options && typeof child.props.options.tabBarIcon === 'function') {
+                    return child.props.options.tabBarIcon({ focused: false });
+                }
+                return child;
+            });
+        });
 
-        // Flatten the style to check color property
-        const flattenedStyle = StyleSheet.flatten(icon.props.style);
-        expect(flattenedStyle.color).toBe(Colors[theme].tabIconDefault);
-    });
+        const { getByTestId } = render(<TabLayout />);
+        expect(getByTestId('icon-book.fill').props.style.color).toBe(Colors.light.tabIconDefault);
+        expect(getByTestId('icon-calendar').props.style.color).toBe(Colors.light.tabIconDefault);
+        expect(getByTestId('icon-chart.bar.fill').props.style.color).toBe(Colors.light.tabIconDefault);
+        expect(getByTestId('icon-gearshape.fill').props.style.color).toBe(Colors.light.tabIconDefault);
 
-
-    it('applies correct tabBarStyle for iOS via Platform.select', () => {
-        // Override Platform.select to simulate iOS
-        const originalSelect = Platform.select;
-        Platform.select = (obj) => obj.ios || {};
-        render(<TabLayout />);
-        const mockedTabs = Tabs as unknown as jest.Mock;
-        const screenOptions = mockedTabs.mock.calls[0][0].screenOptions!;
-        const tabBarStyle = (screenOptions as any).tabBarStyle;
-        // Check for position: 'absolute'
-        expect(tabBarStyle).toHaveProperty('position', 'absolute');
-        // Restore
-        Platform.select = originalSelect;
+        TabsMock.mockImplementation(originalImpl);
     });
 });

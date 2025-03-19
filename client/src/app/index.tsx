@@ -11,7 +11,7 @@ export default function IndexRoute() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors[theme].background }}>
-        <ActivityIndicator size="large" color={Colors[theme].tint} />
+        <ActivityIndicator testID='loading-indicator' size="large" color={Colors[theme].tint} />
       </View>
     );
   }
