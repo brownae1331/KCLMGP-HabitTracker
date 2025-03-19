@@ -12,10 +12,6 @@ jest.mock('expo-notifications', () => ({
   setNotificationHandler: jest.fn()
 }));
 
-jest.mock('expo-device', () => ({
-  isDevice: true
-}));
-
 
 describe('getNextSundayAtNine', () => {
   test('calculates the correct date for the next Sunday at 9', () => {
@@ -32,7 +28,7 @@ describe('ScheduleWeeklyNotification - Native Branch', () => {
 
 
   beforeEach(() => {
-    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => { });
     originalOS = Platform.OS;
   });
 
@@ -41,46 +37,73 @@ describe('ScheduleWeeklyNotification - Native Branch', () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: originalOS });
   });
 
+  test('calls setNotificationHandler with correct configuration', async () => {
+    (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+    (Notifications.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+    render(<ScheduleWeeklyNotification />);
+    await waitFor(() => {
+      expect(Notifications.setNotificationHandler).toHaveBeenCalledWith({
+        handleNotification: expect.any(Function),
+      });
+    });
+    const handler = (Notifications.setNotificationHandler as jest.Mock).mock.calls[0][0].handleNotification;
+    const result = await handler();
+    expect(result).toEqual({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    });
+  });
+
+  test('schedules notification immediately if permission already granted and device available', async () => {
+    (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+    (Notifications.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' })
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
+    Object.defineProperty(Device, 'isDevice', { configurable: true, value: true });
+    render(<ScheduleWeeklyNotification />);
+    await waitFor(() => {
+      expect(Notifications.scheduleNotificationAsync).toHaveBeenCalled();
+    });
+  });
 
   test('requests permissions when not granted and schedules notification', async () => {
     (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'undetermined' });
     (Notifications.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
-    
+
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
-    
+    Object.defineProperty(Device, 'isDevice', { configurable: true, value: true });
     render(<ScheduleWeeklyNotification />);
-    
+
     await waitFor(() => {
       expect(Notifications.requestPermissionsAsync).toHaveBeenCalled();
       expect(Notifications.scheduleNotificationAsync).toHaveBeenCalled();
     });
   });
 
+  test('shows alert if device is not physical', async () => {
+    (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
+    Object.defineProperty(Device, 'isDevice', { configurable: true, value: false });
+
+    render(<ScheduleWeeklyNotification />);
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Physical device required for notifications.');  
+    })
+    Object.defineProperty(Device, 'isDevice', { configurable: true, value: true });
+  });
+
   test('shows an alert if permission is denied', async () => {
     (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'denied' });
     (Notifications.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'denied' });
-    
-    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
-    
-    render(<ScheduleWeeklyNotification />);
-    
-    await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith('Failed to get push token for notifications!');
-    });
-  });
 
-  test('shows alert if physical device is not available', async () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
-    const originalIsDevice = Device.isDevice;
-    Object.defineProperty(Device, 'isDevice', { configurable: true, value: false });
-    
+
     render(<ScheduleWeeklyNotification />);
-    
+
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith('Failed to get push token for notifications!');
     });
-    
-    Object.defineProperty(Device, 'isDevice', { configurable: true, value: originalIsDevice });
   });
 });
 
@@ -91,7 +114,7 @@ describe('ScheduleWeeklyNotification - Web Branch', () => {
 
 
   beforeEach(() => {
-    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => { });
     originalNotification = global.Notification;
     originalOS = Platform.OS;
   });
@@ -106,9 +129,9 @@ describe('ScheduleWeeklyNotification - Web Branch', () => {
   test('shows alert if Notification API is not supported in web', async () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
     delete (global as any).Notification;
-    
+
     render(<ScheduleWeeklyNotification />);
-    
+
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith('Notifications are not supported in this browser.');
     });
@@ -120,9 +143,9 @@ describe('ScheduleWeeklyNotification - Web Branch', () => {
       permission: 'default',
       requestPermission: jest.fn(() => Promise.resolve('denied'))
     } as any;
-    
+
     render(<ScheduleWeeklyNotification />);
-    
+
     await waitFor(() => {
       expect(global.Notification.requestPermission).toHaveBeenCalled();
       expect(alertSpy).toHaveBeenCalledWith('Permission not granted for notifications.');
@@ -132,25 +155,25 @@ describe('ScheduleWeeklyNotification - Web Branch', () => {
   test('schedules web notification if permission granted', async () => {
     jest.useFakeTimers();
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
-    
+
     const notificationMock = jest.fn();
     (notificationMock as any).permission = 'granted';
     global.Notification = notificationMock as any;
-    
+
     const getNextSundayAtNineMock = jest
       .spyOn(require('../NotificationsHandler'), 'getNextSundayAtNine')
       .mockReturnValue(new Date(Date.now() + 1));
-    
+
     render(<ScheduleWeeklyNotification />);
-    
+
     jest.runAllTimers();
-    
+
     await waitFor(() => {
       expect(notificationMock).toHaveBeenCalledWith('Weekly Summary', {
         body: 'Your weekly summary: X habits completed, Y habits missed.',
       });
     });
-    
+
     getNextSundayAtNineMock.mockRestore();
     jest.useRealTimers();
   });
