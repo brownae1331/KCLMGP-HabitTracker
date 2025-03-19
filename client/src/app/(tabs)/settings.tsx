@@ -25,17 +25,14 @@ export default function SettingsScreen() {
   }, []);
 
   const toggleNotifications = async () => {
-    console.log('Toggle function called on web!');
   
     try {
       let newState = !notificationsEnabled; 
       setNotificationsEnabled(newState); 
   
       if (newState) {
-        console.log('Enabling notifications...');
         await enableNotifications();
       } else {
-        console.log('Disabling notifications...');
         await disableNotifications();
       }
   
