@@ -50,7 +50,7 @@ jest.mock('../../../components/StatsBox', () => ({
     StatsBoxComponent: (props: any) => <></>,
 }));
 
-import CalendarScreen from '../../(tabs)/calendar';
+import CalendarScreen from '../../(protected)/(tabs)/calendar';
 
 describe('CalendarScreen', () => {
     afterEach(() => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
-import HomeScreen from '../../(tabs)/habits';
+import HomeScreen from '../../(protected)/(tabs)/habits';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addHabit, getHabitsForDate } from '../../../lib/client';
 

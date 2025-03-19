@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import SettingsScreen from '../../(tabs)/settings';
+import SettingsScreen from '../../(protected)/(tabs)/settings';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, Image } from 'react-native';
 

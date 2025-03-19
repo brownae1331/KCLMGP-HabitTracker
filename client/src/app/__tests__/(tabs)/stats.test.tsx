@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import StatsScreen from '../../(tabs)/stats';
+import StatsScreen from '../../(protected)/(tabs)/stats';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Mock AsyncStorage

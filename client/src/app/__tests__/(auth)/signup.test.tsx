@@ -42,7 +42,7 @@ describe('SignupScreen functionality tests', () => {
 
     await waitFor(() => {
       expect(createUser).toHaveBeenCalledWith('test@example.com', 'password123', 'testuser');
-      expect(router.replace).toHaveBeenCalledWith('/(tabs)/habits');
+      expect(router.replace).toHaveBeenCalledWith('/(protected)/(tabs)/habits');
     });
   });
 
