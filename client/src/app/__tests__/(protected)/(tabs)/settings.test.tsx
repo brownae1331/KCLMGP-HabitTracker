@@ -3,9 +3,12 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import SettingsScreen from '../../../(protected)/(tabs)/settings';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, Image } from 'react-native';
+import { AuthProvider } from '../../../../components/AuthContext';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
+    getItem: jest.fn(),
+    setItem: jest.fn(),
     removeItem: jest.fn(),
 }));
 
@@ -58,50 +61,62 @@ describe('SettingsScreen', () => {
         jest.clearAllMocks();
     });
 
-    test('renders settings screen correctly with title, options, and sign out button', () => {
-        const { getByText } = render(<SettingsScreen />);
-        // Verify title is rendered
-        expect(getByText('Settings')).toBeTruthy();
-        // Verify each settings option is rendered
-        expect(getByText('Account')).toBeTruthy();
-        expect(getByText('Notifications')).toBeTruthy();
-        expect(getByText('Appearance')).toBeTruthy();
-        // Verify sign out button is rendered
-        expect(getByText('Sign Out')).toBeTruthy();
+    test('renders settings screen correctly with title, options, and sign out button', async () => {
+        const rendered = render(
+            <AuthProvider>
+                <SettingsScreen />
+            </AuthProvider>
+        );
+        await waitFor(() => expect(rendered.getByText('Settings')).toBeTruthy());
+        expect(rendered.getByText('Account')).toBeTruthy();
+        expect(rendered.getByText('Notifications')).toBeTruthy();
+        expect(rendered.getByText('Appearance')).toBeTruthy();
+        expect(rendered.getByText('Sign Out')).toBeTruthy();
     });
 
-    test('navigates to the correct route when a settings option is pressed', () => {
-        const { getByText } = render(<SettingsScreen />);
+    test('navigates to the correct route when a settings option is pressed', async () => {
+        const rendered = render(
+            <AuthProvider>
+                <SettingsScreen />
+            </AuthProvider>
+        );
+        await waitFor(() => expect(rendered.getByText('Settings')).toBeTruthy());
         const { router } = require('expo-router');
-        // Simulate press on "Account" option
-        fireEvent.press(getByText('Account'));
+        fireEvent.press(rendered.getByText('Account'));
         expect(router.push).toHaveBeenCalledWith('/account');
-        // Simulate press on "Notifications" option
-        fireEvent.press(getByText('Notifications'));
+        fireEvent.press(rendered.getByText('Notifications'));
         expect(router.push).toHaveBeenCalledWith('/notifications');
-        // Simulate press on "Appearance" option
-        fireEvent.press(getByText('Appearance'));
+        fireEvent.press(rendered.getByText('Appearance'));
         expect(router.push).toHaveBeenCalledWith('/appearance');
     });
 
     test('signs out successfully by removing token and navigating to login', async () => {
-        const { getByText } = render(<SettingsScreen />);
+        const rendered = render(
+            <AuthProvider>
+                <SettingsScreen />
+            </AuthProvider>
+        );
+        await waitFor(() => expect(rendered.getByText('Sign Out')).toBeTruthy());
         const { router } = require('expo-router');
         (AsyncStorage.removeItem as jest.Mock).mockResolvedValueOnce(null);
-        // Simulate sign out button press
-        fireEvent.press(getByText('Sign Out'));
+        fireEvent.press(rendered.getByText('Sign Out'));
         await waitFor(() => {
-            expect(AsyncStorage.removeItem).toHaveBeenCalledWith('token');
-            expect(router.replace).toHaveBeenCalledWith('/login');
+            expect(AsyncStorage.removeItem).toHaveBeenCalledWith('username');
+            expect(AsyncStorage.removeItem).toHaveBeenCalledWith('email');
+            expect(router.replace).toHaveBeenCalledWith('/(auth)/login');
         });
     });
 
     test('displays alert when sign out fails', async () => {
-        const { getByText } = render(<SettingsScreen />);
+        const rendered = render(
+            <AuthProvider>
+                <SettingsScreen />
+            </AuthProvider>
+        );
+        await waitFor(() => expect(rendered.getByText('Sign Out')).toBeTruthy());
         (AsyncStorage.removeItem as jest.Mock).mockRejectedValueOnce(new Error('Error'));
         const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => { });
-        // Simulate sign out button press
-        fireEvent.press(getByText('Sign Out'));
+        fireEvent.press(rendered.getByText('Sign Out'));
         await waitFor(() => {
             expect(alertSpy).toHaveBeenCalledWith('Error', 'Failed to sign out.');
         });
@@ -112,15 +127,19 @@ describe('SettingsScreen', () => {
         // Override useTheme to return dark theme
         const useTheme = require('../../../../components/ThemeContext').useTheme;
         useTheme.mockReturnValue({ theme: 'dark' });
-        const renderResult = render(<SettingsScreen />);
-        const { getByText } = renderResult;
+        const rendered = render(
+            <AuthProvider>
+                <SettingsScreen />
+            </AuthProvider>
+        );
+        await waitFor(() => expect(rendered.getByText('Settings')).toBeTruthy());
+        const { getByText } = rendered;
         const { Colors } = require('../../../../components/styles/Colors');
         // Check that the title text has the dark theme text color
         const titleText = getByText('Settings');
         expect(titleText.props.style).toMatchObject({ color: Colors.dark.text });
 
-        // Use the JSON tree to find all Image nodes
-        const tree = renderResult.toJSON();
+        const tree = rendered.toJSON();
 
         // Helper function to recursively find nodes by type in the JSON tree
         function findAllByType(node: any, type: string): any[] {
@@ -144,11 +163,8 @@ describe('SettingsScreen', () => {
         const images = findAllByType(tree, 'Image');
         expect(images.length).toBeGreaterThan(0);
 
-        // In case the style is an array, flatten it using StyleSheet.flatten
         const { StyleSheet } = require('react-native');
         const flattenedStyle = StyleSheet.flatten(images[0].props.style);
         expect(flattenedStyle).toMatchObject({ tintColor: Colors.dark.text });
     });
-
-
 });

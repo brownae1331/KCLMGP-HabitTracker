@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { AuthProvider } from '../../../components/AuthContext';
 
 // Mock expo-router to avoid navigation context issues
 jest.mock('expo-router', () => ({
@@ -18,7 +19,11 @@ import LoginScreen from '../../(auth)/login';
 
 describe('LoginScreen functionality tests', () => {
   test('renders the component correctly', () => {
-    const { getByText, getByPlaceholderText } = render(<LoginScreen />);
+    const { getByText, getByPlaceholderText } = render(
+      <AuthProvider>
+        <LoginScreen />
+      </AuthProvider>
+    );
     expect(getByText('Log In')).toBeTruthy();
     expect(getByPlaceholderText('Email')).toBeTruthy();
     expect(getByText('Login')).toBeTruthy();
@@ -27,7 +32,11 @@ describe('LoginScreen functionality tests', () => {
   test('calls logIn and navigates to the main screen on successful login', async () => {
     // Simulate a successful login
     (logIn as jest.Mock).mockResolvedValueOnce(undefined);
-    const { getByPlaceholderText, getByText } = render(<LoginScreen />);
+    const { getByPlaceholderText, getByText } = render(
+      <AuthProvider>
+        <LoginScreen />
+      </AuthProvider>
+    );
 
     // Simulate input
     fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
@@ -39,12 +48,16 @@ describe('LoginScreen functionality tests', () => {
     // Wait for the async operation to complete and assert
     await waitFor(() => {
       expect(logIn).toHaveBeenCalledWith('test@example.com', 'password123');
-      expect(router.replace).toHaveBeenCalledWith('/(tabs)/habits');
+      expect(router.replace).toHaveBeenCalledWith('/(protected)/(tabs)/habits');
     });
   });
 
   // test('shows error when email or password is empty', async () => {
-  //   const { getByPlaceholderText, getByText, findByText } = render(<LoginScreen />);
+  //   const { getByPlaceholderText, getByText, findByText } = render(
+    //   <AuthProvider>
+    //     <LoginScreen />
+    //   </AuthProvider>
+    // );
 
   //   // ensure that the email and password fields are empty
   //   fireEvent.changeText(getByPlaceholderText('Email'), '');
@@ -62,7 +75,11 @@ describe('LoginScreen functionality tests', () => {
   test('displays an error message on failed login', async () => {
     // Simulate a failed login
     (logIn as jest.Mock).mockRejectedValueOnce(new Error('Invalid credentials'));
-    const { getByPlaceholderText, getByText, findByText } = render(<LoginScreen />);
+    const { getByPlaceholderText, getByText, findByText } = render(
+      <AuthProvider>
+        <LoginScreen />
+      </AuthProvider>
+    );
 
     // Simulate wrong input
     fireEvent.changeText(getByPlaceholderText('Email'), 'wrong@example.com');
@@ -80,7 +97,11 @@ describe('LoginScreen functionality tests', () => {
     // Simulate an unknown error
     (logIn as jest.Mock).mockRejectedValueOnce('Some unknown error');
 
-    const { getByPlaceholderText, getByText, findByText } = render(<LoginScreen />);
+    const { getByPlaceholderText, getByText, findByText } = render(
+      <AuthProvider>
+        <LoginScreen />
+      </AuthProvider>
+    );
 
     fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
     fireEvent.changeText(getByPlaceholderText('Password'), 'password123');
