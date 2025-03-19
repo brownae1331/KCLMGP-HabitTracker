@@ -788,6 +788,38 @@ export const migrateInstances = async (userEmail, dateCondition = '=', dateValue
   }
 };
 
+// Export all data for a user as JSON
+app.get('/export/:email', async (req, res) => {
+  try {
+    const userEmail = req.params.email;
+    // Get user details (only email and username are stored in users)
+    const [userRows] = await pool.query('SELECT email, username FROM users WHERE email = ?', [userEmail]);
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const user = userRows[0];
+
+    // Get habits for the user
+    const [habitRows] = await pool.query('SELECT * FROM habits WHERE user_email = ?', [userEmail]);
+    // Get habit progress for the user
+    const [progressRows] = await pool.query('SELECT * FROM habit_progress WHERE user_email = ?', [userEmail]);
+    // Get habit locations for the user
+    const [locationRows] = await pool.query('SELECT * FROM habit_locations WHERE user_email = ?', [userEmail]);
+
+    // Combine the data
+    const exportData = {
+      user,
+      habits: habitRows,
+      progress: progressRows,
+      locations: locationRows,
+    };
+
+    res.json(exportData);
+  } catch (error) {
+    console.error('Error exporting user data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Start the server
 app.listen(PORT, () => {
