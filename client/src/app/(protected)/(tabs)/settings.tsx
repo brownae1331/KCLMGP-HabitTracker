@@ -1,62 +1,37 @@
-import { StyleSheet, TouchableOpacity, Alert, FlatList, View, Switch } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { ThemedText } from '../../components/ThemedText';
+import { StyleSheet, TouchableOpacity, Alert, FlatList, View } from 'react-native';
+import React from 'react';
+import { ThemedText } from '../../../components/ThemedText';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Feather } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons'
 import { Image } from 'react-native';
-import { useTheme } from '../../components/ThemeContext';
-import { Colors } from '../../components/styles/Colors';
+import { useTheme } from '../../../components/ThemeContext';
+import { Colors } from '../../../components/styles/Colors';
 import { ScrollView } from 'react-native';
-import { SharedStyles } from '../../components/styles/SharedStyles';
-import { enableNotifications, disableNotifications, getNotificationStatus } from '../NotificationsHandler';
+import { SharedStyles } from '../../../components/styles/SharedStyles';
+import { useAuth } from '../../../components/AuthContext';
+
 
 export default function SettingsScreen() {
-  const { theme, toggleTheme } = useTheme();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-
-  useEffect(() => {
-    async function fetchNotificationStatus() {
-      const status = await getNotificationStatus();
-      setNotificationsEnabled(status);
-    }
-    fetchNotificationStatus();
-  }, []);
-
-  const toggleNotifications = async () => {
-    console.log('Toggle function called on web!');
-  
-    try {
-      let newState = !notificationsEnabled; 
-      setNotificationsEnabled(newState); 
-  
-      if (newState) {
-        console.log('Enabling notifications...');
-        await enableNotifications();
-      } else {
-        console.log('Disabling notifications...');
-        await disableNotifications();
-      }
-  
-    } catch (error) {
-      console.error('Error toggling notifications:', error);
-      Alert.alert('Error', 'Failed to update notification settings.');
-    }
-  };
-  
-  
+  const { theme } = useTheme();
+  const { checkAuthStatus } = useAuth();
 
   const settingsOptions = [
-    { title: 'Account', icon: require('../../../assets/images/account.png'), route: '/account' as const },
+    { title: 'Account', icon: require('../../../../assets/images/account.png'), route: '/account' as const },
+    { title: 'Notifications', icon: require('../../../../assets/images/notifications.png'), route: '/notifications' as const },
+    { title: 'Appearance', icon: require('../../../../assets/images/appearance.png'), route: '/appearance' as const },
   ] as const;
+
 
   type RouteType = (typeof settingsOptions)[number]['route'];
 
   const handleSignOut = async () => {
     try {
-      await AsyncStorage.removeItem('token');
-      router.replace('/login');
+      await AsyncStorage.removeItem('username');
+      await AsyncStorage.removeItem('email');
+      await checkAuthStatus();
+      router.replace('/(auth)/login');
     } catch (error) {
       Alert.alert('Error', 'Failed to sign out.');
     }
@@ -85,22 +60,6 @@ export default function SettingsScreen() {
           keyExtractor={(item) => item.title}
           contentContainerStyle={styles.listContainer}
         />
-
-        <View style={styles.settingItem}>
-          <View style={styles.iconContainer}>
-            <Image source={require('../../../assets/images/appearance.png')} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
-          </View>
-          <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>Dark Mode</ThemedText>
-          <Switch value={theme === 'dark'} onValueChange={toggleTheme} />
-        </View>
-
-        <View style={styles.settingItem}>
-          <View style={styles.iconContainer}>
-            <Image source={require('../../../assets/images/notifications.png')} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
-          </View>
-          <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>Notifications</ThemedText>
-          <Switch value={notificationsEnabled} onValueChange={toggleNotifications} />
-        </View>
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <ThemedText style={styles.signOutText}>Sign Out</ThemedText>

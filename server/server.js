@@ -158,7 +158,7 @@ app.post('/users/login', async (req, res) => {
     if (!passwordMatch) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-
+    await syncHabits(email);
     // Don't send the password hash back to the client
     const { password: _, ...userWithoutPassword } = user;
     res.json(userWithoutPassword);
@@ -298,10 +298,14 @@ app.delete('/users/:username', async (req, res) => {
 app.get('/habits/:email/:date', async (req, res) => {
   const { email, date } = req.params;
   const requestedDate = new Date(date);
+  if (isNaN(requestedDate.getTime())) {
+    return res.status(400).json({ error: 'Invalid date format' });
+  }
   const today = new Date();
 
   try {
     let habits = [];
+    await migrateInstances(email, '<=');
     if (requestedDate > today) {
       // Fetch habits from habit_instances for future dates
       habits = await getHabitsForDate(email, requestedDate, 'instances');
@@ -399,13 +403,17 @@ app.post('/habits', async (req, res) => {
 
     await generateIntervalInstances(email, habitName, 7);
     await generateDayInstances(email, habitName, 7)
-    migrateTodaysInstances(email);
+    await migrateInstances(email);
 
     res.status(201).json({ message: 'Habit added successfully' });
   } catch (error) {
     console.error('Error adding habit:', error);
     // e.g. handle duplicates or other errors
-    res.status(500).json({ error: 'Error adding habit' });
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: 'Habit already exists for this user' });
+    } else {
+      res.status(500).json({ error: 'Error adding habit' });
+    }
   }
 });
 
@@ -418,7 +426,7 @@ app.get('/habits/:username', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     const userEmail = user[0].email;
-    const [habits] = await pool.query('SELECT habitName FROM habits WHERE user_email = ?',[userEmail]);
+    const [habits] = await pool.query('SELECT habitName FROM habits WHERE user_email = ?', [userEmail]);
 
     if (habits.length === 0) {
       return res.json([]);
@@ -453,20 +461,26 @@ app.post('/habit-progress', async (req, res) => {
 
   try {
     const [existingProgress] = await pool.query(
-      `SELECT * FROM habit_progress 
-      WHERE user_email = ? AND habitName = ? AND progressDate = ?`,
+      `SELECT hp.*, h.goalValue 
+       FROM habit_progress hp
+       JOIN habits h ON hp.user_email = h.user_email AND hp.habitName = h.habitName
+       WHERE hp.user_email = ? AND hp.habitName = ? AND hp.progressDate = ?`,
       [email, habitName, today]
     );
 
-    let streak = 0;
-    if (existingProgress.length > 0) {
-      // for if the habits are implemented such that you can add progress
-      // on top of previous progress (e.g. +1 glass of water towards the goalValue)
-      // const prevProgress = existingProgress[0].progress;
-      // const newProgress = prevProgress + progress;
-      // const completed = newProgress >= existingProgress[0].goalValue;
+    if (!existingProgress.length) {
+      return res.status(404).json({ error: 'Habit not found' });
+    }
 
-      const completed = progress >= existingProgress[0].goalValue;
+    let streak = 0;
+    let completed = false;
+    const { goalValue } = existingProgress[0];
+    if (existingProgress.length > 0) {
+      if (goalValue !== null) {
+        completed = progress >= goalValue;
+      } else {
+        completed = progress >= 1;
+      }
 
       if (completed) {
         const [yesterday] = await pool.query(`
@@ -476,9 +490,7 @@ app.post('/habit-progress', async (req, res) => {
           AND progressDate = DATE_SUB(?, INTERVAL 1 DAY)`,
           [email, habitName, today]
         );
-        // if habit was completed yesterday, then streak = prevStreak + 1, else 1
-        //streak = (yesterday.length > 0 && yesterday[0].completed) ? yesterday[0].streak + 1 : 1;
-        streak = yesterday[0].streak + 1;
+        streak = (yesterday.length > 0 && yesterday[0].completed) ? yesterday[0].streak + 1 : 1;
       }
 
       await pool.query(
@@ -506,7 +518,7 @@ app.post('/habit-progress', async (req, res) => {
 // Get habit progress data for a specific user and habit
 app.get('/habit-progress/:email/:habitName', async (req, res) => {
   const { email, habitName } = req.params;
-  const { range } = req.query; // "7" for past 7 days, "30" for past 30 days/month, or 'month' for monthly average
+  const { range = 7 } = req.query; // "7" for past 7 days, "30" for past 30 days/month, or 'month' for monthly average
 
   try {
     const [user] = await pool.query('SELECT email FROM users WHERE email = ?', [email]);
@@ -525,6 +537,8 @@ app.get('/habit-progress/:email/:habitName', async (req, res) => {
       `;
       queryParams.push(parseInt(range));
     } else if (range === 'month') {
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 1);
       query = `
         SELECT 
           YEAR(progressDate) AS year,
@@ -536,9 +550,9 @@ app.get('/habit-progress/:email/:habitName', async (req, res) => {
         GROUP BY YEAR(progressDate), MONTH(progressDate)
         ORDER BY YEAR(progressDate) DESC, MONTH(progressDate) DESC;
       `;
-      queryParams.push(startDate.toISOString().split('T')[0]);
+      queryParams.push(startDate.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
     } else {
-      return res.status(400).json({ error: 'Invalid range parameter' });
+      return res.status(400).json({ error: 'Invalid range parameter (use 7, 30, or month)' });
     }
     const [progressData] = await pool.query(query, queryParams);
     res.json(progressData);
@@ -549,7 +563,7 @@ app.get('/habit-progress/:email/:habitName', async (req, res) => {
 });
 
 // Get habit progress data for all habits of a specific user on a specific date
-app.get('/habit-progress/:email/:date', async (req, res) => {
+app.get('/habit-progress-by-date/:email/:date', async (req, res) => {
   const { email, date } = req.params;
 
   try {
@@ -572,16 +586,58 @@ app.get('/habit-progress/:email/:date', async (req, res) => {
   }
 });
 
+app.get('/habit-streak-by-date/:email/:habitName/:date', async (req, res) => {
+  const { email, habitName, date } = req.params;
+  try {
+    const [streakData] = await pool.query(
+      `SELECT streak FROM habit_progress 
+       WHERE user_email = ? AND habitName = ? AND progressDate = ?`,
+      [email, habitName, date]
+    );
+    res.json(streakData[0] || { streak: 0 });
+  } catch (error) {
+    console.error('Error fetching habit streak:', error);
+    res.status(500).json({ error: 'Error fetching habit streak data' });
+  }
+});
 
 //
-app.post('/habits/sync', async (req, res) => {
-  const { userEmail } = req.body;
-  if (!userEmail) {
-    return res.status(400).json({ error: "Email is required" });
-  }
-  try {
-    await migrateTodaysInstances(userEmail);
+// app.post('/habits/sync', async (req, res) => {
+//   const { userEmail } = req.body;
+//   if (!userEmail) {
+//     return res.status(400).json({ error: "Email is required" });
+//   }
+//   try {
+//     // catch up on all past and current due habits
+//     await migrateInstances(userEmail, '<=');
 
+//     // generate new instances for all habits
+//     const [habits] = await pool.query(
+//       `SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`,
+//       [userEmail]
+//     );
+
+//     for (const habit of habits) {
+//       if (habit.scheduleOption === 'interval') {
+//         await generateIntervalInstances(userEmail, habit.habitName);
+//       } else if (habit.scheduleOption === 'weekly') {
+//         await generateDayInstances(userEmail, habit.habitName);
+//       }
+
+//     }
+//     res.json({ message: 'Habits synchronized successfully' });
+//   } catch (error) {
+//     console.error('Error synchronizing habits:', error);
+//     res.status(500).json({ error: 'Error synchronizing habits' });
+//   }
+// });
+
+const syncHabits = async (userEmail) => {
+  try {
+    // catch up on all past and current due habits
+    await migrateInstances(userEmail, '<=');
+
+    // generate new instances for all habits
     const [habits] = await pool.query(
       `SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`,
       [userEmail]
@@ -593,15 +649,13 @@ app.post('/habits/sync', async (req, res) => {
       } else if (habit.scheduleOption === 'weekly') {
         await generateDayInstances(userEmail, habit.habitName);
       }
-
     }
-    res.json({ message: 'Habits synchronized successfully' });
+    console.log(`Habits synchronized for user ${userEmail}`);
   } catch (error) {
     console.error('Error synchronizing habits:', error);
-    res.status(500).json({ error: 'Error synchronizing habits' });
+    throw error;
   }
-});
-
+};
 
 //generate missing habit instances for interval habits 
 //pregenerates up to 7 days worth of interval habits
@@ -697,29 +751,31 @@ const generateDayInstances = async (userEmail, habitName, daysAhead = 7) => {
   }
 };
 
-// Moves habits from habit_instances to habit_progress if the due date is today
-const migrateTodaysInstances = async (userEmail) => {
+// Moves habits from habit_instances to habit_progress if the due date is today or in the past
+// depending on what dateContidion is passed in 
+//change name to migrateInstances pls
+const migrateInstances = async (userEmail, dateCondition = '=', dateValue = new Date().toISOString().split('T')[0]) => {
   try {
-    const today = new Date().toISOString().split('T')[0];
-
     const [instances] = await pool.query(
-      `SELECT habitName FROM habit_instances
-      WHERE user_email = ? AND dueDate = ?`,
-      [userEmail, today]
+      `SELECT habitName, dueDate FROM habit_instances
+      WHERE user_email = ? AND dueDate ${dateCondition} ?`,
+      [userEmail, dateValue]
     );
 
     for (const instance of instances) {
       const habitName = instance.habitName;
+      const instanceDueDate = instance.dueDate
       await pool.query(
         `INSERT IGNORE INTO habit_progress (user_email, habitName, progressDate, progress, completed, streak)
         VALUES (?, ?, ?, ?, ?, ?)`,
-        [userEmail, habitName, today, 0, false, 0]
+        [userEmail, habitName, instanceDueDate, 0, false, 0]
       );
       await pool.query(
         `DELETE FROM habit_instances
         WHERE user_email = ? AND habitName = ? AND dueDate = ?`,
-        [userEmail, habitName, today]
+        [userEmail, habitName, instanceDueDate]
       );
+      console.log(`Migrated habit: ${habitName} due on: ${instanceDueDate} for user: ${userEmail}`);
     }
     console.log(`Migrated today's instances for user ${userEmail}`);
   } catch (error) {
@@ -727,6 +783,38 @@ const migrateTodaysInstances = async (userEmail) => {
   }
 };
 
+// Export all data for a user as JSON
+app.get('/export/:email', async (req, res) => {
+  try {
+    const userEmail = req.params.email;
+    // Get user details (only email and username are stored in users)
+    const [userRows] = await pool.query('SELECT email, username FROM users WHERE email = ?', [userEmail]);
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const user = userRows[0];
+
+    // Get habits for the user
+    const [habitRows] = await pool.query('SELECT * FROM habits WHERE user_email = ?', [userEmail]);
+    // Get habit progress for the user
+    const [progressRows] = await pool.query('SELECT * FROM habit_progress WHERE user_email = ?', [userEmail]);
+    // Get habit locations for the user
+    const [locationRows] = await pool.query('SELECT * FROM habit_locations WHERE user_email = ?', [userEmail]);
+
+    // Combine the data
+    const exportData = {
+      user,
+      habits: habitRows,
+      progress: progressRows,
+      locations: locationRows,
+    };
+
+    res.json(exportData);
+  } catch (error) {
+    console.error('Error exporting user data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Start the server
 app.listen(PORT, () => {
@@ -766,3 +854,131 @@ app.post('/users/update-password', async (req, res) => {
   }
 });
 
+app.get('/habit-days/:email/:habitName', async (req, res) => {
+  const { email, habitName } = req.params;
+  try {
+    const [rows] = await pool.query(
+      `SELECT day FROM habit_days 
+       WHERE user_email = ? AND habitName = ?`,
+      [email, habitName]
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching habit days:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/habit-interval/:email/:habitName', async (req, res) => {
+  const { email, habitName } = req.params;
+  try {
+    const [rows] = await pool.query(
+      `SELECT increment FROM habit_intervals 
+       WHERE user_email = ? AND habitName = ?`,
+      [email, habitName]
+    );
+    res.json(rows[0] || { increment: null });
+  } catch (error) {
+    console.error('Error fetching habit interval:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update an existing habit
+app.put('/habits', async (req, res) => {
+  const {
+    email,
+    habitName,
+    habitDescription,
+    habitType,
+    habitColor,
+    scheduleOption,
+    intervalDays,
+    selectedDays,
+    goalValue,
+    goalUnit
+  } = req.body;
+
+  try {
+    // 1) Update the main habits table
+    await pool.query(
+      `UPDATE habits SET 
+        habitDescription = ?, 
+        habitType = ?, 
+        habitColor = ?,
+        scheduleOption = ?, 
+        goalValue = ?, 
+        goalUnit = ?
+       WHERE user_email = ? AND habitName = ?`,
+      [
+        habitDescription || '',
+        habitType,
+        habitColor,
+        scheduleOption,
+        goalValue || null,
+        goalUnit || null,
+        email,
+        habitName
+      ]
+    );
+
+    // 2) Delete existing schedule data
+    await pool.query('DELETE FROM habit_days WHERE user_email = ? AND habitName = ?', [email, habitName]);
+    await pool.query('DELETE FROM habit_intervals WHERE user_email = ? AND habitName = ?', [email, habitName]);
+
+    // 3) If the schedule is "weekly," insert each selected day into habit_days
+    if (scheduleOption === 'weekly' && Array.isArray(selectedDays)) {
+      for (const day of selectedDays) {
+        await pool.query(
+          `INSERT INTO habit_days (user_email, habitName, day)
+           VALUES (?, ?, ?)`,
+          [email, habitName, day]
+        );
+      }
+
+      // Handle the special case for today
+      // Check if today was removed from the schedule
+      const today = new Date();
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const todayName = dayNames[today.getDay()];
+
+      // If today's day is not in the selected days, remove it from habit_progress for today
+      if (!selectedDays.includes(todayName)) {
+        const todayStr = today.toISOString().split('T')[0];
+        await pool.query(
+          `DELETE FROM habit_progress 
+           WHERE user_email = ? AND habitName = ? AND progressDate = ?`,
+          [email, habitName, todayStr]
+        );
+      }
+    }
+
+    // 4) If the schedule is "interval," insert a row into habit_intervals
+    if (scheduleOption === 'interval' && intervalDays) {
+      await pool.query(
+        `INSERT INTO habit_intervals (user_email, habitName, increment)
+         VALUES (?, ?, ?)`,
+        [email, habitName, parseInt(intervalDays, 10)]
+      );
+
+      // For interval habits, we don't automatically remove today's instance
+      // as the interval recalculation might still include today
+    }
+
+    // 5) Regenerate future instances based on new schedule
+    await pool.query('DELETE FROM habit_instances WHERE user_email = ? AND habitName = ?', [email, habitName]);
+
+    if (scheduleOption === 'interval') {
+      await generateIntervalInstances(email, habitName, 7);
+    } else {
+      await generateDayInstances(email, habitName, 7);
+    }
+
+    await migrateInstances(email);
+
+    res.status(200).json({ message: 'Habit updated successfully' });
+  } catch (error) {
+    console.error('Error updating habit:', error);
+    res.status(500).json({ error: 'Error updating habit' });
+  }
+});

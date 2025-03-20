@@ -10,12 +10,16 @@ interface StatsBoxComponentProps {
     selectedDate: string;
     completionPercentage: number;
     formatDate: (date: string) => string;
+    currentStreak: number;
+    longestStreak: number;
 }
 
 export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
     selectedDate,
     completionPercentage,
     formatDate,
+    currentStreak,
+    longestStreak,
 }) => {
     const { theme } = useTheme();
     const today = new Date().toISOString().split("T")[0];
@@ -23,10 +27,10 @@ export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
     return (
         <View style={[CalendarPageStyles.statsContainer, { backgroundColor: Colors[theme].background2 }]}>
             <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
-                🔥 Current Streak: <Text style={{ color: "#FFD700" }}>{17} days</Text>
+                🔥 Current Streak: <Text style={{ color: "#FFD700" }}>{currentStreak} days</Text>
             </ThemedText>
             <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
-                🏆 Longest Streak: <Text style={{ color: "#FFD700" }}>{38} days</Text>
+                🏆 Longest Streak: <Text style={{ color: "#FFD700" }}>{longestStreak} days</Text>
             </ThemedText>
 
             {/* Separating Line */}
@@ -34,11 +38,8 @@ export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
 
             {/* Habits Completed Header */}
             <View style={CalendarPageStyles.habitsContainer}>
-                <ThemedText style={{ fontSize: 24, fontWeight: "bold" }}>
-                    Habits completed{" "}
-                    <Text style={{ color: "#FFD700" }}>
-                        {selectedDate === today ? "Today" : formatDate(selectedDate)}
-                    </Text>
+                <ThemedText style={{ color: Colors[theme].text, fontSize: 24, fontWeight: "bold" }}>
+                    Average Completion Percentage
                 </ThemedText>
             </View>
 
