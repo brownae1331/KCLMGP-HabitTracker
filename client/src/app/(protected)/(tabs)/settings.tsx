@@ -1,16 +1,16 @@
 import { StyleSheet, TouchableOpacity, Alert, FlatList, View, Switch } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { ThemedText } from '../../components/ThemedText';
+import { ThemedText } from '../../../components/ThemedText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'react-native';
-import { useTheme } from '../../components/ThemeContext';
-import { Colors } from '../../components/styles/Colors';
+import { useTheme } from '../../../components/ThemeContext';
+import { Colors } from '../../../components/styles/Colors';
 import { ScrollView } from 'react-native';
-import { SharedStyles } from '../../components/styles/SharedStyles';
-import { enableNotifications, disableNotifications, getNotificationStatus } from '../NotificationsHandler';
+import { SharedStyles } from '../../../components/styles/SharedStyles';
+import { enableNotifications, disableNotifications, getNotificationStatus } from '../../NotificationsHandler';
 
 export default function SettingsScreen() {
   const { theme, toggleTheme } = useTheme();
