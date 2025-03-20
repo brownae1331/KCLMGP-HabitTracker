@@ -23,6 +23,8 @@ export default function CalendarScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [visibleCalendarDates, setVisibleCalendarDates] = useState<string[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
 
   // Ensure theme is fully loaded before rendering calendar
   useEffect(() => {
@@ -153,6 +155,53 @@ export default function CalendarScreen() {
           // Update the completion percentage state
           setCompletionPercentage(averagePercentage);
 
+          // Calculate streak information
+          let currentStreakCount = 0;
+          let maxStreakCount = 0;
+          let streakActive = true;
+
+          // Sort dates in descending order (newest first)
+          const sortedDates = Object.keys(newMarkedDates)
+            .filter(date => date <= today) // Only consider today and past dates
+            .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+          if (sortedDates.length > 0) {
+            // Check if today exists in the dataset and is not 100% complete
+            const todayData = newMarkedDates[today];
+            const isTodayComplete = todayData && todayData.progress === 100;
+            const excludeToday = todayData && !isTodayComplete;
+
+            // Calculate current streak (continuous days with 100% completion)
+            for (const date of sortedDates) {
+              // Skip today if it's not complete (to maintain previous streak)
+              if (excludeToday && date === today) continue;
+
+              const dateData = newMarkedDates[date];
+
+              // A day is considered complete if progress is 100%
+              if (dateData.progress === 100) {
+                if (streakActive) {
+                  currentStreakCount++;
+                }
+              } else {
+                // Break the streak once we hit an incomplete day
+                streakActive = false;
+              }
+            }
+
+            // If today is 100% complete, include it in the streak
+            if (isTodayComplete) {
+              // The streak was already counted in the loop above
+            }
+
+            // Track the longest streak
+            maxStreakCount = Math.max(maxStreakCount, currentStreakCount);
+          }
+
+          // Update the streak states
+          setCurrentStreak(currentStreakCount);
+          setLongestStreak(maxStreakCount);
+
           setIsLoading(false);
         } catch (error) {
           console.error('Error fetching habit progress:', error);
@@ -205,6 +254,8 @@ export default function CalendarScreen() {
           selectedDate={selectedDate}
           completionPercentage={completionPercentage}
           formatDate={formatDate}
+          currentStreak={currentStreak}
+          longestStreak={longestStreak}
         />
       </ScrollView>
     </SafeAreaView>

@@ -1,12 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, Dimensions, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, useWindowDimensions, Platform } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { getWeekDates } from '../utils/dateUtils';
 import { WeekCalendarStyles } from './styles/WeekCalendarStyles';
 import { ThemedText } from './ThemedText';
 import { Colors } from './styles/Colors';
-
-const SCREEN_WIDTH = Dimensions.get("window").width;
 
 interface WeeklyCalendarProps {
     selectedDate: { date: number; fullDate: Date };
@@ -20,6 +18,7 @@ interface DayType {
 }
 
 export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, setSelectedDate }) => {
+    const { width } = useWindowDimensions(); 
     const today = new Date();
     const todayDate = today.getDate();
     const todayMonth = today.getMonth();
@@ -61,7 +60,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, se
     const handleScrollEnd = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
         if (!userInteracted.current) return;
 
-        const newIndex = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+        const newIndex = Math.round(event.nativeEvent.contentOffset.x / width);
         setWeekIndex(newIndex - 500);
 
         const newWeek = getWeekDates(newIndex - 500);
@@ -71,11 +70,11 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, se
     };
 
     return (
-        <View style={WeekCalendarStyles.calendarWrapper}>
+        <View style={[WeekCalendarStyles().calendarWrapper, { width: width }]}>
             {/* Web: Display Arrows */}
             {Platform.OS === 'web' ? (
-                <View style={WeekCalendarStyles.weekContainer}>
-                    <TouchableOpacity onPress={() => changeWeek(-1)} style={WeekCalendarStyles.arrowButton}>
+                <View style={[WeekCalendarStyles().weekContainer, { width: width }]}>
+                    <TouchableOpacity onPress={() => changeWeek(-1)} style={WeekCalendarStyles().arrowButton}>
                         <Text style={{ fontSize: 20 }}>{"<"}</Text>
                     </TouchableOpacity>
 
@@ -89,12 +88,12 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, se
                         return (
                             <TouchableOpacity
                                 key={index}
-                                style={WeekCalendarStyles.dayContainer}
+                                style={WeekCalendarStyles().dayContainer}
                                 onPress={() => setSelectedDate({ date, fullDate })}
                             >
-                                <Text style={WeekCalendarStyles.dayText}>{day}</Text>
+                                <Text style={WeekCalendarStyles().dayText}>{day}</Text>
 
-                                <View style={[isToday && WeekCalendarStyles.todayRing, isSelected && WeekCalendarStyles.selectedCircle]}>
+                                <View style={[isToday && WeekCalendarStyles().todayRing, isSelected && WeekCalendarStyles().selectedCircle]}>
                                     <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
                                         {date}
                                     </ThemedText>
@@ -103,12 +102,12 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, se
                         );
                     })}
 
-                    <TouchableOpacity onPress={() => changeWeek(1)} style={WeekCalendarStyles.arrowButton}>
+                    <TouchableOpacity onPress={() => changeWeek(1)} style={WeekCalendarStyles().arrowButton}>
                         <Text style={{ fontSize: 20 }}>{">"}</Text>
                     </TouchableOpacity>
                 </View>
             ) : (
-                // Phone is swipeable
+                // Mobile is swipeable
                 <FlatList
                     ref={flatListRef}
                     testID='weekly-calendar-list'
@@ -119,14 +118,14 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, se
                     showsHorizontalScrollIndicator={false}
                     initialScrollIndex={500}
                     getItemLayout={(_, index) => ({
-                        length: SCREEN_WIDTH,
-                        offset: SCREEN_WIDTH * index,
+                        length: width,
+                        offset: width * index,
                         index,
                     })}
                     onMomentumScrollEnd={handleScrollEnd}
                     onTouchStart={() => (userInteracted.current = true)}
                     renderItem={({ item: week }: { item: DayType[] }) => (
-                        <View style={WeekCalendarStyles.weekContainer}>
+                        <View style={[WeekCalendarStyles().weekContainer, { width: width }]}>
                             {week.map(({ day, date, fullDate }: DayType, index: number) => {
                                 const isToday =
                                     date === todayDate &&
@@ -137,12 +136,12 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, se
                                 return (
                                     <TouchableOpacity
                                         key={index}
-                                        style={WeekCalendarStyles.dayContainer}
+                                        style={WeekCalendarStyles().dayContainer}
                                         onPress={() => setSelectedDate({ date, fullDate })}
                                     >
-                                        <Text style={WeekCalendarStyles.dayText}>{day}</Text>
+                                        <Text style={WeekCalendarStyles().dayText}>{day}</Text>
 
-                                        <View style={[isToday && WeekCalendarStyles.todayRing, isSelected && WeekCalendarStyles.selectedCircle]}>
+                                        <View style={[isToday && WeekCalendarStyles().todayRing, isSelected && WeekCalendarStyles().selectedCircle]}>
                                             <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
                                                 {date}
                                             </ThemedText>
