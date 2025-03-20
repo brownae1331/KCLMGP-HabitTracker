@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Platform, Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Set notification handler (applies to both native and web)
 Notifications.setNotificationHandler({
@@ -79,4 +80,83 @@ export default function ScheduleWeeklyNotification() {
   }, []);
 
   return null;
+}
+
+// Enable notifications
+export async function enableNotifications() {
+
+  try {
+    if (Platform.OS === 'web') {
+
+      if (!('Notification' in window)) {
+        window.alert('Error: Notifications are not supported in this browser.');
+        return;
+      }
+
+      if (Notification.permission === 'granted') {
+        new Notification('Notifications Enabled', {
+          body: 'You will receive weekly summary notifications.',
+        });
+      } else if (Notification.permission !== 'denied') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          new Notification('Notifications Enabled', {
+            body: 'You will receive weekly summary notifications.',
+          });
+        } else {
+          window.alert('Permission Denied: Notifications were not enabled.');
+          return;
+        }
+      } else {
+        window.alert('Blocked: Notifications are blocked in browser settings.');
+        return;
+      }
+    }
+
+    await AsyncStorage.setItem('notificationsEnabled', 'true');
+
+    setTimeout(() => {
+      if (Platform.OS === 'web') {
+        window.alert('Success: Notifications Enabled');
+      } else {
+        Alert.alert('Success', 'Notifications Enabled');
+      }
+    }, 200);
+
+  } catch (error) {
+    console.error('Error enabling notifications:', error);
+    window.alert('Error: Failed to enable notifications.');
+  }
+}
+
+// Disable notifications
+export async function disableNotifications() {
+
+  try {
+    if (Platform.OS === 'web') {
+      window.alert(
+        'To fully disable notifications, go to your browser settings and block them manually.'
+      );
+    }
+
+    await AsyncStorage.setItem('notificationsEnabled', 'false');
+
+    setTimeout(() => {
+      if (Platform.OS === 'web') {
+        window.alert('Success: Notifications Disabled');
+      } else {
+        Alert.alert('Success', 'Notifications Disabled');
+      }
+    }, 200);
+
+  } catch (error) {
+    console.error('Error disabling notifications:', error);
+    window.alert('Error: Failed to disable notifications.');
+  }
+}
+
+// Check Notification Status
+export async function getNotificationStatus() {
+  const storedStatus = await AsyncStorage.getItem('notificationsEnabled');
+  return storedStatus === 'true';
 }
