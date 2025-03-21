@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 export const AuthStyles = StyleSheet.create({
     container: {
@@ -9,11 +9,24 @@ export const AuthStyles = StyleSheet.create({
     card: {
         padding: 20,
         borderRadius: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
         elevation: 5,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+            },
+            android: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+            },
+            web: {
+                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
+            }
+        }),
     },
     title: {
         textAlign: 'center',
