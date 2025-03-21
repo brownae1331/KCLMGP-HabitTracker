@@ -95,7 +95,7 @@ export default function StatsScreen() {
 
         {habits.length === 0 ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-            <ThemedText type="subtitle">
+            <ThemedText type="subtitle" style={styles.backgroundText}>
               You don’t have any habits yet! Create a habit to see statistics.
             </ThemedText>
           </View>
@@ -160,8 +160,10 @@ export default function StatsScreen() {
                 <QuitHabitGraph email={email} habitName={selectedHabit} />
               )
             ) : (
-              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ThemedText type="subtitle">Select a habit to see statistics about your progress!</ThemedText>
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginVertical: 40 }}>
+                <ThemedText type="subtitle" style={styles.backgroundText}>
+                  Select a habit to see statistics about your progress!
+                  </ThemedText>
               </View>
             )}
           </>
@@ -193,5 +195,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
     maxWidth: 100,
+  },
+  backgroundText: {
+    fontSize: 20, 
+    textAlign: 'center', 
+    maxWidth: 500,  
+    color: Colors.light.backgroundText
   },
 });
