@@ -19,7 +19,7 @@ export default function SignupScreen() {
     const handleSignup = async () => {
         try {
             await createUser(email, password, username);
-            router.replace('/(tabs)/habits');
+            router.replace('/(protected)/(tabs)/habits');
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message);

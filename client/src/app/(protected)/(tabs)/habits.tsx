@@ -12,7 +12,7 @@ import { NewHabitModal } from '../../../components/NewHabitModal';
 import { ThemedText } from '../../../components/ThemedText';
 import { Colors } from '../../../components/styles/Colors';
 import { useTheme } from '../../../components/ThemeContext';
-import { addHabit, getHabitsForDate } from '../../../lib/client';
+import { addHabit, getHabitDays, getHabitInterval, getHabitsForDate, updateHabit } from '../../../lib/client';
 //import { getHabits } from '../../lib/client';
 import HabitPanel, { Habit } from '../../../components/HabitPanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -42,9 +42,13 @@ export default function HomeScreen() {
   const [goalUnit, setGoalUnit] = useState('');
   const { theme } = useTheme();
 
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const [currentEditHabit, setCurrentEditHabit] = useState<Habit | null>(null);
+
   const handleAddHabit = async () => {
     try {
-      const newHabit = {
+      const habitData = {
         email: email,
         habitName,
         habitDescription,
@@ -57,11 +61,18 @@ export default function HomeScreen() {
         goalUnit: isGoalEnabled ? goalUnit : null,
       };
 
-      await addHabit(newHabit);
-      fetchHabits(); // Refresh the habit list after adding a new habit
+      if (isEditMode && currentEditHabit) {
+        // If editing, update the existing habit
+        await updateHabit(habitData);
+      } else {
+        // If adding, create a new habit
+        await addHabit(habitData);
+      }
+
+      await fetchHabits();
 
     } catch (error) {
-      console.error('Error adding habit:', error);
+      console.error(`Error ${isEditMode ? 'updating' : 'adding'} habit:`, error);
     }
 
     // Reset form values and close modal
@@ -75,6 +86,8 @@ export default function HomeScreen() {
     setIsGoalEnabled(false);
     setGoalValue('');
     setGoalUnit('');
+    setIsEditMode(false);
+    setCurrentEditHabit(null);
     setModalVisible(false);
   };
 
@@ -137,6 +150,46 @@ export default function HomeScreen() {
     fetchHabits();
   }, [selectedDate, email]);
 
+  // Add a function to handle editing a habit
+  const handleEditHabit = async (habit: Habit) => {
+    // Store the current habit being edited
+    setCurrentEditHabit(habit);
+
+    // Pre-fill the form with the habit's data
+    setHabitName(habit.habitName);
+    setHabitDescription(habit.habitDescription);
+    setHabitType(habit.habitType);
+    setHabitColor(habit.habitColor);
+    setScheduleOption(habit.scheduleOption);
+
+    try {
+      if (habit.scheduleOption === 'interval') {
+        const interval = await getHabitInterval(email, habit.habitName);
+        setIntervalDays(interval.increment.toString());
+      } else if (habit.scheduleOption === 'weekly') {
+        const daysResponse = await getHabitDays(email, habit.habitName);
+        // Extract just the day names from the response objects
+        const dayNames = daysResponse.map((dayObj: { day: string }) => dayObj.day);
+        setSelectedDays(dayNames);
+      }
+    } catch (error) {
+      console.error('Error fetching habit interval or days:', error);
+    }
+
+    const hasGoal = habit.goalValue !== null && habit.goalUnit !== null;
+    setIsGoalEnabled(hasGoal);
+
+    if (habit.goalValue) {
+      setGoalValue(habit.goalValue.toString());
+    }
+
+    if (habit.goalUnit) {
+      setGoalUnit(habit.goalUnit);
+    }
+
+    setIsEditMode(true);
+    setModalVisible(true);
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
@@ -156,10 +209,17 @@ export default function HomeScreen() {
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
         />
+
+        {/* Habit Panel */}
         <View>
           {dbHabits.length > 0 ? (
             dbHabits.map((habit: Habit) => (
-              <HabitPanel key={'$habit.email}-${habit.habitName'} habit={habit} />
+              <HabitPanel
+                key={`${habit.user_email}-${habit.habitName}`}
+                habit={habit}
+                onEdit={handleEditHabit}
+                selectedDate={selectedDate.fullDate}
+              />
             ))
           ) : (
             <ThemedText>No habits found for this date.</ThemedText>
@@ -168,7 +228,10 @@ export default function HomeScreen() {
 
         {/* Add Habit Button */}
         <View style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <TouchableOpacity onPress={() => {
+            setIsEditMode(false);
+            setModalVisible(true);
+          }}>
             <IconSymbol name="plus" size={24} color="#007AFF" />
           </TouchableOpacity>
         </View>
@@ -198,6 +261,7 @@ export default function HomeScreen() {
           goalUnit={goalUnit}
           setGoalUnit={setGoalUnit}
           onAddHabit={handleAddHabit}
+          isEditMode={isEditMode}
         />
       </ScrollView>
     </SafeAreaView>

@@ -481,23 +481,11 @@ app.post('/habit-progress', async (req, res) => {
     let completed = false;
     const { goalValue } = existingProgress[0];
     if (existingProgress.length > 0) {
-      // for if the habits are implemented such that you can add progress
-      // on top of previous progress (e.g. +1 glass of water towards the goalValue)
-      // const prevProgress = existingProgress[0].progress;
-      // const newProgress = prevProgress + progress;
-      // const completed = newProgress >= existingProgress[0].goalValue;
-
-      // const completed = progress >= existingProgress[0].goalValue;
       if (goalValue !== null) {
         completed = progress >= goalValue;
       } else {
         completed = progress >= 1; // when no goal is set: 1 = done, 0 = not done
       }
-
-      // const goalComplete = goalValue !== null && progress >= goalValue;
-      // const noGoalComplete = goalValue == null && progress >= 1
-      // const completed = goalComplete || noGoalComplete
-      // const completed = goalValue !== null && progress >= goalValue;
 
       if (completed) {
         const [yesterday] = await pool.query(`
@@ -507,9 +495,7 @@ app.post('/habit-progress', async (req, res) => {
           AND progressDate = DATE_SUB(?, INTERVAL 1 DAY)`,
           [email, habitName, today]
         );
-        // if habit was completed yesterday, then streak = prevStreak + 1, else 1
         streak = (yesterday.length > 0 && yesterday[0].completed) ? yesterday[0].streak + 1 : 1;
-        //streak = yesterday[0].streak + 1;
       }
 
       await pool.query(
@@ -620,6 +606,52 @@ app.get('/habit-progress-by-date/:email/:date', async (req, res) => {
     res.status(500).json({ error: 'Error fetching habit progress data' });
   }
 });
+
+app.get('/habit-streak-by-date/:email/:habitName/:date', async (req, res) => {
+  const { email, habitName, date } = req.params;
+  try {
+    const [streakData] = await pool.query(
+      `SELECT streak FROM habit_progress 
+       WHERE user_email = ? AND habitName = ? AND progressDate = ?`,
+      [email, habitName, date]
+    );
+    res.json(streakData[0] || { streak: 0 });
+  } catch (error) {
+    console.error('Error fetching habit streak:', error);
+    res.status(500).json({ error: 'Error fetching habit streak data' });
+  }
+});
+
+//
+// app.post('/habits/sync', async (req, res) => {
+//   const { userEmail } = req.body;
+//   if (!userEmail) {
+//     return res.status(400).json({ error: "Email is required" });
+//   }
+//   try {
+//     // catch up on all past and current due habits
+//     await migrateInstances(userEmail, '<=');
+
+//     // generate new instances for all habits
+//     const [habits] = await pool.query(
+//       `SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`,
+//       [userEmail]
+//     );
+
+//     for (const habit of habits) {
+//       if (habit.scheduleOption === 'interval') {
+//         await generateIntervalInstances(userEmail, habit.habitName);
+//       } else if (habit.scheduleOption === 'weekly') {
+//         await generateDayInstances(userEmail, habit.habitName);
+//       }
+
+//     }
+//     res.json({ message: 'Habits synchronized successfully' });
+//   } catch (error) {
+//     console.error('Error synchronizing habits:', error);
+//     res.status(500).json({ error: 'Error synchronizing habits' });
+//   }
+// });
 
 const syncHabits = async (userEmail) => {
   try {
@@ -841,6 +873,38 @@ const fillMissedProgress = async (userEmail) => {
   }
 };
 
+// Export all data for a user as JSON
+app.get('/export/:email', async (req, res) => {
+  try {
+    const userEmail = req.params.email;
+    // Get user details (only email and username are stored in users)
+    const [userRows] = await pool.query('SELECT email, username FROM users WHERE email = ?', [userEmail]);
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const user = userRows[0];
+
+    // Get habits for the user
+    const [habitRows] = await pool.query('SELECT * FROM habits WHERE user_email = ?', [userEmail]);
+    // Get habit progress for the user
+    const [progressRows] = await pool.query('SELECT * FROM habit_progress WHERE user_email = ?', [userEmail]);
+    // Get habit locations for the user
+    const [locationRows] = await pool.query('SELECT * FROM habit_locations WHERE user_email = ?', [userEmail]);
+
+    // Combine the data
+    const exportData = {
+      user,
+      habits: habitRows,
+      progress: progressRows,
+      locations: locationRows,
+    };
+
+    res.json(exportData);
+  } catch (error) {
+    console.error('Error exporting user data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Start the server
 app.listen(PORT, () => {

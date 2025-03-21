@@ -153,8 +153,8 @@ export async function addHabit(habitData: Habit) {
 }
 
 // Delete a habit
-export async function deleteHabit(username: string, name: string) {
-  const response = await fetch(`${BASE_URL}/habits/${username}/${name}`, {
+export async function deleteHabit(user_email: string, habitName: string) {
+  const response = await fetch(`${BASE_URL}/habits/${user_email}/${habitName}`, {
     method: 'DELETE',
   });
   if (!response.ok) {
@@ -163,9 +163,9 @@ export async function deleteHabit(username: string, name: string) {
   return response.json();
 }
 
-// Delete a specific user by username
-export async function deleteUser(username: string) {
-  const response = await fetch(`${BASE_URL}/users/${username}`, {
+// Delete a specific user by email (primary key)
+export async function deleteUser(email: string) {
+  const response = await fetch(`${BASE_URL}/users/${email}`, {
     method: 'DELETE',
   });
   if (!response.ok) {
@@ -252,6 +252,15 @@ export async function updateHabit(habitData: Habit) {
   });
   if (!response.ok) {
     throw new Error('Error updating habit');
+  }
+  return response.json();
+}
+
+// Get habit streak
+export async function getHabitStreak(email: string, habitName: string, date: string) {
+  const response = await fetch(`${BASE_URL}/habit-streak-by-date/${email}/${habitName}/${date}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit streak');
   }
   return response.json();
 }
