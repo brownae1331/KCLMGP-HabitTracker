@@ -139,7 +139,7 @@ const VicChart = ({ email, habitName }: VicChartProps) => {
           data={chartData}
           style={{
             data: {
-              fill: theme === 'light' ? '#0a7ea4' : '#00A3FF',
+              fill: '#0a7ea4',
               width: scaledBarWidth,
             },
           }}

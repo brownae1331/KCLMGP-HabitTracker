@@ -622,37 +622,6 @@ app.get('/habit-streak-by-date/:email/:habitName/:date', async (req, res) => {
   }
 });
 
-//
-// app.post('/habits/sync', async (req, res) => {
-//   const { userEmail } = req.body;
-//   if (!userEmail) {
-//     return res.status(400).json({ error: "Email is required" });
-//   }
-//   try {
-//     // catch up on all past and current due habits
-//     await migrateInstances(userEmail, '<=');
-
-//     // generate new instances for all habits
-//     const [habits] = await pool.query(
-//       `SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`,
-//       [userEmail]
-//     );
-
-//     for (const habit of habits) {
-//       if (habit.scheduleOption === 'interval') {
-//         await generateIntervalInstances(userEmail, habit.habitName);
-//       } else if (habit.scheduleOption === 'weekly') {
-//         await generateDayInstances(userEmail, habit.habitName);
-//       }
-
-//     }
-//     res.json({ message: 'Habits synchronized successfully' });
-//   } catch (error) {
-//     console.error('Error synchronizing habits:', error);
-//     res.status(500).json({ error: 'Error synchronizing habits' });
-//   }
-// });
-
 const syncHabits = async (userEmail) => {
   try {
     // catch up on all past and current due habits
