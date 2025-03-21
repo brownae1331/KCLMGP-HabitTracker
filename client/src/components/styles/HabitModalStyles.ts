@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 export const HabitModalStyles = StyleSheet.create({
     modalOverlay: {
@@ -12,10 +12,23 @@ export const HabitModalStyles = StyleSheet.create({
         maxHeight: '90%',
         borderRadius: 8,
         elevation: 5,
-        shadowColor: '#000000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 4,
+            },
+            android: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 4,
+            },
+            web: {
+                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)'
+            }
+        }),
     },
     descriptionInput: {
         height: 60,
