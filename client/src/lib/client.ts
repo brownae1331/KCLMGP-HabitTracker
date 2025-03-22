@@ -171,6 +171,9 @@ export async function deleteUser(email: string) {
   if (!response.ok) {
     throw new Error('Error deleting user');
   }
+  if (response.status === 204) {
+    return { success: true };
+  }
   return response.json();
 }
 

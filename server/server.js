@@ -37,7 +37,6 @@ const initDatabase = async () => {
       );
     `);
 
-
     await connection.query(`
     CREATE TABLE IF NOT EXISTS habits (
       user_email VARCHAR(255) NOT NULL,
