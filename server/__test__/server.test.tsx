@@ -403,7 +403,7 @@ describe('Server API Endpoints', () => {
             mPool.query.mockResolvedValueOnce([[{ email: 'test@example.com' }]]);
             const res = await request(app).get('/habit-progress/test@example.com/Habit1?range=invalid');
             expect(res.statusCode).toBe(400);
-            expect(res.body).toHaveProperty('error', 'Invalid range parameter (use 7, 30, or month)');
+            expect(res.body).toHaveProperty('error', 'Invalid range parameter (use 7, 30, month, or year)');
         });
 
         test('should return 500 for range "month" due to undefined startDate', async () => {

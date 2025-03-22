@@ -10,7 +10,8 @@ jest.mock('expo-router', () => ({
 
 // Mock the logIn function
 jest.mock('../../../lib/client', () => ({
-  logIn: jest.fn()
+  logIn: jest.fn(),
+  getStoredUser: jest.fn(() => Promise.resolve({ id: 'dummyUser', name: 'Test User' })),
 }));
 
 import { logIn } from '../../../lib/client';
@@ -18,15 +19,17 @@ import { router } from 'expo-router';
 import LoginScreen from '../../(auth)/login';
 
 describe('LoginScreen functionality tests', () => {
-  test('renders the component correctly', () => {
+  test('renders the component correctly', async () => {
     const { getByText, getByPlaceholderText } = render(
       <AuthProvider>
         <LoginScreen />
       </AuthProvider>
     );
-    expect(getByText('Log In')).toBeTruthy();
-    expect(getByPlaceholderText('Email')).toBeTruthy();
-    expect(getByText('Login')).toBeTruthy();
+    await waitFor(() => {
+      expect(getByText('Log In')).toBeTruthy();
+      expect(getByPlaceholderText('Email')).toBeTruthy();
+      expect(getByText('Login')).toBeTruthy();
+    })
   });
 
   test('calls logIn and navigates to the main screen on successful login', async () => {
@@ -54,10 +57,10 @@ describe('LoginScreen functionality tests', () => {
 
   // test('shows error when email or password is empty', async () => {
   //   const { getByPlaceholderText, getByText, findByText } = render(
-    //   <AuthProvider>
-    //     <LoginScreen />
-    //   </AuthProvider>
-    // );
+  //   <AuthProvider>
+  //     <LoginScreen />
+  //   </AuthProvider>
+  // );
 
   //   // ensure that the email and password fields are empty
   //   fireEvent.changeText(getByPlaceholderText('Email'), '');
