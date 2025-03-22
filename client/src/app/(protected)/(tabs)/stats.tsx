@@ -8,11 +8,7 @@ import { SharedStyles } from '../../../components/styles/SharedStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BuildHabitGraph from '../../../components/BuildHabitGraph';
 import QuitHabitGraph from '../../../components/QuitHabitGraph';
-
-type Habit = {
-  habitName: string;
-  habitType: 'build' | 'quit';
-};
+import { Habit } from '../../../lib/client';
 
 export default function StatsScreen() {
   const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
@@ -52,17 +48,47 @@ export default function StatsScreen() {
   }, []);
 
   // temporary fake habits data
+  // useEffect(() => {
+  //   const fakeHabits: Habit[] = [
+  //     { habitName: 'Drink Water', habitType: 'build' },
+  //     { habitName: 'Quit Smoking', habitType: 'quit' },
+  //     { habitName: 'Exercise Daily for 30 Minutes', habitType: 'build' },
+  //     { habitName: 'Drink Wate2r', habitType: 'build' },
+  //     { habitName: 'Quit Smokin2g', habitType: 'quit' },
+  //     { habitName: 'Exercise Da2ily for 30 Minutes', habitType: 'build' },
+  //   ];
+  //   setHabits(fakeHabits);
+  //   setLoading(false);
+  // }, [username]);
+
   useEffect(() => {
-    const fakeHabits: Habit[] = [
-      { habitName: 'Drink Water', habitType: 'build' },
-      { habitName: 'Quit Smoking', habitType: 'quit' },
-      { habitName: 'Exercise Daily for 30 Minutes', habitType: 'build' },
-      { habitName: 'Drink Wate2r', habitType: 'build' },
-      { habitName: 'Quit Smokin2g', habitType: 'quit' },
-      { habitName: 'Exercise Da2ily for 30 Minutes', habitType: 'build' },
-    ];
-    setHabits(fakeHabits);
-    setLoading(false);
+    if (!username) return;
+
+    const fetchHabits = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/habits/${username}`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch habits: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (Array.isArray(data)) {
+          setHabits(data);
+        } else {
+          console.error('Invalid habits response format:', data);
+          setHabits([]);
+        }
+      } catch (error) {
+        console.error('Error fetching habits:', error);
+        setHabits([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHabits();
   }, [username]);
 
   const onContainerLayout = (event: any) => {
@@ -162,7 +188,7 @@ export default function StatsScreen() {
             ) : (
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginVertical: 40 }}>
                 <ThemedText type="subtitle" style={styles.backgroundText}>
-                  Select a habit to see statistics about your progress!
+                  Select a habit above to see statistics about your progress!
                   </ThemedText>
               </View>
             )}
