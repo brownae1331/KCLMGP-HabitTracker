@@ -1,7 +1,7 @@
 import { StyleSheet, useWindowDimensions, Platform } from 'react-native';
 
 
-export const WeekCalendarStyles = () => {
+export const useWeekCalendarStyles = () => {
     const { width } = useWindowDimensions();
 
 
