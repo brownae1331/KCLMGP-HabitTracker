@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, TextInput, Text, StyleSheet } from 'react-native';
-import { ThemedText } from './ThemedText'; // Adjust path if needed
 import { updateHabitProgress, getHabitStreak, getHabitInterval, getHabitDays } from '../lib/client';
 import { IconSymbol } from './ui/IconSymbol';
+import React, { useState, useEffect } from 'react';
+import { View, TouchableOpacity, TextInput, Text, StyleSheet, Alert } from 'react-native';
+import { ThemedText } from './ThemedText'; // Adjust path if needed
+import { deleteHabit } from '../lib/client';
+
 
 // Define the Habit interface (adjust if your structure is different)
 export interface Habit {
-  user_email: string;
+  user_email: string; // this corresponds to user_email in your DB
   habitName: string;
   habitDescription: string;
   habitType: 'build' | 'quit';
@@ -23,9 +25,11 @@ interface HabitPanelProps {
   habit: Habit;
   onEdit?: (habit: Habit) => void;
   selectedDate?: Date;
+
+  onDelete?: () => void;
 }
 
-const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit, selectedDate }) => {
+const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, selectedDate }) => {
   // For build habits: allow the user to enter progress
   const [buildProgress, setBuildProgress] = useState<string>('');
   // For quit habits: allow the user to select yes/no
@@ -176,6 +180,18 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit, selectedDate }) 
     }
   };
 
+  // HabitPanel.tsx
+  const handleDelete = async () => {
+    try {
+      await deleteHabit(habit.user_email, habit.habitName);
+      Alert.alert("Habit deleted successfully");
+      // onDelete callback if needed
+    } catch (error) {
+      Alert.alert("Error deleting habit");
+    }
+  };
+
+
   return (
     <View style={[styles.habitPanel, { backgroundColor: habit.habitColor }]}>
       <View style={styles.headerContainer}>
@@ -244,13 +260,15 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onEdit, selectedDate }) 
             : `Quit status updated to ${quitStatus}`}
         </ThemedText>
       )}
+      <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+        <ThemedText style={styles.deleteButtonText}>Delete Habit</ThemedText>
+      </TouchableOpacity>
     </View>
   );
 };
 
 export default HabitPanel;
 
-// Sample styles for HabitPanel. Adjust as needed.
 const styles = StyleSheet.create({
   habitPanel: {
     padding: 15,
@@ -343,5 +361,16 @@ const styles = StyleSheet.create({
     color: '#FFD700',
     fontWeight: 'bold',
     marginRight: 8,
+  },
+  deleteButton: {
+    padding: 10,
+    backgroundColor: '#ff4d4d',
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

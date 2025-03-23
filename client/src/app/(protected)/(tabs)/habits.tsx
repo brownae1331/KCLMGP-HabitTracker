@@ -4,6 +4,7 @@ import {
   ScrollView,
   SafeAreaView,
   View,
+  Alert,
 } from 'react-native';
 import { IconSymbol } from '../../../components/ui/IconSymbol';
 import { WeeklyCalendar } from '../../../components/WeeklyCalendar';
@@ -47,6 +48,58 @@ export default function HomeScreen() {
   const [currentEditHabit, setCurrentEditHabit] = useState<Habit | null>(null);
 
   const handleAddHabit = async () => {
+    // 1. Validate Habit Name: It must not be empty.
+    if (!habitName || habitName.trim() === '') {
+      // Alert.alert("Validation Error", "Habit name cannot be empty."); FOR MOBILE
+      window.alert("Habit name cannot be empty.");
+      return;
+    }
+  
+    // 2. Validate Habit Name Uniqueness: Check if a habit with the same name already exists for this user.
+    if (dbHabits.some((habit: any) => habit.habitName.toLowerCase() === habitName.trim().toLowerCase())) {
+      // Alert.alert("Validation Error", "A habit with this name already exists for this user.");
+      window.alert("A habit with this name already exists for this user.");
+      return;
+    }
+  
+    // 3. Validate Color: If no color is picked, default to yellow (#FFFF00)
+    let chosenColor = habitColor;
+    if (!chosenColor || chosenColor.trim() === '') {
+      chosenColor = '#FFFF00'; // default yellow
+    }
+  
+    // 4. If schedule is "interval", ensure intervalDays is a valid number.
+    if (scheduleOption === 'interval') {
+      if (!intervalDays || isNaN(parseInt(intervalDays, 10))) {
+        // Alert.alert("Validation Error", "Please enter a valid number of days for the interval schedule.");
+        window.alert("Please enter a valid number of days for the interval schedule.");
+        return;
+      }
+    }
+  
+    // 5. If schedule is "weekly", ensure at least one day is selected.
+    if (scheduleOption === 'weekly') {
+      if (!selectedDays || selectedDays.length === 0) {
+        // Alert.alert("Validation Error", "Please select at least one day for the weekly schedule.");
+        window.alert("Please select at least one day for the weekly schedule.");
+        return;
+      }
+    }
+  
+    // Construct the new habit object with validations applied
+    const newHabit = {
+      email: email, // assuming this is set correctly
+      habitName: habitName.trim(),
+      habitDescription,
+      habitType,
+      habitColor: chosenColor,
+      scheduleOption,
+      intervalDays: scheduleOption === 'interval' ? parseInt(intervalDays, 10) : null,
+      selectedDays: scheduleOption === 'weekly' ? selectedDays : [],
+      goalValue: isGoalEnabled ? parseFloat(goalValue) : null,
+      goalUnit: isGoalEnabled ? goalUnit : null,
+    };
+  
     try {
       const habitData = {
         email: email,
@@ -74,12 +127,12 @@ export default function HomeScreen() {
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'adding'} habit:`, error);
     }
-
+  
     // Reset form values and close modal
     setHabitName('');
     setHabitDescription('');
     setHabitType('build');
-    setHabitColor('#007AFF');
+    setHabitColor('#FFFF00');
     setScheduleOption('interval');
     setIntervalDays('');
     setSelectedDays([]);
@@ -90,6 +143,7 @@ export default function HomeScreen() {
     setCurrentEditHabit(null);
     setModalVisible(false);
   };
+  
 
   const [dbHabits, setDbHabits] = useState<any[]>([]);
 
