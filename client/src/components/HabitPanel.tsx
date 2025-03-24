@@ -1,10 +1,10 @@
 import { updateHabitProgress, getHabitStreak, getHabitInterval, getHabitDays } from '../lib/client';
 import { IconSymbol } from './ui/IconSymbol';
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, TextInput, Text, StyleSheet, Alert } from 'react-native';
-import { ThemedText } from './ThemedText'; // Adjust path if needed
+import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { ThemedText } from './ThemedText';
 import { deleteHabit } from '../lib/client';
-
+import { ProgressEntry } from './ProgressEntry';
 
 // Define the Habit interface (adjust if your structure is different)
 export interface Habit {
@@ -25,19 +25,22 @@ interface HabitPanelProps {
   habit: Habit;
   onEdit?: (habit: Habit) => void;
   selectedDate?: Date;
-
   onDelete?: () => void;
 }
 
 const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, selectedDate }) => {
-  // For build habits: allow the user to enter progress
+  // For build habits: track numeric progress
   const [buildProgress, setBuildProgress] = useState<string>('');
-  // For quit habits: allow the user to select yes/no
+  // For quit habits: track yes/no status
   const [quitStatus, setQuitStatus] = useState<'yes' | 'no' | ''>('');
   // Local flag to indicate an update was made
   const [updated, setUpdated] = useState(false);
   // Track the habit streak
   const [streak, setStreak] = useState<number>(0);
+  // State to control the progress entry modal
+  const [progressModalVisible, setProgressModalVisible] = useState(false);
+  // Track numeric progress
+  const [currentProgress, setCurrentProgress] = useState<number>(0);
 
   const date = selectedDate
     ? selectedDate.toISOString().split("T")[0]
@@ -138,11 +141,22 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
     }
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (progress: number) => {
     try {
-      const progressValue = habit.habitType === 'build' ? parseFloat(buildProgress) : quitStatus === 'yes' ? 1 : 0;
+      // Set progress based on habit type
+      const progressValue = habit.habitType === 'build' ? progress : progress > 0 ? 1 : 0;
+
       await updateHabitProgress(habit.user_email, habit.habitName, progressValue);
       setUpdated(true);
+
+      // For build habits, update the progress state
+      if (habit.habitType === 'build') {
+        setBuildProgress(progress.toString());
+        setCurrentProgress(progress);
+      } else {
+        // For quit habits, set the yes/no state
+        setQuitStatus(progress > 0 ? 'yes' : 'no');
+      }
 
       if (!isDateInFuture) {
         const streakData = await getHabitStreak(habit.user_email, habit.habitName, date);
@@ -193,79 +207,85 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
     }
   };
 
+  const openProgressEntry = () => {
+    // Don't allow editing future dates
+    if (isDateInFuture) return;
+
+    // For build habits, parse the current progress
+    const progressValue = habit.habitType === 'build'
+      ? buildProgress ? parseFloat(buildProgress) : 0
+      : quitStatus === 'yes' ? 1 : 0;
+
+    setCurrentProgress(progressValue);
+    setProgressModalVisible(true);
+  };
+
+  const handleSaveProgress = (progress: number) => {
+    handleUpdate(progress);
+  };
 
   return (
-    <View style={[styles.habitPanel, { backgroundColor: habit.habitColor }]}>
-      <View style={styles.headerContainer}>
-        <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
-        {onEdit && (
-          <View style={styles.actionsContainer}>
-            {/* Only show streak if date is not in the future */}
-            {!isDateInFuture && (
-              <>
-                <Text style={styles.fireEmoji}>🔥</Text>
-                <Text style={styles.streakCount}>{streak}</Text>
-              </>
-            )}
-            <TouchableOpacity
-              style={styles.editButton}
-              onPress={() => onEdit(habit)}
-            >
-              <IconSymbol name="pencil" size={16} color="#fff" />
-            </TouchableOpacity>
-          </View>
+    <>
+      <TouchableOpacity
+        style={[styles.habitPanel, { backgroundColor: habit.habitColor }]}
+        onPress={openProgressEntry}
+        disabled={isDateInFuture ?? false}
+      >
+        <View style={styles.headerContainer}>
+          <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
+          {onEdit && (
+            <View style={styles.actionsContainer}>
+              {/* Only show streak if date is not in the future */}
+              {!isDateInFuture && (
+                <>
+                  <Text style={styles.fireEmoji}>🔥</Text>
+                  <Text style={styles.streakCount}>{streak}</Text>
+                </>
+              )}
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => onEdit(habit)}
+              >
+                <IconSymbol name="pencil" size={16} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+        <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
+        {habit.goalValue != null && (
+          <ThemedText style={styles.habitGoal}>
+            Goal: {habit.goalValue} {habit.goalUnit}
+          </ThemedText>
         )}
-      </View>
-      <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
-      {habit.goalValue != null && (
-        <ThemedText style={styles.habitGoal}>
-          Goal: {habit.goalValue} {habit.goalUnit}
-        </ThemedText>
-      )}
-      {habit.habitType === 'build' ? (
-        <View style={styles.updateContainer}>
-          <Text style={styles.updateLabel}>Enter your progress:</Text>
-          <TextInput
-            style={styles.updateInput}
-            placeholder="e.g. 10"
-            keyboardType="numeric"
-            value={buildProgress}
-            onChangeText={setBuildProgress}
-          />
-        </View>
-      ) : (
-        <View style={styles.updateContainer}>
-          <Text style={styles.updateLabel}>Did you quit? (yes/no)</Text>
-          <View style={styles.yesNoContainer}>
-            <TouchableOpacity
-              style={[styles.yesNoButton, quitStatus === 'yes' && styles.selectedYesNo]}
-              onPress={() => setQuitStatus('yes')}
-            >
-              <Text style={styles.yesNoText}>Yes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.yesNoButton, quitStatus === 'no' && styles.selectedYesNo]}
-              onPress={() => setQuitStatus('no')}
-            >
-              <Text style={styles.yesNoText}>No</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-      <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
-        <ThemedText style={styles.updateButtonText}>Update</ThemedText>
+
+        {updated && (
+          <ThemedText style={styles.updateStatus}>
+            {habit.habitType === 'build'
+              ? `Progress updated to ${buildProgress}`
+              : `Quit status updated to ${quitStatus}`}
+          </ThemedText>
+        )}
+
+        {/* Only show when in the current view or future date view */}
+        {isDateInFuture && (
+          <ThemedText style={styles.futureMessage}>
+            This habit will be available on this date
+          </ThemedText>
+        )}
+
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+          <ThemedText style={styles.deleteButtonText}>Delete Habit</ThemedText>
+        </TouchableOpacity>
       </TouchableOpacity>
-      {updated && (
-        <ThemedText style={styles.updateStatus}>
-          {habit.habitType === 'build'
-            ? `Progress updated to ${buildProgress}`
-            : `Quit status updated to ${quitStatus}`}
-        </ThemedText>
-      )}
-      <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-        <ThemedText style={styles.deleteButtonText}>Delete Habit</ThemedText>
-      </TouchableOpacity>
-    </View>
+
+      <ProgressEntry
+        visible={progressModalVisible}
+        onClose={() => setProgressModalVisible(false)}
+        habit={habit}
+        initialProgress={currentProgress}
+        onSave={handleSaveProgress}
+      />
+    </>
   );
 };
 
@@ -290,52 +310,6 @@ const styles = StyleSheet.create({
   habitGoal: {
     fontSize: 14,
     color: '#fff',
-  },
-  updateContainer: {
-    marginVertical: 10,
-  },
-  updateLabel: {
-    color: '#fff',
-    marginBottom: 5,
-  },
-  updateInput: {
-    borderWidth: 1,
-    borderColor: '#fff',
-    backgroundColor: '#fff',
-    color: '#000',
-    borderRadius: 4,
-    padding: 8,
-  },
-  yesNoContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 5,
-  },
-  yesNoButton: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#fff',
-    borderRadius: 4,
-    width: '40%',
-    alignItems: 'center',
-  },
-  selectedYesNo: {
-    backgroundColor: '#fff',
-  },
-  yesNoText: {
-    color: '#000',
-    fontWeight: 'bold',
-  },
-  updateButton: {
-    padding: 10,
-    backgroundColor: '#00000080',
-    borderRadius: 5,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  updateButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
   updateStatus: {
     marginTop: 10,
@@ -374,5 +348,18 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  progressIndicator: {
+    marginTop: 10,
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  futureMessage: {
+    marginTop: 10,
+    color: '#fff',
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
 });
