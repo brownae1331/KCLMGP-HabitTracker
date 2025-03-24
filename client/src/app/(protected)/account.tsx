@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingVertical: 8,
     paddingHorizontal: 15,
-    backgroundColor: 'blue',
+    backgroundColor: '#007AFF',
     borderRadius: 5
   },
   modalContainer: {
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   modalButton: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: 'blue',
+    backgroundColor: '#007AFF',
     alignItems: 'center',
     borderRadius: 5
   }
