@@ -37,7 +37,6 @@ const initDatabase = async () => {
       );
     `);
 
-
     await connection.query(`
     CREATE TABLE IF NOT EXISTS habits (
       user_email VARCHAR(255) NOT NULL,
@@ -440,24 +439,21 @@ app.get('/habits/:username', async (req, res) => {
 });
 
 // Delete a habit
-app.delete('/habits/:username/:name', async (req, res) => {
-  const { username, name } = req.params;
+app.delete('/habits/:user_email/:habitName', async (req, res) => {
+  const { user_email, habitName } = req.params;
   try {
-    const [user] = await pool.query('SELECT email FROM users WHERE username = ?', [username]);
-    if (!user.length) {
-      return res.status(404).json({ error: `User ${username} not found` });
-    }
-    const userEmail = user[0].email;
-    const [result] = await pool.query('DELETE FROM habits WHERE user_email = ? AND habitName = ?', [userEmail, habitName]);
-    if (result.affectedRows > 0) {
-      res.json({ success: true, message: `Habit "${name}" deleted successfully.` });
-    } else {
-      res.status(404).json({ error: `Habit "${name}" not found.` });
-    }
+    await pool.query(
+      'DELETE FROM habits WHERE user_email = ? AND habitName = ?',
+      [user_email, habitName]
+    );
+    res.json({ success: true, message: 'Habit deleted successfully' });
   } catch (error) {
+    console.error('Error deleting habit:', error);
     res.status(500).json({ error: 'Error deleting habit' });
   }
 });
+
+
 
 //log progress of a specific habit
 app.post('/habit-progress', async (req, res) => {
