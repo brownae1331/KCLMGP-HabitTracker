@@ -23,7 +23,7 @@ jest.mock('../../../../components/ThemedText', () => {
 });
 
 // Mock GoodHabitGraph similarly by dynamically requiring Text
-jest.mock('../../../../components/GoodHabitGraph', () => {
+jest.mock('../../../../components/BuildHabitGraph', () => {
     const React = require('react');
     const { Text } = require('react-native');
     return (props: any) => (

@@ -106,7 +106,7 @@ export default function HomeScreen() {
         habitName,
         habitDescription,
         habitType,
-        habitColor,
+        habitColor: chosenColor,
         scheduleOption,
         intervalDays: intervalDays ? parseInt(intervalDays, 10) : null,
         selectedDays,
