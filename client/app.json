@@ -10,14 +10,18 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "package": "com.KCLMGP.HabitTracker"
+      "package": "com.KCLMGP.HabitTracker",
+      "bundleIdentifier": "com.KCLMGP.HabitTracker",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.kclmgp.habittracker",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.KCLMGP.HabitTracker"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -42,6 +46,15 @@
     },
     "assetBundlePatterns": [
       "assets/**/*"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "a09847c1-0f9c-45ff-9d57-4ee98ca1d0b9"
+      }
+    },
+    "owner": "brownae"
   }
 }
