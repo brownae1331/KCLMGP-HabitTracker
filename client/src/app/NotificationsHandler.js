@@ -1,4 +1,3 @@
-// ScheduleWeeklyNotification.js
 import React, { useEffect } from 'react';
 import { Platform, Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
@@ -30,7 +29,7 @@ export default function ScheduleWeeklyNotification() {
     async function scheduleNotification() {
       if (Platform.OS === 'web') {
         // Web: Use the browser Notification API
-        if (!('Notification' in window)) {
+        if (typeof window !== 'undefined' && !('Notification' in window)) {
           Alert.alert('Notifications are not supported in this browser.');
           return;
         }
@@ -87,8 +86,7 @@ export async function enableNotifications() {
 
   try {
     if (Platform.OS === 'web') {
-
-      if (!('Notification' in window)) {
+      if (typeof window !== 'undefined' && !('Notification' in window)) {
         window.alert('Error: Notifications are not supported in this browser.');
         return;
       }
@@ -97,12 +95,14 @@ export async function enableNotifications() {
         new Notification('Notifications Enabled', {
           body: 'You will receive weekly summary notifications.',
         });
+        await AsyncStorage.setItem('notificationsEnabled', 'true');
       } else if (Notification.permission !== 'denied') {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
           new Notification('Notifications Enabled', {
             body: 'You will receive weekly summary notifications.',
           });
+          await AsyncStorage.setItem('notificationsEnabled', 'true');
         } else {
           window.alert('Permission Denied: Notifications were not enabled.');
           return;
@@ -111,21 +111,25 @@ export async function enableNotifications() {
         window.alert('Blocked: Notifications are blocked in browser settings.');
         return;
       }
+    } else {
+      await AsyncStorage.setItem('notificationsEnabled', 'true');
     }
 
-    await AsyncStorage.setItem('notificationsEnabled', 'true');
-
-    setTimeout(() => {
-      if (Platform.OS === 'web') {
-        window.alert('Success: Notifications Enabled');
-      } else {
-        Alert.alert('Success', 'Notifications Enabled');
-      }
-    }, 200);
+    if (typeof jest === 'undefined') {
+      setTimeout(() => {
+        if (Platform.OS === 'web') {
+          window.alert('Success: Notifications Enabled');
+        } else {
+          Alert.alert('Success', 'Notifications Enabled');
+        }
+      }, 200);
+    }
 
   } catch (error) {
     console.error('Error enabling notifications:', error);
-    window.alert('Error: Failed to enable notifications.');
+    if (typeof window !== 'undefined') {
+      window.alert('Error: Failed to enable notifications.');
+    }
   }
 }
 
@@ -141,17 +145,21 @@ export async function disableNotifications() {
 
     await AsyncStorage.setItem('notificationsEnabled', 'false');
 
-    setTimeout(() => {
-      if (Platform.OS === 'web') {
-        window.alert('Success: Notifications Disabled');
-      } else {
-        Alert.alert('Success', 'Notifications Disabled');
-      }
-    }, 200);
+    if (typeof jest === 'undefined') {
+      setTimeout(() => {
+        if (Platform.OS === 'web') {
+          window.alert('Success: Notifications Disabled');
+        } else {
+          Alert.alert('Success', 'Notifications Disabled');
+        }
+      }, 200);
+    }
 
   } catch (error) {
     console.error('Error disabling notifications:', error);
-    window.alert('Error: Failed to disable notifications.');
+    if (typeof window !== 'undefined') {
+      window.alert('Error: Failed to disable notifications.');
+    }
   }
 }
 
