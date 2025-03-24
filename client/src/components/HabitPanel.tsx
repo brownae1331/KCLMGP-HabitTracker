@@ -180,14 +180,16 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
     }
   };
 
-  // HabitPanel.tsx
   const handleDelete = async () => {
     try {
       await deleteHabit(habit.user_email, habit.habitName);
-      Alert.alert("Habit deleted successfully");
-      // onDelete callback if needed
+      Alert.alert("Success", "Habit deleted successfully");
+      if (onDelete) {
+        onDelete();
+      }
     } catch (error) {
-      Alert.alert("Error deleting habit");
+      Alert.alert("Error", "Error deleting habit");
+      console.error('Error deleting habit:', error);
     }
   };
 
