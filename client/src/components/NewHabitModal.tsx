@@ -108,11 +108,14 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                         <HabitTypeSlider habitType={habitType} setHabitType={setHabitType} />
 
                         <TextInput
-                            style={[SharedStyles.input, { color: Colors[theme].text }]}
+                            style={[SharedStyles.input, {
+                                color: Colors[theme].text,
+                                backgroundColor: isEditMode ? Colors[theme].background2 : Colors[theme].background
+                            }]}
                             placeholder="Habit Name"
                             placeholderTextColor={Colors[theme].placeholder}
                             value={habitName}
-                            onChangeText={setHabitName}
+                            editable={!isEditMode}
                         />
 
                         <TextInput

@@ -55,11 +55,22 @@ export default function HomeScreen() {
       return;
     }
 
-    // 2. Validate Habit Name Uniqueness: Check if a habit with the same name already exists for this user.
-    if (dbHabits.some((habit: any) => habit.habitName.toLowerCase() === habitName.trim().toLowerCase())) {
+    // 2. Validate Habit Name Uniqueness: BUT only for new habits or when the name has changed
+    if (!isEditMode && dbHabits.some((habit: any) => habit.habitName.toLowerCase() === habitName.trim().toLowerCase())) {
       // Alert.alert("Validation Error", "A habit with this name already exists for this user.");
       window.alert("A habit with this name already exists for this user.");
       return;
+    }
+
+    // For edit mode, only check for duplicate names if the name has changed
+    if (isEditMode && currentEditHabit && habitName.trim().toLowerCase() !== currentEditHabit.habitName.toLowerCase()) {
+      if (dbHabits.some((habit: any) =>
+        habit.habitName.toLowerCase() === habitName.trim().toLowerCase() &&
+        habit.habitName.toLowerCase() !== currentEditHabit.habitName.toLowerCase()
+      )) {
+        window.alert("A habit with this new name already exists for this user.");
+        return;
+      }
     }
 
     // 3. Validate Color: If no color is picked, default to yellow (#FFFF00)

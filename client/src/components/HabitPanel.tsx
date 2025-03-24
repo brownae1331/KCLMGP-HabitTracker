@@ -180,7 +180,6 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
     }
   };
 
-  // HabitPanel.tsx
   const handleDelete = async () => {
     try {
       await deleteHabit(habit.user_email, habit.habitName);
