@@ -38,8 +38,7 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
           `http://localhost:3000/stats/${email}/${habitName}/progress?range=${range === 'W' ? 'week' : range === 'M' ? 'month' : 'year'}`
         );
         const rawData = await response.json();
-        console.log('Raw data from server:', rawData);
-
+        
         const startDate = new Date(today);
         if (range === 'W') {
           startDate.setDate(today.getDate() - ((today.getDay() + 6) % 7));

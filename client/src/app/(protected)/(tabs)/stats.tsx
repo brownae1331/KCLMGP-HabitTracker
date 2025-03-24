@@ -40,7 +40,6 @@ export default function StatsScreen() {
       try {
         const storedUsername = await AsyncStorage.getItem('username');
         const storedEmail = await AsyncStorage.getItem('email');
-        console.log('Stored username:', storedUsername, 'Stored email:', storedEmail);
         if (storedUsername) setUsername(storedUsername);
         if (storedEmail) setEmail(storedEmail);
       } catch (error) {
@@ -62,10 +61,8 @@ export default function StatsScreen() {
           throw new Error(`Failed to fetch habits: ${response.statusText}`);
         }
         const data = await response.json();
-        console.log('Raw server response:', data);
         if (Array.isArray(data)) {
           setHabits(data);
-          console.log('Set habits:', data);
         } else {
           console.error('Invalid habits response format:', data);
           setHabits([]);
@@ -169,7 +166,6 @@ export default function StatsScreen() {
             </View>
 
             {selectedHabit && selectedHabitData && email ? (
-              console.log('Selected habit:', selectedHabitData.habitType),
               selectedHabitData.habitType === 'build' ? (
                 <BuildHabitGraph email={email} habitName={selectedHabit} />
               ) : (

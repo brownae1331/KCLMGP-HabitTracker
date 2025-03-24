@@ -35,7 +35,6 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
           `http://localhost:3000/stats/${email}/${habitName}/streak?range=${range === 'W' ? 'week' : 'month'}`
         );
         const rawData = await response.json();
-        console.log('Raw data from server:', rawData);
   
         const today = new Date();
         const startDate = new Date(today);
