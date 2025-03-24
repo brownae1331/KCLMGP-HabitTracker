@@ -125,8 +125,18 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                         />
 
                         <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
-                            Pick a Color
+                            Select a Color
                         </ThemedText>
+
+                        <ThemedText style={{ marginTop: 12 }}>Custom Color</ThemedText>
+                        <TextInput
+                            style={[SharedStyles.input, { color: Colors[theme].text }]}
+                            placeholder="#ffaa00"
+                            placeholderTextColor={Colors[theme].placeholder}
+                            value={habitColor}
+                            onChangeText={setHabitColor}
+                        />
+
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 8 }}>
                             {colorOptions.map((color) => (
                                 <TouchableOpacity
@@ -143,7 +153,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                     Goal
                                 </ThemedText>
                                 <View style={HabitModalStyles.goalToggleContainer}>
-                                    <ThemedText style={{ color: Colors[theme].text }}>Enable Goal?</ThemedText>
+                                    <ThemedText style={{ color: Colors[theme].text }}>Enable Goal</ThemedText>
                                     <Switch
                                         value={isGoalEnabled}
                                         onValueChange={setIsGoalEnabled}

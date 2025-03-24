@@ -59,7 +59,9 @@ export default function SettingsScreen() {
       // Retrieve the stored email (adjust key if needed)
       const storedEmail = await AsyncStorage.getItem('email');
       if (!storedEmail) {
-        Alert.alert('Error', 'No email found');
+        Platform.OS === 'web'
+          ? window.alert('Error: No email found')
+          : Alert.alert('Error', 'No email found');
         return;
       }
       const response = await fetch(`http://localhost:3000/export/${storedEmail}`);
@@ -67,14 +69,14 @@ export default function SettingsScreen() {
         throw new Error('Error exporting data');
       }
       const exportData = await response.json();
-      if (Platform.OS == 'ios') {
+      if (Platform.OS === 'ios') {
         const fileUri = FileSystem.documentDirectory + 'exportData.json';
-        await FileSystem.writeAsStringAsync(      
+        await FileSystem.writeAsStringAsync(
           fileUri,
           JSON.stringify(exportData, null, 2),
           { encoding: FileSystem.EncodingType.UTF8 }
         );
-        Alert.alert('Exported Data', `Data saved to ${fileUri}`);  
+        Alert.alert('Exported Data', `Data saved to ${fileUri}`);
       }
       else if (Platform.OS === 'web') {
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -86,13 +88,17 @@ export default function SettingsScreen() {
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
-        Alert.alert('Exported Data', 'Data downloaded as exportData.json');
+        window.alert('Exported Data: Data downloaded as exportData.json');
       }
     } 
     catch (error) {
-      Alert.alert('Failed to export data');
+      if (Platform.OS === 'web') {
+        window.alert('Failed to export data');
+      } else {
+        Alert.alert('Failed to export data');
+      }
     };
-  }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -103,7 +109,7 @@ export default function SettingsScreen() {
     }
   };
 
-  const confirmDeleteUser = async () => {
+  const DeleteUser = async () => {
     console.log('Confirm Delete pressed');
     try {
       const storedEmail = await AsyncStorage.getItem('email');
@@ -115,13 +121,14 @@ export default function SettingsScreen() {
       } else {
         Alert.alert('Error', 'No email found');
       }
-    } catch (error: any) {
+    } 
+    catch (error: any) {
       console.error('Error in confirmDeleteUser:', error);
       Alert.alert('Error', error.message || 'Failed to delete user');
     }
   };
   
-  const handleDeleteUser = () => {
+  const confirmUserDeletion = () => {
     console.log('Delete User pressed');
     Alert.alert(
       'Confirm Delete Account',
@@ -133,15 +140,14 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: () => {
             console.log('Delete confirmed');
-            confirmDeleteUser();
+            DeleteUser();
           },
         },
       ],
       { cancelable: true }
     );
   };
-  
-  
+
   const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
     <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route)}>
       <View style={styles.iconContainer}>
@@ -182,6 +188,8 @@ export default function SettingsScreen() {
           <Switch value={notificationsEnabled} onValueChange={toggleNotifications} />
         </View>
 
+        <View style={{ height: 20 }} />
+
         <TouchableOpacity style={styles.exportButton} onPress={handleExportData}>
           <ThemedText style={styles.exportButtonText}>Export Data</ThemedText>
         </TouchableOpacity>
@@ -190,8 +198,8 @@ export default function SettingsScreen() {
           <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteUser}>
-          <ThemedText style={styles.deleteButtonText}>Delete User</ThemedText>
+        <TouchableOpacity style={styles.deleteButton} onPress={confirmUserDeletion}>
+          <ThemedText style={styles.deleteButtonText}>Delete My Data</ThemedText>
         </TouchableOpacity>
 
       </ScrollView>
@@ -242,9 +250,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
-  },  
+  },
   deleteButton: {
-    backgroundColor: 'red',
+    backgroundColor: '#e10812',
     paddingVertical: 12,
     marginHorizontal: 20,
     borderRadius: 10,
@@ -258,7 +266,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   signOutButton: {
-    backgroundColor: 'red',
+    backgroundColor: '#007AFF',
     paddingVertical: 12,
     marginHorizontal: 20,
     borderRadius: 10,
