@@ -417,7 +417,7 @@ app.post('/habits', async (req, res) => {
   }
 });
 
-// Get the names of all habits for a user
+// Get the names and types of all habits for a user
 app.get('/habits/:username', async (req, res) => {
   const { username } = req.params;
   try {
@@ -426,7 +426,7 @@ app.get('/habits/:username', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     const userEmail = user[0].email;
-    const [habits] = await pool.query('SELECT habitName FROM habits WHERE user_email = ?', [userEmail]);
+    const [habits] = await pool.query('SELECT habitName, habitType FROM habits WHERE user_email = ?', [userEmail]);
 
     if (habits.length === 0) {
       return res.json([]);
@@ -435,7 +435,7 @@ app.get('/habits/:username', async (req, res) => {
     res.json(habits);
   } catch (error) {
     console.error('Error fetching habits:', error);
-    res.status(500).json({ error: 'Error fetching habit names' });
+    res.status(500).json({ error: 'Error fetching habit names and types' });
   }
 });
 
@@ -481,21 +481,17 @@ app.post('/habit-progress', async (req, res) => {
     let completed = false;
     const { goalValue } = existingProgress[0];
     if (existingProgress.length > 0) {
-      if (goalValue !== null) {
-        completed = progress >= goalValue;
-      } else {
-        completed = progress >= 1; // when no goal is set: 1 = done, 0 = not done
-      }
+      completed = goalValue !== null ? progress >= goalValue : progress >= 1;
 
       if (completed) {
-        const [yesterday] = await pool.query(`
+        const [recent] = await pool.query(`
           SELECT completed, streak 
           FROM habit_progress 
           WHERE user_email = ? AND habitName = ? 
-          AND progressDate = DATE_SUB(?, INTERVAL 1 DAY)`,
+          AND progressDate < ? ORDER BY progressDate DESC LIMIT 1`,
           [email, habitName, today]
         );
-        streak = (yesterday.length > 0 && yesterday[0].completed) ? yesterday[0].streak + 1 : 1;
+        streak = (recent.length > 0 && recent[0].completed) ? recent[0].streak + 1 : 1;
       }
 
       await pool.query(
@@ -519,67 +515,68 @@ app.post('/habit-progress', async (req, res) => {
   }
 });
 
-
-// Get habit progress data for a specific user and habit
-app.get('/habit-progress/:email/:habitName', async (req, res) => {
+// get streak for quit habits
+app.get('/stats/:email/:habitName/streak', async (req, res) => {
   const { email, habitName } = req.params;
-  const { range = '7' } = req.query; // "7" for past 7 days, "30" for past 30 days/month, 
-  // 'month' for monthly average, 'year' for monthy average over the past year
+  const { range } = req.query;
+  const today = new Date();
+  const startDate = new Date(today);
 
-  try {
-    const [user] = await pool.query('SELECT email FROM users WHERE email = ?', [email]);
-    if (user.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+  if (range === 'week' || range === 'month') {
+    startDate.setDate(range === 'week' ? today.getDate() - ((today.getDay() + 6) % 7) : 1);
+    const query = `
+      SELECT progressDate, streak 
+      FROM habit_progress 
+      WHERE user_email = ? AND habitName = ? AND progressDate >= ?
+      ORDER BY progressDate ASC
+    `;
+    const params = [email, habitName, startDate.toISOString().split('T')[0]];
+    try {
+      const [rows] = await pool.query(query, params);
+      res.json(rows);
+    } catch (error) {
+      res.status(500).json({ error: 'Server error' });
     }
-    let query = '';
-    let queryParams = [email, habitName];
-    if (range === '7' || range === '30') {
+  } else {
+    return res.status(400).json({ error: 'Invalid range: use "week" or "month"' });
+  }
+});
+
+// get progress for build habits
+app.get('/stats/:email/:habitName/progress', async (req, res) => {
+  const { email, habitName } = req.params;
+  const { range } = req.query;
+  const today = new Date();
+  const startDate = new Date(today);
+  try {
+    let query, params;
+    if (range === 'week' || range === 'month') {
+      startDate.setDate(range === 'week' ? today.getDate() - ((today.getDay() + 6) % 7) : 1);
       query = `
         SELECT progressDate, progress
         FROM habit_progress
-        WHERE user_email = ? AND habitName = ?
-        AND progressDate BETWEEN CURDATE() - INTERVAL ? DAY AND CURDATE()
-        ORDER BY progressDate ASC;
+        WHERE user_email = ? AND habitName = ? AND progressDate >= ?
+        ORDER BY progressDate ASC
       `;
-      queryParams.push(parseInt(range));
-    } else if (range === 'month') {
-      const startDate = new Date();
-      startDate.setMonth(startDate.getMonth() - 1);
-      query = `
-        SELECT 
-          YEAR(progressDate) AS year,
-          MONTH(progressDate) AS month,
-          AVG(progress) AS avg_value
-        FROM habit_progress
-        WHERE user_email = ? AND habitName = ?
-        AND progressDate BETWEEN ? AND ?
-        GROUP BY YEAR(progressDate), MONTH(progressDate)
-        ORDER BY YEAR(progressDate) DESC, MONTH(progressDate) DESC;
-      `;
-      queryParams.push(startDate.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
-    } else if (range === 'year') {
-      const startDate = new Date();
-      startDate.setFullYear(startDate.getFullYear() - 1);
-      query = `
-        SELECT 
-          YEAR(progressDate) AS year,
-          MONTH(progressDate) AS month,
-          AVG(progress) AS avg_value
-        FROM habit_progress
-        WHERE user_email = ? AND habitName = ?
-        AND progressDate BETWEEN ? AND CURDATE()
-        GROUP BY YEAR(progressDate), MONTH(progressDate)
-        ORDER BY YEAR(progressDate) ASC, MONTH(progressDate) ASC;
-      `;
-      queryParams.push(startDate.toISOString().split('T')[0]);
-    } else {
-      return res.status(400).json({ error: 'Invalid range parameter (use 7, 30, month, or year)' });
+      params = [email, habitName, startDate.toISOString().split('T')[0]];
     }
-    const [progressData] = await pool.query(query, queryParams);
-    res.json(progressData);
+    else if (range === 'year') {
+      query = `
+        SELECT MONTH(progressDate) as month, AVG(progress) as avgProgress
+        FROM habit_progress
+        WHERE user_email = ? AND habitName = ? AND YEAR(progressDate) = ?
+        GROUP BY MONTH(progressDate)
+        ORDER BY month ASC
+      `;
+      params = [email, habitName, today.getFullYear()];
+    }
+    else {
+      return res.status(400).json({ error: 'Invalid range' });
+    }
+    const [rows] = await pool.query(query, params);
+    res.json(rows);
   } catch (error) {
-    console.error('Error fetching habit progress:', error);
-    res.status(500).json({ error: 'Error fetching habit progress data' });
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

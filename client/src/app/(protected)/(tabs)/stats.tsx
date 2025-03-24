@@ -8,7 +8,12 @@ import { SharedStyles } from '../../../components/styles/SharedStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BuildHabitGraph from '../../../components/BuildHabitGraph';
 import QuitHabitGraph from '../../../components/QuitHabitGraph';
-import { Habit } from '../../../lib/client';
+//import { Habit } from '../../../lib/client';
+
+type Habit = {
+  habitName: string;
+  habitType: 'build' | 'quit';
+};
 
 export default function StatsScreen() {
   const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
@@ -47,35 +52,20 @@ export default function StatsScreen() {
     fetchUserData();
   }, []);
 
-  // temporary fake habits data
-  // useEffect(() => {
-  //   const fakeHabits: Habit[] = [
-  //     { habitName: 'Drink Water', habitType: 'build' },
-  //     { habitName: 'Quit Smoking', habitType: 'quit' },
-  //     { habitName: 'Exercise Daily for 30 Minutes', habitType: 'build' },
-  //     { habitName: 'Drink Wate2r', habitType: 'build' },
-  //     { habitName: 'Quit Smokin2g', habitType: 'quit' },
-  //     { habitName: 'Exercise Da2ily for 30 Minutes', habitType: 'build' },
-  //   ];
-  //   setHabits(fakeHabits);
-  //   setLoading(false);
-  // }, [username]);
-
   useEffect(() => {
     if (!username) return;
 
     const fetchHabits = async () => {
       try {
         const response = await fetch(`http://localhost:3000/habits/${username}`);
-
         if (!response.ok) {
           throw new Error(`Failed to fetch habits: ${response.statusText}`);
         }
-
         const data = await response.json();
-
+        console.log('Raw server response:', data);
         if (Array.isArray(data)) {
           setHabits(data);
+          console.log('Set habits:', data);
         } else {
           console.error('Invalid habits response format:', data);
           setHabits([]);
@@ -87,7 +77,6 @@ export default function StatsScreen() {
         setLoading(false);
       }
     };
-
     fetchHabits();
   }, [username]);
 
@@ -180,6 +169,7 @@ export default function StatsScreen() {
             </View>
 
             {selectedHabit && selectedHabitData && email ? (
+              console.log('Selected habit:', selectedHabitData.habitType),
               selectedHabitData.habitType === 'build' ? (
                 <BuildHabitGraph email={email} habitName={selectedHabit} />
               ) : (
