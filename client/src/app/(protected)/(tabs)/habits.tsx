@@ -286,6 +286,19 @@ export default function HomeScreen() {
         {/* Add Habit Button */}
         <View style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
           <TouchableOpacity onPress={() => {
+            // Reset all form fields when opening the modal
+            setHabitName('');
+            setHabitDescription('');
+            setHabitType('build');  // This is a default, but for clarity
+            setHabitColor('');  // Clear color
+            setScheduleOption('interval');
+            setIntervalDays('');
+            setSelectedDays([]);
+            setIsGoalEnabled(false);
+            setGoalValue('');
+            setGoalUnit('');
+
+            // Then set edit mode and show modal
             setIsEditMode(false);
             setModalVisible(true);
           }}>
