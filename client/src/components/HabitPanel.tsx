@@ -1,4 +1,4 @@
-import { updateHabitProgress, getHabitStreak } from '../lib/client';
+import { updateHabitProgress, getHabitStreak, getHabitInterval, getHabitDays } from '../lib/client';
 import { IconSymbol } from './ui/IconSymbol';
 import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, TextInput, Text, StyleSheet, Alert } from 'react-native';
@@ -56,6 +56,12 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
   // Only consider a date future if it's strictly after today
   const isDateInFuture = selectedDateCopy && selectedDateCopy > today;
 
+  // Function to check if a date is today
+  const isToday = selectedDateCopy &&
+    selectedDateCopy.getDate() === today.getDate() &&
+    selectedDateCopy.getMonth() === today.getMonth() &&
+    selectedDateCopy.getFullYear() === today.getFullYear();
+
   useEffect(() => {
     const fetchStreak = async () => {
       try {
@@ -63,6 +69,21 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
         if (!isDateInFuture) {
           const streakData = await getHabitStreak(habit.user_email, habit.habitName, date);
           setStreak(streakData.streak || 0);
+
+          // If it's today and streak is 0, get the last occurrence's streak
+          if (isToday && streakData.streak === 0) {
+            // Find the last scheduled date for this habit
+            const lastScheduledDate = await findLastScheduledDate(habit);
+            if (lastScheduledDate) {
+              const lastDateStr = lastScheduledDate.toISOString().split("T")[0];
+
+              // Fetch last occurrence's streak
+              const lastStreakData = await getHabitStreak(habit.user_email, habit.habitName, lastDateStr);
+              if (lastStreakData.streak > 0) {
+                setStreak(lastStreakData.streak);
+              }
+            }
+          }
         }
       } catch (error) {
         console.error('Error fetching habit streak:', error);
@@ -70,7 +91,52 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
     };
 
     fetchStreak();
-  }, [habit, updated, date, isDateInFuture]);
+  }, [habit, updated, date, isDateInFuture, isToday]);
+
+  // Add this helper function to find the last scheduled date for the habit
+  const findLastScheduledDate = async (habit: Habit) => {
+    try {
+      const today = new Date();
+
+      if (habit.scheduleOption === 'interval') {
+        // For interval habits, calculate the last date based on the interval
+        const intervalData = await getHabitInterval(habit.user_email, habit.habitName);
+        const intervalDays = intervalData?.increment || 1;
+
+        // Create a date for the last scheduled occurrence
+        const lastDate = new Date(today);
+        lastDate.setDate(today.getDate() - intervalDays);
+        return lastDate;
+      }
+      else if (habit.scheduleOption === 'weekly') {
+        // For weekly habits, find the previous occurrence based on selected days
+        const daysResponse = await getHabitDays(habit.user_email, habit.habitName);
+        if (!daysResponse || daysResponse.length === 0) return null;
+
+        const selectedDays = daysResponse.map((day: { day: string }) => day.day);
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        // Start from yesterday and go backwards up to 7 days
+        for (let i = 1; i <= 7; i++) {
+          const checkDate = new Date(today);
+          checkDate.setDate(today.getDate() - i);
+          const dayName = dayNames[checkDate.getDay()];
+
+          if (selectedDays.includes(dayName)) {
+            return checkDate;
+          }
+        }
+      }
+
+      // If we couldn't determine the specific last date, default to yesterday
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      return yesterday;
+    } catch (error) {
+      console.error('Error finding last scheduled date:', error);
+      return null;
+    }
+  };
 
   const handleUpdate = async () => {
     try {
@@ -80,23 +146,50 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
 
       if (!isDateInFuture) {
         const streakData = await getHabitStreak(habit.user_email, habit.habitName, date);
-        setStreak(streakData.streak || 0);
+
+        // Determine if the goal was reached
+        const isGoalReached = habit.habitType === 'build'
+          ? (habit.goalValue !== undefined && habit.goalValue !== null && progressValue >= habit.goalValue)
+          : (progressValue === 1); // For 'quit' habits, 1 means success
+
+        // For today's update
+        if (isToday) {
+          if (isGoalReached) {
+            // Goal achieved - set streak to streakData (should be incremented by server)
+            setStreak(streakData.streak || 0);
+          } else {
+            // Goal not achieved - maintain previous streak
+            const lastScheduledDate = await findLastScheduledDate(habit);
+            if (lastScheduledDate) {
+              const lastDateStr = lastScheduledDate.toISOString().split("T")[0];
+              const lastStreakData = await getHabitStreak(habit.user_email, habit.habitName, lastDateStr);
+              // Always maintain the previous streak regardless of progress value
+              setStreak(lastStreakData.streak || 0);
+            } else {
+              // No previous date found, maintain current streak
+              setStreak(streakData.streak || 0);
+            }
+          }
+        } else {
+          // For past dates, just use the streak from the database
+          setStreak(streakData.streak || 0);
+        }
       }
     } catch (error) {
       console.error('Error updating habit:', error);
     }
   };
 
-// HabitPanel.tsx
-const handleDelete = async () => {
-  try {
-    await deleteHabit(habit.user_email, habit.habitName); 
-    Alert.alert("Habit deleted successfully");
-    // onDelete callback if needed
-  } catch (error) {
-    Alert.alert("Error deleting habit");
-  }
-};
+  // HabitPanel.tsx
+  const handleDelete = async () => {
+    try {
+      await deleteHabit(habit.user_email, habit.habitName);
+      Alert.alert("Habit deleted successfully");
+      // onDelete callback if needed
+    } catch (error) {
+      Alert.alert("Error deleting habit");
+    }
+  };
 
 
   return (
