@@ -1,7 +1,10 @@
 import { StyleSheet, TouchableOpacity, Alert, FlatList, View, Switch } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { deleteUser } from '../../../lib/client';
 import { ThemedText } from '../../../components/ThemedText';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as FileSystem from 'expo-file-system';
+import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
@@ -45,13 +48,51 @@ export default function SettingsScreen() {
     }
   };
 
-
-
   const settingsOptions = [
     { title: 'Account', icon: require('../../../../assets/images/account.png'), route: '/account' as const },
   ] as const;
 
   type RouteType = (typeof settingsOptions)[number]['route'];
+
+  const handleExportData = async () => {
+    try {
+      // Retrieve the stored email (adjust key if needed)
+      const storedEmail = await AsyncStorage.getItem('email');
+      if (!storedEmail) {
+        Alert.alert('Error', 'No email found');
+        return;
+      }
+      const response = await fetch(`http://localhost:3000/export/${storedEmail}`);
+      if (!response.ok) {
+        throw new Error('Error exporting data');
+      }
+      const exportData = await response.json();
+      if (Platform.OS == 'ios') {
+        const fileUri = FileSystem.documentDirectory + 'exportData.json';
+        await FileSystem.writeAsStringAsync(      
+          fileUri,
+          JSON.stringify(exportData, null, 2),
+          { encoding: FileSystem.EncodingType.UTF8 }
+        );
+        Alert.alert('Exported Data', `Data saved to ${fileUri}`);  
+      }
+      else if (Platform.OS === 'web') {
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'exportData.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        Alert.alert('Exported Data', 'Data downloaded as exportData.json');
+      }
+    } 
+    catch (error) {
+      Alert.alert('Failed to export data');
+    };
+  }
 
   const handleSignOut = async () => {
     try {
@@ -62,6 +103,45 @@ export default function SettingsScreen() {
     }
   };
 
+  const confirmDeleteUser = async () => {
+    console.log('Confirm Delete pressed');
+    try {
+      const storedEmail = await AsyncStorage.getItem('email');
+      if (storedEmail !== null) {
+        console.log('Deleting user with email:', storedEmail);
+        await deleteUser(storedEmail);
+        Alert.alert('User Deleted', 'User has been deleted successfully.');
+        router.replace('/login');
+      } else {
+        Alert.alert('Error', 'No email found');
+      }
+    } catch (error: any) {
+      console.error('Error in confirmDeleteUser:', error);
+      Alert.alert('Error', error.message || 'Failed to delete user');
+    }
+  };
+  
+  const handleDeleteUser = () => {
+    console.log('Delete User pressed');
+    Alert.alert(
+      'Confirm Delete Account',
+      'Are you sure you want to delete your account? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel', onPress: () => console.log('Delete canceled') },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            console.log('Delete confirmed');
+            confirmDeleteUser();
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+  
+  
   const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
     <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route)}>
       <View style={styles.iconContainer}>
@@ -102,9 +182,18 @@ export default function SettingsScreen() {
           <Switch value={notificationsEnabled} onValueChange={toggleNotifications} />
         </View>
 
+        <TouchableOpacity style={styles.exportButton} onPress={handleExportData}>
+          <ThemedText style={styles.exportButtonText}>Export Data</ThemedText>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteUser}>
+          <ThemedText style={styles.deleteButtonText}>Delete User</ThemedText>
+        </TouchableOpacity>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -139,6 +228,34 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     marginLeft: 10,
+  },
+  exportButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    marginHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  exportButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },  
+  deleteButton: {
+    backgroundColor: 'red',
+    paddingVertical: 12,
+    marginHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  deleteButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   signOutButton: {
     backgroundColor: 'red',

@@ -12,17 +12,18 @@ interface ChartData {
   y: number;
 }
 
-interface VicChartProps {
+interface BuildHabitGraphProps {
     email: string;
     habitName: string;
   }
 
-const VicChart = ({ email, habitName }: VicChartProps) => {
+const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();
   const [range, setRange] = useState<Range>('W');
   const [chartData, setChartData] = useState<ChartData[]>([]);
-  const currentDate = new Date();
+  const [hasDecimals, setHasDecimals] = useState(false);
+  const today = new Date();
 
   const labels: Record<Range, string[]> = {
     W: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -30,33 +31,66 @@ const VicChart = ({ email, habitName }: VicChartProps) => {
     Y: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   };
 
-  // Simulate sample data
-  const sampleData: Record<Range, number[]> = {
-    W: [3, 4, 0, 6, 0, 1, 2], // 7 days
-    M: Array(31)
-      .fill(0)
-      .map((_, i) => (i < currentDate.getDate() ? Math.random() * 5 + 1 : 0)), // Up to March 19
-    Y: Array(12)
-      .fill(0)
-      .map((_, i) => (i < currentDate.getMonth() + 1 ? Math.random() * 5 + 1 : 0)), // Up to March
-  };
-
   useEffect(() => {
-    const selectedLabels = labels[range];
-    const selectedData = sampleData[range];
-    const newData = selectedLabels.map((label, index) => ({
-      x: label,
-      y: selectedData[index],
-    }));
-    setChartData(newData);
-  }, [range]);
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/stats/${email}/${habitName}/progress?range=${range === 'W' ? 'week' : range === 'M' ? 'month' : 'year'}`
+        );
+        const rawData = await response.json();
+        
+        const startDate = new Date(today);
+        if (range === 'W') {
+          startDate.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+        } else if (range === 'M') {
+          startDate.setDate(1);
+        } else {
+          startDate.setFullYear(today.getFullYear(), 0, 1);
+        }
 
-  const getTickValues = () => {
-    if (range === 'M') {
-      return [1, 8, 15, 22, 29].map(day => day.toString());
-    }
-    return labels[range];
-  };
+        let newData: ChartData[];
+        if (range === 'W' || range === 'M') {
+          const dataMap = new Map();
+          rawData.forEach((entry: { progressDate: string; progress: number }) => {
+            const date = new Date(entry.progressDate);
+            let x;
+            if (range === 'W') {
+              const dayIndex = (date.getDay() + 6) % 7;
+              x = labels[range][dayIndex];
+            } else {
+              x = date.getDate().toString();
+            }
+            dataMap.set(x, entry.progress);
+          });
+
+          newData = labels[range].map(label => ({
+            x: label,
+            y: dataMap.has(label) ? dataMap.get(label) : 0,
+          }));
+        } else {
+          const dataMap = new Map();
+          rawData.forEach((entry: { month: number; avgProgress: number }) => {
+            const monthIndex = entry.month - 1;
+            const x = labels[range][monthIndex];
+            dataMap.set(x, entry.avgProgress);
+          });
+
+          newData = labels[range].map(label => ({
+            x: label,
+            y: dataMap.has(label) ? dataMap.get(label) : 0,
+          }));
+        }
+
+        const hasDecimalValues = newData.some(data => data.y % 1 !== 0);
+        setHasDecimals(hasDecimalValues);
+        setChartData(newData);
+      } catch (error) {
+        console.error('Error fetching progress data:', error);
+      }
+    };
+
+    fetchData();
+  }, [range, email, habitName]);
 
   const referenceWidth = 400;
   const baseBarWidth = { W: 15, M: 5, Y: 10 };
@@ -70,30 +104,19 @@ const VicChart = ({ email, habitName }: VicChartProps) => {
     <View style={[styles.container, { backgroundColor: Colors[theme].background }]}>
       <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].background2 }]}>
         <TouchableOpacity
-          style={[
-            styles.pickerButton,
-            styles.leftButton,
-            range === 'W' && styles.activeButton,
-          ]}
+          style={[styles.pickerButton, styles.leftButton, range === 'W' && styles.activeButton]}
           onPress={() => setRange('W')}
         >
           <Text style={[styles.pickerText, { color: Colors[theme].text }]}>W</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.pickerButton,
-            range === 'M' && styles.activeButton,
-          ]}
+          style={[styles.pickerButton, range === 'M' && styles.activeButton]}
           onPress={() => setRange('M')}
         >
           <Text style={[styles.pickerText, { color: Colors[theme].text }]}>M</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.pickerButton,
-            styles.rightButton,
-            range === 'Y' && styles.activeButton,
-          ]}
+          style={[styles.pickerButton, styles.rightButton, range === 'Y' && styles.activeButton]}
           onPress={() => setRange('Y')}
         >
           <Text style={[styles.pickerText, { color: Colors[theme].text }]}>Y</Text>
@@ -101,15 +124,16 @@ const VicChart = ({ email, habitName }: VicChartProps) => {
       </View>
 
       <Text style={[styles.date, { color: Colors[theme].text }]}>
-        {range === 'W' ? 'Current Week' : range === 'M' ? `Current Month` : `2025`}
+        {range === 'W' ? 'Current Week' : range === 'M' ? `Current Month` : today.getFullYear().toString()}
       </Text>
 
       <VictoryChart
         width={chartWidth}
         height={220}
-        domainPadding={{ x: range === 'M' ? 5 : 20 }}
+        domainPadding={{ x: range === 'M' ? 5 : 20, y: 10 }}
         padding={{ top: 20, bottom: 40, left: 40, right: 40 }}
         theme={VictoryTheme.material}
+        domain={{ y: [0, Math.max(5, ...chartData.map(d => d.y))] }}
       >
         <VictoryAxis
           tickValues={labels[range]}
@@ -128,6 +152,7 @@ const VicChart = ({ email, habitName }: VicChartProps) => {
         />
         <VictoryAxis
           dependentAxis
+          tickFormat={(tick: number) => (hasDecimals ? tick.toFixed(1) : Math.round(tick))}
           style={{
             axis: { stroke: Colors[theme].text },
             ticks: { stroke: Colors[theme].text, size: 5 },
@@ -139,7 +164,7 @@ const VicChart = ({ email, habitName }: VicChartProps) => {
           data={chartData}
           style={{
             data: {
-              fill: theme === 'light' ? '#0a7ea4' : '#00A3FF',
+              fill: '#0a7ea4',
               width: scaledBarWidth,
             },
           }}
@@ -190,4 +215,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VicChart;
+export default BuildHabitGraph;
