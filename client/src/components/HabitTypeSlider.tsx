@@ -8,19 +8,21 @@ import { useTheme } from './ThemeContext';
 interface HabitTypeSliderProps {
     habitType: 'build' | 'quit';
     setHabitType: (value: 'build' | 'quit') => void;
+    activeColor?: string;
 }
 
 export const HabitTypeSlider: React.FC<HabitTypeSliderProps> = ({
     habitType,
     setHabitType,
+    activeColor = '#a39d41',
 }) => {
     const { theme } = useTheme();
     return (
-        <View style={HabitModalStyles.sliderContainer}>
+        <View style={[HabitModalStyles.sliderContainer, { borderColor: activeColor }]}>
             <TouchableOpacity
                 style={[
                     HabitModalStyles.sliderOption,
-                    habitType === 'build' && HabitModalStyles.selectedOption,
+                    habitType === 'build' && [HabitModalStyles.selectedOption, { backgroundColor: activeColor }],
                 ]}
                 onPress={() => setHabitType('build')}
             >
@@ -31,7 +33,7 @@ export const HabitTypeSlider: React.FC<HabitTypeSliderProps> = ({
             <TouchableOpacity
                 style={[
                     HabitModalStyles.sliderOption,
-                    habitType === 'quit' && HabitModalStyles.selectedOption,
+                    habitType === 'quit' && [HabitModalStyles.selectedOption, { backgroundColor: activeColor }],
                 ]}
                 onPress={() => setHabitType('quit')}
             >

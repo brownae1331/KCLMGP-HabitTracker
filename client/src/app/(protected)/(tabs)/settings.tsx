@@ -90,7 +90,7 @@ export default function SettingsScreen() {
         window.URL.revokeObjectURL(url);
         window.alert('Exported Data: Data downloaded as exportData.json');
       }
-    } 
+    }
     catch (error) {
       if (Platform.OS === 'web') {
         window.alert('Failed to export data');
@@ -138,7 +138,7 @@ export default function SettingsScreen() {
         Alert.alert('Error', error.message || 'Failed to delete user');
       }
     }
-  };  
+  };
 
   const confirmUserDeletion = () => {
     console.log('Delete User pressed');
@@ -171,7 +171,7 @@ export default function SettingsScreen() {
         { cancelable: true }
       );
     }
-  };  
+  };
 
   const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
     <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route)}>
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   exportButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#a39d41',
     paddingVertical: 12,
     marginHorizontal: 20,
     borderRadius: 10,
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   signOutButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#a39d41',
     paddingVertical: 12,
     marginHorizontal: 20,
     borderRadius: 10,

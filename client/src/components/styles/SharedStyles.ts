@@ -14,7 +14,7 @@ export const SharedStyles = StyleSheet.create({
     button: {
         flex: 1,
         paddingVertical: 10,
-        backgroundColor: '#007AFF',
+        backgroundColor: '#a39d41',
         borderRadius: 4,
         marginHorizontal: 5,
         alignItems: 'center',

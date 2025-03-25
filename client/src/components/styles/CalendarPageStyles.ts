@@ -41,7 +41,7 @@ export const CalendarPageStyles = StyleSheet.create({
         height: '100%',
     },
     percentageText: {
-        color: "#FFD700",
+        color: "#a39d41",
         fontSize: 22,
         fontWeight: "bold",
     },

@@ -38,7 +38,7 @@ export const HabitModalStyles = StyleSheet.create({
         flexDirection: 'row',
         marginVertical: 12,
         borderWidth: 1,
-        borderColor: '#007AFF',
+        borderColor: '#a39d41',
         borderRadius: 25,
         overflow: 'hidden',
     },
@@ -48,7 +48,7 @@ export const HabitModalStyles = StyleSheet.create({
         alignItems: 'center',
     },
     selectedOption: {
-        backgroundColor: '#007AFF',
+        backgroundColor: '#a39d41',
     },
     colorSwatch: {
         width: 32,
@@ -59,7 +59,7 @@ export const HabitModalStyles = StyleSheet.create({
         borderColor: 'transparent',
     },
     selectedSwatch: {
-        borderColor: '#007AFF',
+        borderColor: '#a39d41',
     },
     goalToggleContainer: {
         flexDirection: 'row',
@@ -99,7 +99,7 @@ export const HabitModalStyles = StyleSheet.create({
         marginBottom: 8,
     },
     selectedDayButton: {
-        backgroundColor: '#007AFF',
+        backgroundColor: '#a39d41',
     },
     dayButtonText: {
         color: '#333333',

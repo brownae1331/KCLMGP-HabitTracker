@@ -27,10 +27,10 @@ export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
     return (
         <View style={[CalendarPageStyles.statsContainer, { backgroundColor: Colors[theme].background2 }]}>
             <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
-                🔥 Current Streak: <Text style={{ color: "#FFD700" }}>{currentStreak} days</Text>
+                🔥 Current Streak: <Text style={{ color: "#a39d41" }}>{currentStreak} days</Text>
             </ThemedText>
             <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
-                🏆 Longest Streak: <Text style={{ color: "#FFD700" }}>{longestStreak} days</Text>
+                🏆 Longest Streak: <Text style={{ color: "#a39d41" }}>{longestStreak} days</Text>
             </ThemedText>
 
             {/* Separating Line */}
@@ -47,7 +47,7 @@ export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
             <View style={CalendarPageStyles.progressContainer}>
                 <CircleProgress
                     percentage={completionPercentage}
-                    color="#FFD700"
+                    color="#a39d41"
                     size={120}
                     strokeWidth={10}
                 />
