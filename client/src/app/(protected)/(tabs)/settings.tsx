@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableOpacity, Alert, FlatList, View, Switch } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { deleteUser } from '../../../lib/client';
+import { deleteUser, BASE_URL } from '../../../lib/client';
 import { ThemedText } from '../../../components/ThemedText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system';
@@ -64,7 +64,7 @@ export default function SettingsScreen() {
           : Alert.alert('Error', 'No email found');
         return;
       }
-      const response = await fetch(`http://localhost:3000/export/${storedEmail}`);
+      const response = await fetch(`${BASE_URL}/export/${storedEmail}`);
       if (!response.ok) {
         throw new Error('Error exporting data');
       }

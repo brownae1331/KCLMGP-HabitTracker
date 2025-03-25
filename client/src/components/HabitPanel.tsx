@@ -311,14 +311,14 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
         <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
         {habit.goalValue != null && (
             <Text style={styles.progressText}>
-            {"✅"} {buildProgress !== '' ? buildProgress : currentProgress} {habit.goalUnit} / {habit.goalValue} {habit.goalUnit} {"🏆"}
+            {"🏁"} {buildProgress !== '' ? buildProgress : currentProgress} {habit.goalUnit} / {habit.goalValue} {habit.goalUnit} {"🏆"}
           </Text>
         )}
 
         {updated && (
           <ThemedText style={styles.updateStatus}>
             {habit.habitType === 'build' && habit.goalValue != null
-              ? `Progress updated to ${buildProgress}`
+              ? `Progress updated to ${buildProgress} / ${habit.goalValue} ${habit.goalUnit}`
               : `Status updated to ${quitStatus}`}
           </ThemedText>
         )}
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   progressText: {
-    fontSize: 14,
+    fontSize: 20,
     color: '#fff',
     marginTop: 5,
     textAlign: 'center',
