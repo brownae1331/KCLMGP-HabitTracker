@@ -192,7 +192,7 @@ describe('HomeScreen', () => {
             habitName: 'New Habit',
             habitDescription: '',
             habitType: 'build',
-            habitColor: '#007AFF',
+            habitColor: '#FFFF00',
             scheduleOption: 'interval',
             intervalDays: 5,
             selectedDays: [],
