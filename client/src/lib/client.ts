@@ -167,15 +167,15 @@ export async function deleteHabit(user_email: string, habitName: string) {
 }
 
 // Delete a specific user by email (primary key)
-export async function deleteUser(email: string) {
-  const response = await fetch(`${BASE_URL}/users/${email}`, {
-    method: 'DELETE',
-  });
+export async function deleteUser(user_email: string) {
+  const response = await fetch(
+    `${BASE_URL}/users/${user_email}`,
+    {
+      method: 'DELETE',
+    }
+  );
   if (!response.ok) {
     throw new Error('Error deleting user');
-  }
-  if (response.status === 204) {
-    return { success: true };
   }
   return response.json();
 }
