@@ -54,20 +54,31 @@ export default function HomeScreen() {
       window.alert("Habit name cannot be empty.");
       return;
     }
-  
-    // 2. Validate Habit Name Uniqueness: Check if a habit with the same name already exists for this user.
-    if (dbHabits.some((habit: any) => habit.habitName.toLowerCase() === habitName.trim().toLowerCase())) {
+
+    // 2. Validate Habit Name Uniqueness: BUT only for new habits or when the name has changed
+    if (!isEditMode && dbHabits.some((habit: any) => habit.habitName.toLowerCase() === habitName.trim().toLowerCase())) {
       // Alert.alert("Validation Error", "A habit with this name already exists for this user.");
       window.alert("A habit with this name already exists for this user.");
       return;
     }
-  
+
+    // For edit mode, only check for duplicate names if the name has changed
+    if (isEditMode && currentEditHabit && habitName.trim().toLowerCase() !== currentEditHabit.habitName.toLowerCase()) {
+      if (dbHabits.some((habit: any) =>
+        habit.habitName.toLowerCase() === habitName.trim().toLowerCase() &&
+        habit.habitName.toLowerCase() !== currentEditHabit.habitName.toLowerCase()
+      )) {
+        window.alert("A habit with this new name already exists for this user.");
+        return;
+      }
+    }
+
     // 3. Validate Color: If no color is picked, default to yellow (#FFFF00)
     let chosenColor = habitColor;
     if (!chosenColor || chosenColor.trim() === '') {
       chosenColor = '#FFFF00'; // default yellow
     }
-  
+
     // 4. If schedule is "interval", ensure intervalDays is a valid number.
     if (scheduleOption === 'interval') {
       if (!intervalDays || isNaN(parseInt(intervalDays, 10))) {
@@ -76,7 +87,7 @@ export default function HomeScreen() {
         return;
       }
     }
-  
+
     // 5. If schedule is "weekly", ensure at least one day is selected.
     if (scheduleOption === 'weekly') {
       if (!selectedDays || selectedDays.length === 0) {
@@ -85,7 +96,7 @@ export default function HomeScreen() {
         return;
       }
     }
-  
+
     // Construct the new habit object with validations applied
     const newHabit = {
       email: email, // assuming this is set correctly
@@ -99,27 +110,14 @@ export default function HomeScreen() {
       goalValue: isGoalEnabled ? parseFloat(goalValue) : null,
       goalUnit: isGoalEnabled ? goalUnit : null,
     };
-  
-    try {
-      const habitData = {
-        email: email,
-        habitName,
-        habitDescription,
-        habitType,
-        habitColor,
-        scheduleOption,
-        intervalDays: intervalDays ? parseInt(intervalDays, 10) : null,
-        selectedDays,
-        goalValue: isGoalEnabled ? parseFloat(goalValue) : null,
-        goalUnit: isGoalEnabled ? goalUnit : null,
-      };
 
+    try {
       if (isEditMode && currentEditHabit) {
         // If editing, update the existing habit
-        await updateHabit(habitData);
+        await updateHabit(newHabit);
       } else {
         // If adding, create a new habit
-        await addHabit(habitData);
+        await addHabit(newHabit);
       }
 
       await fetchHabits();
@@ -127,7 +125,7 @@ export default function HomeScreen() {
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'adding'} habit:`, error);
     }
-  
+
     // Reset form values and close modal
     setHabitName('');
     setHabitDescription('');
@@ -143,7 +141,7 @@ export default function HomeScreen() {
     setCurrentEditHabit(null);
     setModalVisible(false);
   };
-  
+
 
   const [dbHabits, setDbHabits] = useState<any[]>([]);
 
@@ -245,6 +243,10 @@ export default function HomeScreen() {
     setModalVisible(true);
   };
 
+  const handleHabitDelete = () => {
+    fetchHabits();
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
       <ScrollView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
@@ -272,6 +274,7 @@ export default function HomeScreen() {
                 key={`${habit.user_email}-${habit.habitName}`}
                 habit={habit}
                 onEdit={handleEditHabit}
+                onDelete={handleHabitDelete}
                 selectedDate={selectedDate.fullDate}
               />
             ))
@@ -283,6 +286,19 @@ export default function HomeScreen() {
         {/* Add Habit Button */}
         <View style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
           <TouchableOpacity onPress={() => {
+            // Reset all form fields when opening the modal
+            setHabitName('');
+            setHabitDescription('');
+            setHabitType('build');  // This is a default, but for clarity
+            setHabitColor('');  // Clear color
+            setScheduleOption('interval');
+            setIntervalDays('');
+            setSelectedDays([]);
+            setIsGoalEnabled(false);
+            setGoalValue('');
+            setGoalUnit('');
+
+            // Then set edit mode and show modal
             setIsEditMode(false);
             setModalVisible(true);
           }}>
