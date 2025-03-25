@@ -1,4 +1,4 @@
-import { updateHabitProgress, getHabitStreak, getHabitInterval, getHabitDays } from '../lib/client';
+import { updateHabitProgress, getHabitStreak, getHabitInterval, getHabitDays, getHabitProgressByDateAndHabit } from '../lib/client';
 import { IconSymbol } from './ui/IconSymbol';
 import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
@@ -207,17 +207,31 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
     }
   };
 
-  const openProgressEntry = () => {
+  const openProgressEntry = async () => {
     // Don't allow editing future dates
     if (isDateInFuture) return;
 
-    // For build habits, parse the current progress
-    const progressValue = habit.habitType === 'build'
-      ? buildProgress ? parseFloat(buildProgress) : 0
-      : quitStatus === 'yes' ? 1 : 0;
+    try {
+      const progressData = await getHabitProgressByDateAndHabit(habit.user_email, habit.habitName, date);
+      console.log('Progress data:', progressData); // Debug the response
 
-    setCurrentProgress(progressValue);
-    setProgressModalVisible(true);
+      // Make sure we're handling the API response correctly
+      const progressValue = progressData && typeof progressData.progress !== 'undefined'
+        ? progressData.progress
+        : 0;
+
+      setCurrentProgress(progressValue);
+      setProgressModalVisible(true);
+    } catch (error) {
+      console.error('Error fetching habit progress:', error);
+      // Fall back to using local state
+      const progressValue = habit.habitType === 'build'
+        ? (buildProgress ? parseFloat(buildProgress) : 0)
+        : (quitStatus === 'yes' ? 1 : 0);
+
+      setCurrentProgress(progressValue);
+      setProgressModalVisible(true);
+    }
   };
 
   const handleSaveProgress = (progress: number) => {

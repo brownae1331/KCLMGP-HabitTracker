@@ -29,11 +29,13 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
 }) => {
     const { theme } = useTheme();
     const [progress, setProgress] = useState<number>(initialProgress);
-    const [progressText, setProgressText] = useState<string>(initialProgress.toString());
+    const [progressText, setProgressText] = useState<string>(
+        initialProgress !== undefined ? initialProgress.toString() : '0'
+    );
 
     useEffect(() => {
-        setProgress(initialProgress);
-        setProgressText(initialProgress.toString());
+        setProgress(initialProgress || 0);
+        setProgressText(initialProgress !== undefined ? initialProgress.toString() : '0');
     }, [initialProgress, visible]);
 
     const increaseProgress = () => {

@@ -615,6 +615,23 @@ app.get('/habit-streak-by-date/:email/:habitName/:date', async (req, res) => {
   }
 });
 
+// Get habit progress for a specific habit on a specific date
+app.get('/habit-progress-by-date/:email/:habitName/:date', async (req, res) => {
+  const { email, habitName, date } = req.params;
+  try {
+    const [progressData] = await pool.query(
+      `SELECT progress FROM habit_progress 
+       WHERE user_email = ? AND habitName = ? AND progressDate = ?`,
+      [email, habitName, date]
+    );
+    res.json(progressData[0] || { progress: 0 });
+  } catch (error) {
+    console.error('Error fetching habit progress:', error);
+    res.status(500).json({ error: 'Error fetching habit progress data' });
+  }
+});
+
+
 const syncHabits = async (userEmail) => {
   try {
     // catch up on all past and current due habits
@@ -698,7 +715,7 @@ const generateIntervalInstances = async (userEmail, habitName, daysAhead = 7) =>
     const today = new Date();
     const cutoff = new Date();
     cutoff.setDate(today.getDate() + daysAhead);
-    
+
     const lastDate = await getLastDate('habit_instances', userEmail, habitName, 'dueDate', today);
     const dates = generateIntervalDates(lastDate, cutoff, increment);
     for (const date of dates) {
