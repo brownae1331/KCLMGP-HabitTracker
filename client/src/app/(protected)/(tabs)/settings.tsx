@@ -227,7 +227,7 @@ export default function SettingsScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.deleteButton} onPress={confirmUserDeletion}>
-          <ThemedText style={styles.deleteButtonText}>Delete My Data</ThemedText>
+          <ThemedText style={styles.deleteButtonText}>Delete My Data/Account</ThemedText>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
