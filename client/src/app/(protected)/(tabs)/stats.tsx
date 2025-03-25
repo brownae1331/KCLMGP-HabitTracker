@@ -8,7 +8,7 @@ import { SharedStyles } from '../../../components/styles/SharedStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BuildHabitGraph from '../../../components/BuildHabitGraph';
 import QuitHabitGraph from '../../../components/QuitHabitGraph';
-//import { Habit } from '../../../lib/client';
+import { BASE_URL } from '../../../lib/client';
 
 type Habit = {
   habitName: string;
@@ -57,7 +57,7 @@ export default function StatsScreen() {
 
     const fetchHabits = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/habits/${username}`);
+        const response = await fetch(`${BASE_URL}/habits/${username}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch habits: ${response.statusText}`);
         }

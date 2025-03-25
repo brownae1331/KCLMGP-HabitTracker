@@ -155,7 +155,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                         <ThemedText style={{ marginTop: 12 }}>Custom Color</ThemedText>
                         <TextInput
                             style={[SharedStyles.input, { color: Colors[theme].text }]}
-                            placeholder="#ffaa00"
+                            placeholder="#ffCC00"
                             placeholderTextColor={Colors[theme].placeholder}
                             value={habitColor}
                             onChangeText={setHabitColor}

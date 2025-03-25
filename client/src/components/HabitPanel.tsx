@@ -1,14 +1,14 @@
 import { updateHabitProgress, getHabitStreak, getHabitInterval, getHabitDays, getHabitProgressByDateAndHabit } from '../lib/client';
 import { IconSymbol } from './ui/IconSymbol';
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { Platform, View, TouchableOpacity, TextInput, Text, StyleSheet, Alert } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { deleteHabit } from '../lib/client';
 import { ProgressEntry } from './ProgressEntry';
 
-// Define the Habit interface (adjust if your structure is different)
+// Define the Habit interface (using user_email to match your DB)
 export interface Habit {
-  user_email: string; // this corresponds to user_email in your DB
+  user_email: string;
   habitName: string;
   habitDescription: string;
   habitType: 'build' | 'quit';
@@ -202,15 +202,42 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
   };
 
   const handleDelete = async () => {
-    try {
-      await deleteHabit(habit.user_email, habit.habitName);
-      Alert.alert("Success", "Habit deleted successfully");
-      if (onDelete) {
-        onDelete();
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm("Are you sure you want to delete this habit?");
+      if (!confirmed) return;
+      try {
+        await deleteHabit(habit.user_email, habit.habitName);
+        window.alert("Habit deleted successfully");
+        if (onDelete) onDelete();
+      } catch (error) {
+        window.alert("Error deleting habit");
+        console.error('Error deleting habit:', error);
       }
-    } catch (error) {
-      Alert.alert("Error", "Error deleting habit");
-      console.error('Error deleting habit:', error);
+    } else {
+      Alert.alert(
+        "Confirm Delete",
+        "Are you sure you want to delete this habit?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            onPress: async () => {
+              try {
+                await deleteHabit(habit.user_email, habit.habitName);
+                Alert.alert("Success", "Habit deleted successfully");
+                if (onDelete) onDelete();
+              } catch (error) {
+                Alert.alert("Error", "Error deleting habit");
+                console.error('Error deleting habit:', error);
+              }
+            },
+            style: "destructive",
+          },
+        ]
+      );
     }
   };
 
@@ -272,27 +299,29 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
               >
                 <IconSymbol name="pencil" size={16} color="#fff" />
               </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={handleDelete}
+              >
+                <Text style={styles.deleteIcon}>×</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
         <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
         {habit.goalValue != null && (
-          <ThemedText style={styles.habitGoal}>
-            Goal: {habit.goalValue} {habit.goalUnit}
-          </ThemedText>
+          <Text style={styles.progressText}>
+            {"🏁"} {buildProgress !== '' ? buildProgress : currentProgress} {habit.goalUnit} / {habit.goalValue} {habit.goalUnit} {"🏆"}
+          </Text>
         )}
 
         {updated && (
           <ThemedText style={styles.updateStatus}>
             {habit.habitType === 'build' && habit.goalValue != null
-              ? `Progress updated to ${buildProgress}`
+              ? `Progress updated to ${buildProgress} / ${habit.goalValue} ${habit.goalUnit}`
               : `Status updated to ${quitStatus}`}
           </ThemedText>
         )}
-
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <ThemedText style={styles.deleteButtonText}>Delete Habit</ThemedText>
-        </TouchableOpacity>
       </TouchableOpacity>
 
       <ProgressEntry
@@ -325,10 +354,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginVertical: 5,
   },
-  habitGoal: {
-    fontSize: 14,
-    color: '#fff',
-  },
   updateStatus: {
     marginTop: 10,
     color: '#fff',
@@ -360,8 +385,8 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#FF6B6B',
     borderRadius: 5,
-    marginTop: 10,
-    alignItems: 'center',
+    marginTop: 0,
+    marginLeft: 8,
   },
   deleteButtonText: {
     color: '#fff',
@@ -374,4 +399,23 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
   },
+  futureMessage: {
+    marginTop: 10,
+    color: '#fff',
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  deleteIcon: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  progressText: {
+    fontSize: 20,
+    color: '#fff',
+    marginTop: 5,
+    textAlign: 'center',
+  },
+
 });

@@ -4,6 +4,8 @@ import { VictoryLine, VictoryChart, VictoryAxis, VictoryTheme, VictoryScatter } 
 import { useWindowDimensions } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
+import { BASE_URL } from '../lib/client';
+
 
 type Range = 'W' | 'M';
 
@@ -32,7 +34,7 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3000/stats/${email}/${habitName}/streak?range=${range === 'W' ? 'week' : 'month'}`
+          `${BASE_URL}/stats/${email}/${habitName}/streak?range=${range === 'W' ? 'week' : 'month'}`
         );
         const rawData = await response.json();
   

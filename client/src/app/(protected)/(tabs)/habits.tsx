@@ -5,6 +5,9 @@ import {
   SafeAreaView,
   View,
   Alert,
+  StyleSheet,
+  Text,
+  Platform,
 } from 'react-native';
 import { IconSymbol } from '../../../components/ui/IconSymbol';
 import { WeeklyCalendar } from '../../../components/WeeklyCalendar';
@@ -50,55 +53,84 @@ export default function HomeScreen() {
   const [isLoading, setIsLoading] = useState(true);
 
   const handleAddHabit = async () => {
+    // Helper function for showing alerts
+    const showAlert = (message: string) => {
+      if (Platform.OS === 'web') {
+        window.alert(message);
+      } else {
+        Alert.alert("Validation Error", message);
+      }
+    };
+  
     // 1. Validate Habit Name: It must not be empty.
     if (!habitName || habitName.trim() === '') {
-      // Alert.alert("Validation Error", "Habit name cannot be empty."); FOR MOBILE
-      window.alert("Habit name cannot be empty.");
+      showAlert("Habit name cannot be empty.");
       return;
     }
-
+  
     // 2. Validate Habit Name Uniqueness: BUT only for new habits or when the name has changed
     if (!isEditMode && dbHabits.some((habit: any) => habit.habitName.toLowerCase() === habitName.trim().toLowerCase())) {
-      // Alert.alert("Validation Error", "A habit with this name already exists for this user.");
-      window.alert("A habit with this name already exists for this user.");
+      showAlert("A habit with this name already exists for this user.");
       return;
     }
-
+  
     // For edit mode, only check for duplicate names if the name has changed
     if (isEditMode && currentEditHabit && habitName.trim().toLowerCase() !== currentEditHabit.habitName.toLowerCase()) {
       if (dbHabits.some((habit: any) =>
         habit.habitName.toLowerCase() === habitName.trim().toLowerCase() &&
         habit.habitName.toLowerCase() !== currentEditHabit.habitName.toLowerCase()
       )) {
-        window.alert("A habit with this new name already exists for this user.");
+        showAlert("A habit with this new name already exists for this user.");
         return;
       }
     }
-
+  
     // 3. Validate Color: If no color is picked, default to yellow (#FFFF00)
     let chosenColor = habitColor;
     if (!chosenColor || chosenColor.trim() === '') {
       chosenColor = '#FFFF00'; // default yellow
     }
-
-    // 4. If schedule is "interval", ensure intervalDays is a valid number.
+  
+    // 4. If schedule is "interval", ensure intervalDays is a valid number and not negative.
     if (scheduleOption === 'interval') {
       if (!intervalDays || isNaN(parseInt(intervalDays, 10))) {
-        // Alert.alert("Validation Error", "Please enter a valid number of days for the interval schedule.");
-        window.alert("Please enter a valid number of days for the interval schedule.");
+        showAlert("Please enter a valid number of days for the interval schedule.");
+        return;
+      }
+      if (parseInt(intervalDays, 10) < 0) {
+        showAlert("Interval days cannot be negative.");
         return;
       }
     }
-
+  
     // 5. If schedule is "weekly", ensure at least one day is selected.
     if (scheduleOption === 'weekly') {
       if (!selectedDays || selectedDays.length === 0) {
-        // Alert.alert("Validation Error", "Please select at least one day for the weekly schedule.");
-        window.alert("Please select at least one day for the weekly schedule.");
+        showAlert("Please select at least one day for the weekly schedule.");
         return;
       }
     }
-
+  
+    // 6. Validate goal value: if goal is enabled, ensure the goal value is not negative.
+    if (isGoalEnabled) {
+      if (!goalValue || goalValue.trim() === '') {
+        showAlert("Please enter a valid goal value.");
+        return;
+      }
+      if (isNaN(parseFloat(goalValue))) {
+        showAlert("Goal value must be a number.");
+        return;
+      }
+      if (parseFloat(goalValue) < 0) {
+        showAlert("Goal value cannot be negative.");
+        return;
+      }
+      if (!goalUnit || goalUnit.trim() === '') {
+        showAlert("Please enter a unit for your goal.");
+        return;
+      }
+    }
+  
     // Construct the new habit object with validations applied
     const newHabit = {
       email: email, // assuming this is set correctly
@@ -112,37 +144,30 @@ export default function HomeScreen() {
       goalValue: isGoalEnabled ? parseFloat(goalValue) : null,
       goalUnit: isGoalEnabled ? goalUnit : null,
     };
-
+  
     try {
-      if (isEditMode && currentEditHabit) {
-        // If editing, update the existing habit
-        await updateHabit(newHabit);
-      } else {
-        // If adding, create a new habit
-        await addHabit(newHabit);
-      }
-
-      await fetchHabits();
-
+      await addHabit(newHabit);
+      fetchHabits(); // Refresh the habit list after adding a new habit
     } catch (error) {
-      console.error(`Error ${isEditMode ? 'updating' : 'adding'} habit:`, error);
+      console.error('Error adding habit:', error);
+      showAlert("Error adding habit");
+      return;
     }
-
+  
     // Reset form values and close modal
     setHabitName('');
     setHabitDescription('');
     setHabitType('build');
-    setHabitColor('#FFFF00');
+    setHabitColor('#007AFF');
     setScheduleOption('interval');
     setIntervalDays('');
     setSelectedDays([]);
     setIsGoalEnabled(false);
     setGoalValue('');
     setGoalUnit('');
-    setIsEditMode(false);
-    setCurrentEditHabit(null);
     setModalVisible(false);
   };
+  
 
 
   const [dbHabits, setDbHabits] = useState<any[]>([]);
@@ -276,7 +301,7 @@ export default function HomeScreen() {
         />
 
         {/* Habit Panel */}
-        <View>
+        <View style={styles.habitListContainer}>
           {dbHabits.length > 0 ? (
             dbHabits.map((habit: Habit) => (
               <HabitPanel
@@ -288,9 +313,13 @@ export default function HomeScreen() {
               />
             ))
           ) : (
-            <ThemedText>No habits found for this date.</ThemedText>
+            <Text style={styles.noHabitsText}>
+              Press the plus button to add new habits!
+            </Text>
           )}
         </View>
+
+
 
         {/* Add Habit Button */}
         <View style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
@@ -346,3 +375,21 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
+const styles = StyleSheet.create({
+  habitListContainer: {
+    marginHorizontal: 16,
+    marginVertical: 12,
+    padding: 12,
+    // No backgroundColor here—so if there are habits, it won’t show a grey box.
+    borderRadius: 8,
+  },
+  
+  
+  noHabitsText: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontSize: 16,
+    color: '#a39d41',
+  },
+});
+
