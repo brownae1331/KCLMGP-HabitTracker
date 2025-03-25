@@ -32,7 +32,7 @@ export const useWeekCalendarStyles = () => {
         },
         todayRing: {
             borderWidth: 2,
-            borderColor: '#007AFF',
+            borderColor: '#a39d41',
             borderRadius: 15,
             width: 30,
             height: 30,
@@ -40,7 +40,7 @@ export const useWeekCalendarStyles = () => {
             justifyContent: 'center',
         },
         selectedCircle: {
-            backgroundColor: '#007AFF',
+            backgroundColor: '#a39d41',
             borderRadius: 15,
             width: 30,
             height: 30,
@@ -59,7 +59,7 @@ export const useWeekCalendarStyles = () => {
         arrowText: {
             fontSize: 24,
             fontWeight: "bold",
-            color: "#007AFF",
+            color: "#a39d41",
         },
     });
 };

@@ -30,7 +30,7 @@ export default function HomeScreen() {
   const [habitName, setHabitName] = useState('');
   const [habitDescription, setHabitDescription] = useState('');
   const [habitType, setHabitType] = useState<'build' | 'quit'>('build');
-  const [habitColor, setHabitColor] = useState('#007AFF');
+  const [habitColor, setHabitColor] = useState('#a39d41');
 
   // State for scheduling options
   const [scheduleOption, setScheduleOption] = useState<'interval' | 'weekly'>('interval');
@@ -302,7 +302,7 @@ export default function HomeScreen() {
             setIsEditMode(false);
             setModalVisible(true);
           }}>
-            <IconSymbol name="plus" size={24} color="#007AFF" />
+            <IconSymbol name="plus" size={24} color="#a39d41" />
           </TouchableOpacity>
         </View>
 

@@ -18,6 +18,7 @@ interface ProgressEntryProps {
     };
     initialProgress: number;
     onSave: (progress: number) => void;
+    isEditable?: boolean;
 }
 
 export const ProgressEntry: React.FC<ProgressEntryProps> = ({
@@ -26,6 +27,7 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
     habit,
     initialProgress,
     onSave,
+    isEditable = true,
 }) => {
     const { theme } = useTheme();
     const [progress, setProgress] = useState<number>(initialProgress);
@@ -101,87 +103,125 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
                     <ThemedText type="title" style={[styles.title, { color: Colors[theme].text }]}>{habit.habitName}</ThemedText>
                     <ThemedText style={[styles.description, { color: Colors[theme].text }]}>{habit.habitDescription}</ThemedText>
 
-                    <View style={styles.progressContainer}>
-                        <CircleProgress
-                            percentage={progressPercentage}
-                            color={habit.habitColor}
-                            size={200}
-                        />
-
-                        <View style={styles.progressTextContainer}>
-                            <TextInput
-                                style={[
-                                    styles.progressInput,
-                                    { color: Colors[theme].text }
-                                ]}
-                                value={progressText}
-                                onChangeText={handleTextChange}
-                                keyboardType="numeric"
-                                textAlign="center"
+                    {/* Only show progress circle for build habits with goals */}
+                    {!useBinaryControls && (
+                        <View style={styles.progressContainer}>
+                            <CircleProgress
+                                percentage={progressPercentage}
+                                color={habit.habitColor}
+                                size={200}
                             />
-                            {habit.goalUnit && (
-                                <ThemedText style={[styles.unitText, { color: Colors[theme].text }]}>{habit.goalUnit}</ThemedText>
-                            )}
-                        </View>
-                    </View>
 
-                    {useBinaryControls ? (
-                        <View style={styles.binaryControlContainer}>
-                            <TouchableOpacity
-                                style={[styles.binaryButton, progress > 0 && styles.binaryButtonSelected]}
-                                onPress={() => {
-                                    setProgress(1);
-                                    setProgressText("1");
-                                }}
-                            >
-                                <Text style={styles.binaryButtonText}>Completed</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.binaryButton, progress === 0 && styles.binaryButtonSelected]}
-                                onPress={() => {
-                                    setProgress(0);
-                                    setProgressText("0");
-                                }}
-                            >
-                                <Text style={styles.binaryButtonText}>Not Completed</Text>
-                            </TouchableOpacity>
-                        </View>
-                    ) : (
-                        <View style={styles.goalContainer}>
-                            <TouchableOpacity
-                                style={[styles.circleButton, { backgroundColor: habit.habitColor }]}
-                                onPress={decreaseProgress}
-                            >
-                                <Text style={styles.buttonText}>-</Text>
-                            </TouchableOpacity>
-
-                            {habit.goalValue && (
-                                <ThemedText style={[styles.goalText, { color: Colors[theme].text }]}>
-                                    Goal: {habit.goalValue} {habit.goalUnit}
-                                </ThemedText>
-                            )}
-
-                            <TouchableOpacity
-                                style={[styles.circleButton, { backgroundColor: habit.habitColor }]}
-                                onPress={increaseProgress}
-                            >
-                                <Text style={styles.buttonText}>+</Text>
-                            </TouchableOpacity>
+                            <View style={styles.progressTextContainer}>
+                                <TextInput
+                                    style={[
+                                        styles.progressInput,
+                                        { color: Colors[theme].text },
+                                        !isEditable && styles.disabledInput
+                                    ]}
+                                    value={progressText}
+                                    onChangeText={handleTextChange}
+                                    keyboardType="numeric"
+                                    textAlign="center"
+                                    editable={isEditable}
+                                />
+                                {habit.goalUnit && (
+                                    <ThemedText style={[styles.unitText, { color: Colors[theme].text }]}>{habit.goalUnit}</ThemedText>
+                                )}
+                            </View>
                         </View>
                     )}
 
-                    <TouchableOpacity
-                        style={[styles.saveButton, { backgroundColor: habit.habitColor }]}
-                        onPress={handleSave}
-                    >
-                        <ThemedText style={styles.saveButtonText}>Save Progress</ThemedText>
-                    </TouchableOpacity>
+                    {/* For binary habits, show completion status */}
+                    {useBinaryControls && (
+                        <View style={[styles.binaryStatusContainer, { borderColor: habit.habitColor }]}>
+                            <ThemedText style={[styles.binaryStatusText, { color: Colors[theme].text }]}>
+                                Status: {progress > 0 ? 'Completed' : 'Not Completed'}
+                            </ThemedText>
+                        </View>
+                    )}
+
+                    {isEditable ? (
+                        <>
+                            {useBinaryControls ? (
+                                <View style={styles.binaryControlContainer}>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.binaryButton,
+                                            progress > 0 && styles.binaryButtonSelected,
+                                            { backgroundColor: progress > 0 ? habit.habitColor : 'rgba(0,0,0,0.1)' }
+                                        ]}
+                                        onPress={() => {
+                                            setProgress(1);
+                                            setProgressText("1");
+                                        }}
+                                    >
+                                        <Text style={styles.binaryButtonText}>Completed</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.binaryButton,
+                                            progress === 0 && styles.binaryButtonSelected,
+                                            { backgroundColor: progress === 0 ? habit.habitColor : 'rgba(0,0,0,0.1)' }
+                                        ]}
+                                        onPress={() => {
+                                            setProgress(0);
+                                            setProgressText("0");
+                                        }}
+                                    >
+                                        <Text style={styles.binaryButtonText}>Not Completed</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ) : (
+                                <View style={styles.goalContainer}>
+                                    <TouchableOpacity
+                                        style={[styles.circleButton, { backgroundColor: habit.habitColor }]}
+                                        onPress={decreaseProgress}
+                                    >
+                                        <Text style={styles.buttonText}>-</Text>
+                                    </TouchableOpacity>
+
+                                    {habit.goalValue && (
+                                        <ThemedText style={[styles.goalText, { color: Colors[theme].text }]}>
+                                            Goal: {habit.goalValue} {habit.goalUnit}
+                                        </ThemedText>
+                                    )}
+
+                                    <TouchableOpacity
+                                        style={[styles.circleButton, { backgroundColor: habit.habitColor }]}
+                                        onPress={increaseProgress}
+                                    >
+                                        <Text style={styles.buttonText}>+</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+
+                            <TouchableOpacity
+                                style={[styles.saveButton, { backgroundColor: habit.habitColor }]}
+                                onPress={handleSave}
+                            >
+                                <ThemedText style={styles.saveButtonText}>Save Progress</ThemedText>
+                            </TouchableOpacity>
+                        </>
+                    ) : (
+                        <View style={styles.readOnlyContainer}>
+                            {/* Only show progress text for non-binary habits */}
+                            {!useBinaryControls && (
+                                <ThemedText style={[styles.readOnlyText, { color: Colors[theme].text }]}>
+                                    Progress: {progress} {habit.goalUnit || ''}
+                                    {habit.goalValue && ` / ${habit.goalValue} ${habit.goalUnit || ''}`}
+                                </ThemedText>
+                            )}
+                        </View>
+                    )}
 
                     <TouchableOpacity
                         style={styles.cancelButton}
                         onPress={onClose}
                     >
-                        <ThemedText style={{ color: Colors[theme].text }}>Cancel</ThemedText>
+                        <ThemedText style={{ color: Colors[theme].text }}>
+                            {isEditable ? 'Cancel' : 'Close'}
+                        </ThemedText>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -319,5 +359,33 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    disabledInput: {
+        opacity: 0.7,
+    },
+    readOnlyContainer: {
+        marginVertical: 20,
+        alignItems: 'center',
+        padding: 10,
+    },
+    readOnlyText: {
+        fontSize: 18,
+        fontWeight: '500',
+        textAlign: 'center',
+    },
+    binaryStatusContainer: {
+        marginVertical: 20,
+        padding: 20,
+        borderWidth: 2,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 100,
+        width: '100%',
+    },
+    binaryStatusText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 }); 

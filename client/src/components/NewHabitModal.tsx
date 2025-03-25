@@ -80,6 +80,9 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
     onAddHabit,
     isEditMode = false,
 }) => {
+    // Get the color to use (selected color or default)
+    const getActiveColor = () => habitColor && habitColor.trim() !== '' ? habitColor : '#a39d41';
+
     const toggleDay = (day: string) => {
         console.log(selectedDays);
         if (selectedDays.includes(day)) {
@@ -118,7 +121,11 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                             {isEditMode ? "Edit Habit" : "Add New Habit"}
                         </ThemedText>
 
-                        <HabitTypeSlider habitType={habitType} setHabitType={setHabitType} />
+                        <HabitTypeSlider
+                            habitType={habitType}
+                            setHabitType={setHabitType}
+                            activeColor={getActiveColor()}
+                        />
 
                         <TextInput
                             style={[SharedStyles.input, {
@@ -158,7 +165,14 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                             {colorOptions.map((color) => (
                                 <TouchableOpacity
                                     key={color}
-                                    style={[HabitModalStyles.colorSwatch, { backgroundColor: color }, color === habitColor && HabitModalStyles.selectedSwatch,]}
+                                    style={[
+                                        HabitModalStyles.colorSwatch,
+                                        { backgroundColor: color },
+                                        color === habitColor && [
+                                            HabitModalStyles.selectedSwatch,
+                                            { borderColor: getActiveColor() }
+                                        ],
+                                    ]}
                                     onPress={() => setHabitColor(color)}
                                 />
                             ))}
@@ -174,7 +188,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                     <Switch
                                         value={isGoalEnabled}
                                         onValueChange={setIsGoalEnabled}
-                                        trackColor={{ false: '#ccc', true: '#007AFF' }}
+                                        trackColor={{ false: '#ccc', true: getActiveColor() }}
                                         thumbColor="#fff"
                                     />
                                 </View>
@@ -235,7 +249,10 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                         onPress={() => toggleDay(day)}
                                         style={[
                                             HabitModalStyles.dayButton,
-                                            selectedDays.includes(day) && HabitModalStyles.selectedDayButton,
+                                            selectedDays.includes(day) && [
+                                                HabitModalStyles.selectedDayButton,
+                                                { backgroundColor: getActiveColor() }
+                                            ],
                                         ]}
                                     >
                                         <ThemedText
@@ -253,8 +270,18 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                     </ScrollView>
 
                     <View style={[HabitModalStyles.buttonContainer, { backgroundColor: Colors[theme].background }]}>
-                        <TouchableOpacity style={SharedStyles.button} onPress={onAddHabit}>
-                            <ThemedText type="defaultSemiBold" style={{ color: Colors[theme].text }}>
+                        <TouchableOpacity
+                            style={[
+                                SharedStyles.button,
+                                {
+                                    borderColor: getActiveColor(),
+                                    backgroundColor: getActiveColor(),
+                                }
+                            ]}
+                            onPress={onAddHabit}>
+                            <ThemedText
+                                type="defaultSemiBold"
+                                style={{ color: '#FFFFFF' }}>
                                 {isEditMode ? "Edit Habit" : "Add Habit"}
                             </ThemedText>
                         </TouchableOpacity>

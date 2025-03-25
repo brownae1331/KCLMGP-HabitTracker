@@ -41,7 +41,7 @@ export const AuthStyles = StyleSheet.create({
         fontSize: 16,
     },
     button: {
-        backgroundColor: '#007AFF',
+        backgroundColor: '#a39d41',
         padding: 15,
         borderRadius: 10,
         alignItems: 'center',
@@ -52,7 +52,7 @@ export const AuthStyles = StyleSheet.create({
         alignItems: 'center',
     },
     linkText: {
-        color: '#007AFF',
+        color: '#a39d41',
         fontSize: 16,
         textDecorationLine: 'underline',
     },

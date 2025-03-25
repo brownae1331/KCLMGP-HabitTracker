@@ -94,7 +94,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
                                     cx="22.5"
                                     cy="22.5"
                                     r={radius}
-                                    stroke="#FFD700"
+                                    stroke="#a39d41"
                                     strokeWidth={strokeWidth}
                                     fill="none"
                                     strokeDasharray={circumference}
@@ -115,7 +115,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
                                 style={{
                                     color:
                                         date.dateString === today
-                                            ? "#FFD700"
+                                            ? "#a39d41"
                                             : Colors[theme].text,
                                     fontSize: 14,
                                     position: "absolute",
@@ -133,7 +133,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
                 calendarBackground: Colors[theme].background2,
                 textSectionTitleColor: Colors[theme].text,
                 dayTextColor: Colors[theme].text,
-                todayTextColor: "#FFD700",
+                todayTextColor: "#a39d41",
                 arrowColor: Colors[theme].text,
                 monthTextColor: Colors[theme].text,
                 textDisabledColor: Colors[theme].text,

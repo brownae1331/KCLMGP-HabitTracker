@@ -220,7 +220,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
 
     try {
       const progressData = await getHabitProgressByDateAndHabit(habit.user_email, habit.habitName, date);
-      console.log('Progress data:', progressData); // Debug the response
+      console.log('Progress data:', progressData);
 
       // Make sure we're handling the API response correctly
       const progressValue = progressData && typeof progressData.progress !== 'undefined'
@@ -290,13 +290,6 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
           </ThemedText>
         )}
 
-        {/* Only show when in the current view or future date view */}
-        {isDateInFuture && (
-          <ThemedText style={styles.futureMessage}>
-            This habit will be available on this date
-          </ThemedText>
-        )}
-
         <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
           <ThemedText style={styles.deleteButtonText}>Delete Habit</ThemedText>
         </TouchableOpacity>
@@ -308,6 +301,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
         habit={habit}
         initialProgress={currentProgress}
         onSave={handleSaveProgress}
+        isEditable={isToday ?? false}
       />
     </>
   );
@@ -358,13 +352,13 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   streakCount: {
-    color: '#FFD700',
+    color: '#a39d41',
     fontWeight: 'bold',
     marginRight: 8,
   },
   deleteButton: {
     padding: 10,
-    backgroundColor: '#ff4d4d',
+    backgroundColor: '#FF6B6B',
     borderRadius: 5,
     marginTop: 10,
     alignItems: 'center',
@@ -379,11 +373,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 5,
     alignItems: 'center',
-  },
-  futureMessage: {
-    marginTop: 10,
-    color: '#fff',
-    fontStyle: 'italic',
-    textAlign: 'center',
   },
 });
