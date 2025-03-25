@@ -207,6 +207,17 @@ export async function getHabitProgressByDate(email: string, date: string) {
   return response.json();
 }
 
+// Get habit progress for a specific habit on a specific date
+export async function getHabitProgressByDateAndHabit(email: string, habitName: string, date: string) {
+  const encodedEmail = encodeURIComponent(email);
+  const formattedDate = new Date(date).toISOString().split('T')[0];
+  const response = await fetch(`${BASE_URL}/habit-progress-by-date/${encodedEmail}/${habitName}/${formattedDate}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit progress');
+  }
+  return response.json();
+}
+
 // Change password
 export async function updatePassword(username: string, oldPassword: string, newPassword: string) {
   try {

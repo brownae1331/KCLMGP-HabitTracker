@@ -115,11 +115,12 @@ export default function CalendarScreen() {
 
           // Calculate progress for each habit
           for (const habit of progressData) {
-            if (habit.habitType === "build") {
+            if (habit.habitType === "build" && habit.goalValue) {
               const habitPercentage = Math.min(100, Math.round((habit.progress / habit.goalValue) * 100));
               totalHabitPercentages += habitPercentage;
             }
-            else if (habit.habitType === "quit") {
+            else {
+              // For quit habits and build habits without goals
               totalHabitPercentages += habit.progress * 100;
             }
           }

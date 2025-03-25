@@ -23,6 +23,7 @@
     "expo": "^52.0.28",
     "expo-blur": "^14.0.3",
     "expo-constants": "^17.0.5",
+    "expo-dev-client": "~5.0.14",
     "expo-device": "^7.0.2",
     "expo-font": "~13.0.3",
     "expo-haptics": "~14.0.1",
@@ -51,8 +52,7 @@
     "react-native-url-polyfill": "^2.0.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
-    "victory-native": "^37.3.6",
-    "expo-dev-client": "~5.0.14"
+    "victory-native": "^37.3.6"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
