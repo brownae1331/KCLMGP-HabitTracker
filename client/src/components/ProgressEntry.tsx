@@ -69,11 +69,25 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
     };
 
     // Calculate progress percentage for the circle
-    const progressPercentage = habit.habitType === 'build' && habit.goalValue
-        ? Math.min(100, (progress / habit.goalValue) * 100)
-        : habit.habitType === 'quit'
-            ? (progress > 0 ? 100 : 0)
-            : Math.min(100, progress);
+    const progressPercentage = useMemo(() => {
+        const isBuildWithoutGoal = habit.habitType === 'build' &&
+            (habit.goalValue === undefined || habit.goalValue === null);
+
+        if (habit.habitType === 'build' && !isBuildWithoutGoal && habit.goalValue) {
+            // Build habit with a goal: show percentage to goal
+            return Math.min(100, (progress / habit.goalValue) * 100);
+        } else {
+            // Quit habit or build habit without a goal: binary progress
+            return progress > 0 ? 100 : 0;
+        }
+    }, [habit, progress]);
+
+    // Determine if this is a build habit without a goal
+    const isBuildWithoutGoal = habit.habitType === 'build' &&
+        (habit.goalValue === undefined || habit.goalValue === null);
+
+    // Use binary controls for quit habits and build habits without goals
+    const useBinaryControls = habit.habitType === 'quit' || isBuildWithoutGoal;
 
     return (
         <Modal
@@ -111,28 +125,50 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
                         </View>
                     </View>
 
-                    {/* Goal container with plus/minus buttons */}
-                    <View style={styles.goalContainer}>
-                        <TouchableOpacity
-                            style={[styles.circleButton, { backgroundColor: habit.habitColor }]}
-                            onPress={decreaseProgress}
-                        >
-                            <Text style={styles.buttonText}>-</Text>
-                        </TouchableOpacity>
+                    {useBinaryControls ? (
+                        <View style={styles.binaryControlContainer}>
+                            <TouchableOpacity
+                                style={[styles.binaryButton, progress > 0 && styles.binaryButtonSelected]}
+                                onPress={() => {
+                                    setProgress(1);
+                                    setProgressText("1");
+                                }}
+                            >
+                                <Text style={styles.binaryButtonText}>Completed</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.binaryButton, progress === 0 && styles.binaryButtonSelected]}
+                                onPress={() => {
+                                    setProgress(0);
+                                    setProgressText("0");
+                                }}
+                            >
+                                <Text style={styles.binaryButtonText}>Not Completed</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View style={styles.goalContainer}>
+                            <TouchableOpacity
+                                style={[styles.circleButton, { backgroundColor: habit.habitColor }]}
+                                onPress={decreaseProgress}
+                            >
+                                <Text style={styles.buttonText}>-</Text>
+                            </TouchableOpacity>
 
-                        {habit.goalValue && (
-                            <ThemedText style={[styles.goalText, { color: Colors[theme].text }]}>
-                                Goal: {habit.goalValue} {habit.goalUnit}
-                            </ThemedText>
-                        )}
+                            {habit.goalValue && (
+                                <ThemedText style={[styles.goalText, { color: Colors[theme].text }]}>
+                                    Goal: {habit.goalValue} {habit.goalUnit}
+                                </ThemedText>
+                            )}
 
-                        <TouchableOpacity
-                            style={[styles.circleButton, { backgroundColor: habit.habitColor }]}
-                            onPress={increaseProgress}
-                        >
-                            <Text style={styles.buttonText}>+</Text>
-                        </TouchableOpacity>
-                    </View>
+                            <TouchableOpacity
+                                style={[styles.circleButton, { backgroundColor: habit.habitColor }]}
+                                onPress={increaseProgress}
+                            >
+                                <Text style={styles.buttonText}>+</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
 
                     <TouchableOpacity
                         style={[styles.saveButton, { backgroundColor: habit.habitColor }]}
@@ -253,5 +289,35 @@ const styles = StyleSheet.create({
     cancelButton: {
         paddingVertical: 15,
         marginTop: 10,
+    },
+    binaryControlContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginVertical: 20,
+    },
+    binaryButton: {
+        width: '48%',
+        paddingVertical: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    binaryButtonSelected: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    binaryButtonText: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 }); 

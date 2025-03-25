@@ -143,28 +143,35 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
 
   const handleUpdate = async (progress: number) => {
     try {
-      // Set progress based on habit type
-      const progressValue = habit.habitType === 'build' ? progress : progress > 0 ? 1 : 0;
+      // Determine if this is a build habit without a goal
+      const isBuildWithoutGoal = habit.habitType === 'build' &&
+        (habit.goalValue === undefined || habit.goalValue === null);
+
+      // Set progress based on habit type and goal presence
+      const progressValue = habit.habitType === 'quit' || isBuildWithoutGoal
+        ? progress > 0 ? 1 : 0  // For quit habits and build habits without goals: binary 0/1
+        : progress;  // For build habits with goals: numeric value
 
       await updateHabitProgress(habit.user_email, habit.habitName, progressValue);
       setUpdated(true);
 
-      // For build habits, update the progress state
-      if (habit.habitType === 'build') {
+      // For build habits with goals, update the progress state numerically
+      if (habit.habitType === 'build' && !isBuildWithoutGoal) {
         setBuildProgress(progress.toString());
         setCurrentProgress(progress);
       } else {
-        // For quit habits, set the yes/no state
+        // For quit habits and build habits without goals, set the yes/no state
         setQuitStatus(progress > 0 ? 'yes' : 'no');
+        setCurrentProgress(progressValue);
       }
 
       if (!isDateInFuture) {
         const streakData = await getHabitStreak(habit.user_email, habit.habitName, date);
 
         // Determine if the goal was reached
-        const isGoalReached = habit.habitType === 'build'
-          ? (habit.goalValue !== undefined && habit.goalValue !== null && progressValue >= habit.goalValue)
-          : (progressValue === 1); // For 'quit' habits, 1 means success
+        const isGoalReached = habit.habitType === 'build' && habit.goalValue
+          ? progressValue >= habit.goalValue  // Build habit with goal
+          : progressValue === 1;  // Quit habit or build habit without goal
 
         // For today's update
         if (isToday) {
@@ -225,7 +232,10 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
     } catch (error) {
       console.error('Error fetching habit progress:', error);
       // Fall back to using local state
-      const progressValue = habit.habitType === 'build'
+      const isBuildWithoutGoal = habit.habitType === 'build' &&
+        (habit.goalValue === undefined || habit.goalValue === null);
+
+      const progressValue = habit.habitType === 'build' && !isBuildWithoutGoal
         ? (buildProgress ? parseFloat(buildProgress) : 0)
         : (quitStatus === 'yes' ? 1 : 0);
 
@@ -274,9 +284,9 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
 
         {updated && (
           <ThemedText style={styles.updateStatus}>
-            {habit.habitType === 'build'
+            {habit.habitType === 'build' && habit.goalValue != null
               ? `Progress updated to ${buildProgress}`
-              : `Quit status updated to ${quitStatus}`}
+              : `Status updated to ${quitStatus}`}
           </ThemedText>
         )}
 
