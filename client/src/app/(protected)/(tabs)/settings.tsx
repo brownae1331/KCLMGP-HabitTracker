@@ -113,40 +113,65 @@ export default function SettingsScreen() {
     console.log('Confirm Delete pressed');
     try {
       const storedEmail = await AsyncStorage.getItem('email');
-      if (storedEmail !== null) {
-        console.log('Deleting user with email:', storedEmail);
-        await deleteUser(storedEmail);
-        Alert.alert('User Deleted', 'User has been deleted successfully.');
-        router.replace('/login');
-      } else {
-        Alert.alert('Error', 'No email found');
+      if (!storedEmail) {
+        if (Platform.OS === 'web') {
+          window.alert('Error: No email found');
+        } else {
+          Alert.alert('Error', 'No email found');
+        }
+        return;
       }
-    } 
-    catch (error: any) {
+      console.log('Deleting user with email:', storedEmail);
+      await deleteUser(storedEmail);
+      if (Platform.OS === 'web') {
+        window.alert('User Deleted – Your account has been removed successfully.');
+      } else {
+        Alert.alert('User Deleted', 'User has been deleted successfully.');
+      }
+      // Await sign-out to ensure token removal and navigation happen
+      await handleSignOut();
+    } catch (error: any) {
       console.error('Error in confirmDeleteUser:', error);
-      Alert.alert('Error', error.message || 'Failed to delete user');
+      if (Platform.OS === 'web') {
+        window.alert(error.message || 'Failed to delete user');
+      } else {
+        Alert.alert('Error', error.message || 'Failed to delete user');
+      }
     }
-  };
-  
+  };  
+
   const confirmUserDeletion = () => {
     console.log('Delete User pressed');
-    Alert.alert(
-      'Confirm Delete Account',
-      'Are you sure you want to delete your account? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel', onPress: () => console.log('Delete canceled') },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            console.log('Delete confirmed');
-            DeleteUser();
+    if (Platform.OS === 'web') {
+      console.log('Delete User pressed on Web');
+      const confirmed = window.confirm(
+        'Are you sure you want to delete your account? This action cannot be undone.'
+      );
+      if (confirmed) {
+        console.log('Delete confirmed on Web');
+        DeleteUser();
+      } else {
+        console.log('Delete canceled on Web');
+      }
+    } else {
+      Alert.alert(
+        'Confirm Delete Account',
+        'Are you sure you want to delete your account? This action cannot be undone.',
+        [
+          { text: 'Cancel', style: 'cancel', onPress: () => console.log('Delete canceled') },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: () => {
+              console.log('Delete confirmed');
+              DeleteUser();
+            },
           },
-        },
-      ],
-      { cancelable: true }
-    );
-  };
+        ],
+        { cancelable: true }
+      );
+    }
+  };  
 
   const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
     <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route)}>
@@ -160,38 +185,41 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
-      <ScrollView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
-        <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
-          <ThemedText type="title" style={{ color: Colors[theme].text }}>Settings</ThemedText>
-        </View>
-
-        <FlatList
-          data={settingsOptions}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.title}
-          contentContainerStyle={styles.listContainer}
-        />
-
-        <View style={styles.settingItem}>
-          <View style={styles.iconContainer}>
-            <Image source={require('../../../../assets/images/appearance.png')} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          style={{ flex: 1, backgroundColor: Colors[theme].background }}
+          contentContainerStyle={{ paddingBottom: 140 }}
+        >
+          <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+            <ThemedText type="title" style={{ color: Colors[theme].text }}>Settings</ThemedText>
           </View>
-          <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>Dark Mode</ThemedText>
-          <Switch value={theme === 'dark'} onValueChange={toggleTheme} />
-        </View>
 
-        <View style={styles.settingItem}>
-          <View style={styles.iconContainer}>
-            <Image source={require('../../../../assets/images/notifications.png')} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
+          <FlatList
+            data={settingsOptions}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.title}
+            contentContainerStyle={styles.listContainer}
+          />
+
+          <View style={styles.settingItem}>
+            <View style={styles.iconContainer}>
+              <Image source={require('../../../../assets/images/appearance.png')} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
+            </View>
+            <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>Dark Mode</ThemedText>
+            <Switch value={theme === 'dark'} onValueChange={toggleTheme} />
           </View>
-          <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>Notifications</ThemedText>
-          <Switch value={notificationsEnabled} onValueChange={toggleNotifications} />
-        </View>
 
-        <View style={{ height: 20 }} />
+          <View style={styles.settingItem}>
+            <View style={styles.iconContainer}>
+              <Image source={require('../../../../assets/images/notifications.png')} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
+            </View>
+            <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>Notifications</ThemedText>
+            <Switch value={notificationsEnabled} onValueChange={toggleNotifications} />
+          </View>
+        </ScrollView>
 
         <TouchableOpacity style={styles.exportButton} onPress={handleExportData}>
-          <ThemedText style={styles.exportButtonText}>Export Data</ThemedText>
+          <ThemedText style={styles.exportButtonText}>Export My Data</ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
@@ -201,8 +229,7 @@ export default function SettingsScreen() {
         <TouchableOpacity style={styles.deleteButton} onPress={confirmUserDeletion}>
           <ThemedText style={styles.deleteButtonText}>Delete My Data</ThemedText>
         </TouchableOpacity>
-
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
