@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
     Modal,
     TouchableOpacity,
@@ -91,6 +91,19 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
 
     const { theme } = useTheme();
 
+    useEffect(() => {
+        if (modalVisible && !isEditMode) {
+            // Reset form values when opening for a new habit
+            setHabitName('');
+            setHabitDescription('');
+            setHabitColor('');
+            setIntervalDays('');
+            setSelectedDays([]);
+            setGoalValue('');
+            setGoalUnit('');
+        }
+    }, [modalVisible, isEditMode]);
+
     return (
         <Modal
             animationType="slide"
@@ -115,6 +128,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                             placeholder="Habit Name"
                             placeholderTextColor={Colors[theme].placeholder}
                             value={habitName}
+                            onChangeText={setHabitName}
                             editable={!isEditMode}
                         />
 
