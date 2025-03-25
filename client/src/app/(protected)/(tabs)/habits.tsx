@@ -47,6 +47,8 @@ export default function HomeScreen() {
 
   const [currentEditHabit, setCurrentEditHabit] = useState<Habit | null>(null);
 
+  const [isLoading, setIsLoading] = useState(true);
+
   const handleAddHabit = async () => {
     // 1. Validate Habit Name: It must not be empty.
     if (!habitName || habitName.trim() === '') {
@@ -174,12 +176,17 @@ export default function HomeScreen() {
   // };
 
   const fetchHabits = async () => {
+    if (!email) return;
+
     try {
+      setIsLoading(true);
       const dateString = selectedDate.fullDate.toISOString().split('T')[0];
       const habits = await getHabitsForDate(email, dateString);
       setDbHabits(habits);
     } catch (error) {
       console.error('Error fetching habits for selected date:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -199,7 +206,9 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    fetchHabits();
+    if (email) {
+      fetchHabits();
+    }
   }, [selectedDate, email]);
 
   // Add a function to handle editing a habit
