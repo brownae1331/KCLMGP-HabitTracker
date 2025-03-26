@@ -54,7 +54,7 @@ export async function getHabitsForDate(email, date, type) {
   return rows;
 }
 
-const syncHabits = async (userEmail) => {
+export const syncHabits = async (userEmail) => {
   try {
     // catch up on all past and current due habits
     await migrateInstances(userEmail, '<=');
@@ -85,7 +85,7 @@ const syncHabits = async (userEmail) => {
 };
 
 // helper function: retrieves most recent date of progress of a habit
-const getLastDate = async (table, userEmail, habitName, dateColumn, defaultDate) => {
+export const getLastDate = async (table, userEmail, habitName, dateColumn, defaultDate) => {
   const [rows] = await pool.query(
     `SELECT MAX(${dateColumn}) as lastDate
      FROM ${table}
@@ -96,7 +96,7 @@ const getLastDate = async (table, userEmail, habitName, dateColumn, defaultDate)
 };
 
 // helper function:
-const generateIntervalDates = (startDate, endDate, increment) => {
+export const generateIntervalDates = (startDate, endDate, increment) => {
   const dates = [];
   let currentDate = new Date(startDate);
   while (currentDate <= endDate) {
@@ -106,7 +106,7 @@ const generateIntervalDates = (startDate, endDate, increment) => {
   return dates;
 };
 
-const generateWeeklyDates = (startDate, endDate, selectedDays) => {
+export const generateWeeklyDates = (startDate, endDate, selectedDays) => {
   const dates = [];
   let currentDate = new Date(startDate);
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -221,7 +221,7 @@ export const migrateInstances = async (userEmail, dateCondition = '=', dateValue
   }
 };
 
-const fillMissedProgress = async (userEmail) => {
+export const fillMissedProgress = async (userEmail) => {
   try {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];

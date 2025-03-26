@@ -1,6 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { pool } from '../db.js';
+import { syncHabits } from '../server.js';
 
 const router = express.Router();
 
