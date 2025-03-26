@@ -12,12 +12,12 @@ import {
 import { IconSymbol } from '../../../components/ui/IconSymbol';
 import { WeeklyCalendar } from '../../../components/WeeklyCalendar';
 import { SharedStyles } from '../../../components/styles/SharedStyles';
+import { HabitPageStyles } from '../../../components/styles/HabitPageStyles';
 import { NewHabitModal } from '../../../components/NewHabitModal';
 import { ThemedText } from '../../../components/ThemedText';
 import { Colors } from '../../../components/styles/Colors';
 import { useTheme } from '../../../components/ThemeContext';
 import { addHabit, getHabitDays, getHabitInterval, getHabitsForDate, updateHabit } from '../../../lib/client';
-//import { getHabits } from '../../lib/client';
 import HabitPanel, { Habit } from '../../../components/HabitPanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -40,7 +40,7 @@ export default function HomeScreen() {
   const [intervalDays, setIntervalDays] = useState('');
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
 
-  // Goal fields (only relevant for build type)
+  // Goal fields (only used by build type)
   const [isGoalEnabled, setIsGoalEnabled] = useState(false);
   const [goalValue, setGoalValue] = useState('');
   const [goalUnit, setGoalUnit] = useState('');
@@ -80,7 +80,7 @@ export default function HomeScreen() {
         habit.habitName.toLowerCase() === habitName.trim().toLowerCase() &&
         habit.habitName.toLowerCase() !== currentEditHabit.habitName.toLowerCase()
       )) {
-        showAlert("A habit with this new name already exists for this user.");
+        showAlert("A habit with this name already exists for this user.");
         return;
       }
     }
@@ -133,7 +133,7 @@ export default function HomeScreen() {
 
     // Construct the new habit object with validations applied
     const newHabit = {
-      email: email, // assuming this is set correctly
+      email: email,
       habitName: habitName.trim(),
       habitDescription,
       habitType,
@@ -184,34 +184,6 @@ export default function HomeScreen() {
 
 
   const [dbHabits, setDbHabits] = useState<any[]>([]);
-
-  // const fetchHabits = async () => {
-  //   try {
-  //     const habits = await getHabits(email);
-
-  //     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  //     const selectedDayName = dayNames[selectedDate.fullDate.getDay()];
-
-  //     const filtered = habits.filter((habit: any) => {
-  //       if (habit.scheduleOption === 'weekly') {
-  //         // For weekly habits, check if the selected day's name is in the selectedDays array.
-  //         return habit.selectedDays && habit.selectedDays.includes(selectedDayName);
-  //       } else {
-  //         // For interval (or date-specific) habits, check the habit.date.
-  //         if (!habit.date) return false;
-  //         const habitDate = new Date(habit.date);
-  //         return (
-  //           habitDate.getDate() === selectedDate.fullDate.getDate() &&
-  //           habitDate.getMonth() === selectedDate.fullDate.getMonth() &&
-  //           habitDate.getFullYear() === selectedDate.fullDate.getFullYear()
-  //         );
-  //       }
-  //     });
-  //     setDbHabits(filtered);
-  //   } catch (error) {
-  //     console.error('Error fetching habits for selected date:', error);
-  //   }
-  // };
 
   const fetchHabits = async () => {
     if (!email) return;
@@ -314,7 +286,7 @@ export default function HomeScreen() {
         />
 
         {/* Habit Panel */}
-        <View style={styles.habitListContainer}>
+        <View style={HabitPageStyles.habitListContainer}>
           {dbHabits.length > 0 ? (
             dbHabits.map((habit: Habit) => (
               <HabitPanel
@@ -326,7 +298,7 @@ export default function HomeScreen() {
               />
             ))
           ) : (
-            <Text style={styles.noHabitsText}>
+            <Text style={HabitPageStyles.noHabitsText}>
               Press the plus button to add new habits!
             </Text>
           )}
@@ -340,7 +312,7 @@ export default function HomeScreen() {
             // Reset all form fields when opening the modal
             setHabitName('');
             setHabitDescription('');
-            setHabitType('build');  // This is a default, but for clarity
+            setHabitType('build');  // This is a default
             setHabitColor('');  // Clear color
             setScheduleOption('interval');
             setIntervalDays('');
@@ -388,21 +360,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-const styles = StyleSheet.create({
-  habitListContainer: {
-    marginHorizontal: 16,
-    marginVertical: 12,
-    padding: 12,
-    // No backgroundColor here—so if there are habits, it won’t show a grey box.
-    borderRadius: 8,
-  },
-
-
-  noHabitsText: {
-    textAlign: 'center',
-    marginVertical: 20,
-    fontSize: 16,
-    color: '#a39d41',
-  },
-});
-

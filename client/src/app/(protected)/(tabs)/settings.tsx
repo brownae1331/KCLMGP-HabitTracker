@@ -13,6 +13,7 @@ import { useTheme } from '../../../components/ThemeContext';
 import { Colors } from '../../../components/styles/Colors';
 import { ScrollView } from 'react-native';
 import { SharedStyles } from '../../../components/styles/SharedStyles';
+import { SettingsPageStyles} from '../../../components/styles/SettingsPageStyles';
 import { enableNotifications, disableNotifications, getNotificationStatus } from '../../NotificationsHandler';
 
 export default function SettingsScreen() {
@@ -174,11 +175,11 @@ export default function SettingsScreen() {
   };
 
   const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
-    <TouchableOpacity style={styles.settingItem} onPress={() => router.push(item.route)}>
-      <View style={styles.iconContainer}>
-        <Image source={item.icon} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
+    <TouchableOpacity style={SettingsPageStyles.settingItem} onPress={() => router.push(item.route)}>
+      <View style={SettingsPageStyles.iconContainer}>
+        <Image source={item.icon} style={[SettingsPageStyles.iconImage, { tintColor: Colors[theme].text }]} />
       </View>
-      <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>{item.title}</ThemedText>
+      <ThemedText style={[SettingsPageStyles.settingText, { color: Colors[theme].text }]}>{item.title}</ThemedText>
       <Feather name="chevron-right" size={20} color={Colors[theme].text} />
     </TouchableOpacity>
   );
@@ -198,118 +199,38 @@ export default function SettingsScreen() {
             data={settingsOptions}
             renderItem={renderItem}
             keyExtractor={(item) => item.title}
-            contentContainerStyle={styles.listContainer}
+            contentContainerStyle={SettingsPageStyles.listContainer}
           />
 
-          <View style={styles.settingItem}>
-            <View style={styles.iconContainer}>
-              <Image source={require('../../../../assets/images/appearance.png')} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
+          <View style={SettingsPageStyles.settingItem}>
+            <View style={SettingsPageStyles.iconContainer}>
+              <Image source={require('../../../../assets/images/appearance.png')} style={[SettingsPageStyles.iconImage, { tintColor: Colors[theme].text }]} />
             </View>
-            <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>Dark Mode</ThemedText>
+            <ThemedText style={[SettingsPageStyles.settingText, { color: Colors[theme].text }]}>Dark Mode</ThemedText>
             <Switch value={theme === 'dark'} onValueChange={toggleTheme} />
           </View>
 
-          <View style={styles.settingItem}>
-            <View style={styles.iconContainer}>
-              <Image source={require('../../../../assets/images/notifications.png')} style={[styles.iconImage, { tintColor: Colors[theme].text }]} />
+          <View style={SettingsPageStyles.settingItem}>
+            <View style={SettingsPageStyles.iconContainer}>
+              <Image source={require('../../../../assets/images/notifications.png')} style={[SettingsPageStyles.iconImage, { tintColor: Colors[theme].text }]} />
             </View>
-            <ThemedText style={[styles.settingText, { color: Colors[theme].text }]}>Notifications</ThemedText>
+            <ThemedText style={[SettingsPageStyles.settingText, { color: Colors[theme].text }]}>Notifications</ThemedText>
             <Switch value={notificationsEnabled} onValueChange={toggleNotifications} />
           </View>
         </ScrollView>
 
-        <TouchableOpacity style={styles.exportButton} onPress={handleExportData}>
-          <ThemedText style={styles.exportButtonText}>Export My Data</ThemedText>
+        <TouchableOpacity style={SettingsPageStyles.exportButton} onPress={handleExportData}>
+          <ThemedText style={SettingsPageStyles.exportButtonText}>Export My Data</ThemedText>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
+        <TouchableOpacity style={SettingsPageStyles.signOutButton} onPress={handleSignOut}>
+          <ThemedText style={SettingsPageStyles.signOutText}>Sign Out</ThemedText>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.deleteButton} onPress={confirmUserDeletion}>
-          <ThemedText style={styles.deleteButtonText}>Delete My Data/Account</ThemedText>
+        <TouchableOpacity style={SettingsPageStyles.deleteButton} onPress={confirmUserDeletion}>
+          <ThemedText style={SettingsPageStyles.deleteButtonText}>Delete My Data/Account</ThemedText>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ccc',
-  },
-  listContainer: {
-    flexGrow: 1,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ccc',
-  },
-  iconContainer: {
-    width: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-    backgroundColor: 'transparent',
-  },
-  settingText: {
-    flex: 1,
-    fontSize: 16,
-    marginLeft: 10,
-  },
-  exportButton: {
-    backgroundColor: '#a39d41',
-    paddingVertical: 12,
-    marginHorizontal: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  exportButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  deleteButton: {
-    backgroundColor: '#e10812',
-    paddingVertical: 12,
-    marginHorizontal: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  deleteButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  signOutButton: {
-    backgroundColor: '#a39d41',
-    paddingVertical: 12,
-    marginHorizontal: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  signOutText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  iconImage: {
-    width: 24,
-    height: 24,
-    resizeMode: 'contain',
-    backgroundColor: 'transparent',
-  },
-});

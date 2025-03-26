@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme } from 'victory-native';
 import { useWindowDimensions } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
+import { BuildHabitGraphStyles } from './styles/BuildHabitGraphStyles';
 import { fetchBuildHabitProgress, fetchStreak, fetchLongestStreak, fetchCompletionRate, fetchAverageProgress } from '../lib/client'
 import StatsBoxes from './StatsBoxes';
 
@@ -143,25 +144,25 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
 
   return (
     <>
-      <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground }]}>
-        <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
+      <View style={[BuildHabitGraphStyles.container, { backgroundColor: Colors[theme].graphBackground }]}>
+        <View style={[BuildHabitGraphStyles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
           {(['W', 'M', 'Y'] as Range[]).map((r, index) => (
             <TouchableOpacity
               key={r}
               style={[
-                styles.pickerButton,
-                index === 0 && styles.leftButton,
-                index === 2 && styles.rightButton,
-                range === r && styles.activeButton,
+                BuildHabitGraphStyles.pickerButton,
+                index === 0 && BuildHabitGraphStyles.leftButton,
+                index === 2 && BuildHabitGraphStyles.rightButton,
+                range === r && BuildHabitGraphStyles.activeButton,
               ]}
               onPress={() => setRange(r)}
             >
-              <Text style={[styles.pickerText, { color: Colors[theme].text }]}>{r}</Text>
+              <Text style={[BuildHabitGraphStyles.pickerText, { color: Colors[theme].text }]}>{r}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={[styles.date, { color: Colors[theme].text }]}>
+        <Text style={[BuildHabitGraphStyles.date, { color: Colors[theme].text }]}>
           {range === 'W' ? 'Current Week' : range === 'M' ? `Current Month` : today.getFullYear().toString()}
         </Text>
 
@@ -204,47 +205,5 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    paddingTop: 20,
-    borderRadius: 10,
-  },
-  pickerContainer: {
-    flexDirection: 'row',
-    width: '90%',
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginBottom: 10,
-  },
-  pickerButton: {
-    flex: 1,
-    paddingVertical: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  leftButton: {
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-  },
-  rightButton: {
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-  },
-  activeButton: {
-    backgroundColor: '#a39d41',
-  },
-  pickerText: {
-    fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  date: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-});
 
 export default BuildHabitGraph;

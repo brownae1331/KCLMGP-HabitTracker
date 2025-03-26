@@ -5,6 +5,7 @@ import { ThemedText } from '../../../components/ThemedText';
 import { Colors } from '../../../components/styles/Colors';
 import { useTheme } from '../../../components/ThemeContext';
 import { SharedStyles } from '../../../components/styles/SharedStyles';
+import { StatsPageStyles } from '../../../components/styles/StatsPageStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BuildHabitGraph from '../../../components/BuildHabitGraph';
 import QuitHabitGraph from '../../../components/QuitHabitGraph';
@@ -73,20 +74,20 @@ export default function StatsScreen() {
         </View>
 
         {habits.length === 0 ? (
-          <View style={styles.messageContainer}>
-            <ThemedText type="subtitle" style={styles.messageText}>
+          <View style={StatsPageStyles.messageContainer}>
+            <ThemedText type="subtitle" style={StatsPageStyles.messageText}>
               You don't have any habits yet! Create a habit to see statistics.
             </ThemedText>
           </View>
         ) : (
           <>
-            <View style={[styles.pickerContainer, { 
+            <View style={[StatsPageStyles.pickerContainer, { 
               backgroundColor: Colors[theme].graphBackground, 
               borderColor: Colors[theme].pickerBackground }]}>
               <Picker
                 selectedValue={selectedHabit}
                 onValueChange={(itemValue) => setSelectedHabit(itemValue)}
-                style={[styles.picker, { 
+                style={[StatsPageStyles.picker, { 
                   backgroundColor: theme === 'dark' ? Colors.dark.background2 : '#FAFAFA', 
                   color: Colors[theme].text,
                   borderColor: Colors[theme].graphBackground, }]}
@@ -108,7 +109,7 @@ export default function StatsScreen() {
             </View>
 
             {selectedHabit && selectedHabitData && email ? (
-              <View style={styles.graphContainer}>
+              <View style={StatsPageStyles.graphContainer}>
                   {(selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
                     <BuildHabitGraph email={email} habitName={selectedHabit} />
                   ) : (
@@ -116,8 +117,8 @@ export default function StatsScreen() {
                   )}
               </View>
             ) : (
-              <View style={styles.messageContainer}>
-                <ThemedText type="subtitle" style={styles.messageText}>
+              <View style={StatsPageStyles.messageContainer}>
+                <ThemedText type="subtitle" style={StatsPageStyles.messageText}>
                   Select a habit above to see statistics about your progress!
                 </ThemedText>
               </View>
@@ -128,37 +129,3 @@ export default function StatsScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  pickerContainer: {
-    width: '80%',
-    alignSelf: 'center',
-    marginVertical: 20,
-    borderRadius: 11,
-    overflow: 'hidden',
-    borderWidth: 1,
-  },
-  picker: {
-    height: 50,
-    borderRadius: 10,
-  },
-  graphContainer: {
-    marginHorizontal: 30,
-    marginVertical: 10,
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  messageContainer: {
-    alignSelf: 'center',
-    marginHorizontal: 20,
-    marginVertical: 20,
-    borderRadius: 10,
-    padding: 20,
-  },
-  messageText: {
-    fontSize: 20,
-    textAlign: 'center',
-    maxWidth: 400,
-    color: Colors.light.backgroundText,
-  },
-});

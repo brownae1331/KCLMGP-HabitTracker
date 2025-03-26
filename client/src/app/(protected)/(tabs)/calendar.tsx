@@ -52,7 +52,7 @@ export default function CalendarScreen() {
     };
 
     loadEmail();
-  }, []); // Added missing closing bracket here
+  }, []);
 
   // Generate dates for current month if visibleCalendarDates is empty
   useEffect(() => {

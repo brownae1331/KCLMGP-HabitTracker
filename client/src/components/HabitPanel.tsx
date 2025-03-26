@@ -3,6 +3,7 @@ import { IconSymbol } from './ui/IconSymbol';
 import React, { useState, useEffect } from 'react';
 import { Platform, View, TouchableOpacity, TextInput, Text, StyleSheet, Alert } from 'react-native';
 import { ThemedText } from './ThemedText';
+import { HabitPanelStyles } from './styles/HabitPanelStyles';
 import { deleteHabit } from '../lib/client';
 import { ProgressEntry } from './ProgressEntry';
 
@@ -308,45 +309,45 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
   return (
     <>
       <TouchableOpacity
-        style={[styles.habitPanel, { backgroundColor: habit.habitColor }]}
+        style={[HabitPanelStyles.habitPanel, { backgroundColor: habit.habitColor }]}
         onPress={openProgressEntry}
         disabled={isDateInFuture ?? false}
       >
-        <View style={styles.headerContainer}>
-          <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
+        <View style={HabitPanelStyles.headerContainer}>
+          <ThemedText style={HabitPanelStyles.habitName}>{habit.habitName}</ThemedText>
           {onEdit && (
-            <View style={styles.actionsContainer}>
+            <View style={HabitPanelStyles.actionsContainer}>
               {/* Only show streak if date is not in the future */}
               {!isDateInFuture && (
                 <>
-                  <Text style={styles.fireEmoji}>🔥</Text>
-                  <Text style={styles.streakCount}>{streak}</Text>
+                  <Text style={HabitPanelStyles.fireEmoji}>🔥</Text>
+                  <Text style={HabitPanelStyles.streakCount}>{streak}</Text>
                 </>
               )}
               <TouchableOpacity
-                style={styles.editButton}
+                style={HabitPanelStyles.editButton}
                 onPress={() => onEdit(habit)}
               >
                 <IconSymbol name="pencil" size={16} color="#fff" />
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.deleteButton}
+                style={HabitPanelStyles.deleteButton}
                 onPress={handleDelete}
               >
-                <Text style={styles.deleteIcon}>×</Text>
+                <Text style={HabitPanelStyles.deleteIcon}>×</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
-        <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
+        <ThemedText style={HabitPanelStyles.habitDescription}>{habit.habitDescription}</ThemedText>
         {habit.goalValue != null ? (
-          <Text style={styles.progressText}>
+          <Text style={HabitPanelStyles.progressText}>
             {buildProgress !== '' ? parseFloat(buildProgress) : currentProgress}{" "}
             {habit.goalUnit} / {habit.goalValue} {habit.goalUnit}{" "}
             {parseFloat(buildProgress !== '' ? buildProgress : currentProgress.toString()) >= habit.goalValue ? "🏆" : "🚧"}
           </Text>
         ) : (
-          <Text style={styles.progressText}>
+          <Text style={HabitPanelStyles.progressText}>
             {quitStatus === 'COMPLETE' ? "🏆" : "🚧"} {quitStatus}
           </Text>
         )}
@@ -366,84 +367,3 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
 };
 
 export default HabitPanel;
-
-const styles = StyleSheet.create({
-  habitPanel: {
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 8,
-  },
-  habitName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  habitDescription: {
-    fontSize: 14,
-    color: '#fff',
-    marginVertical: 5,
-  },
-  updateStatus: {
-    marginTop: 10,
-    color: '#fff',
-    fontStyle: 'italic',
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  editButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-  },
-  actionsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  fireEmoji: {
-    marginRight: 5,
-  },
-  streakCount: {
-    color: '#a39d41',
-    fontWeight: 'bold',
-    marginRight: 8,
-  },
-  deleteButton: {
-    padding: 10,
-    backgroundColor: '#FF6B6B',
-    borderRadius: 5,
-    marginTop: 0,
-    marginLeft: 8,
-  },
-  deleteButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  progressIndicator: {
-    marginTop: 10,
-    padding: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  futureMessage: {
-    marginTop: 10,
-    color: '#fff',
-    fontStyle: 'italic',
-    textAlign: 'center',
-  },
-  deleteIcon: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  progressText: {
-    fontSize: 20,
-    color: '#fff',
-    marginTop: 5,
-    textAlign: 'center',
-  },
-});

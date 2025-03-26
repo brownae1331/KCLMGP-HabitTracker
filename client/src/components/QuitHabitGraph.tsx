@@ -4,6 +4,7 @@ import { VictoryLine, VictoryChart, VictoryAxis, VictoryTheme, VictoryScatter } 
 import { useWindowDimensions } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
+import { QuitHabitGraphStyles } from './styles/QuitHabitGraphStyles';
 import { fetchStreak, fetchLongestStreak, fetchCompletionRate } from '../lib/client';
 import StatsBoxes from './StatsBoxes';
 
@@ -105,25 +106,25 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
 
   return (
     <>
-      <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground }]}>
-        <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
+      <View style={[QuitHabitGraphStyles.container, { backgroundColor: Colors[theme].graphBackground }]}>
+        <View style={[QuitHabitGraphStyles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
           {(['W', 'M'] as Range[]).map((r, index) => (
             <TouchableOpacity
               key={r}
               style={[
-                styles.pickerButton,
-                index === 0 && styles.leftButton,
-                index === 1 && styles.rightButton,
-                range === r && styles.activeButton,
+                QuitHabitGraphStyles.pickerButton,
+                index === 0 && QuitHabitGraphStyles.leftButton,
+                index === 1 && QuitHabitGraphStyles.rightButton,
+                range === r && QuitHabitGraphStyles.activeButton,
               ]}
               onPress={() => setRange(r)}
             >
-              <Text style={[styles.pickerText, { color: Colors[theme].text }]}>{r}</Text>
+              <Text style={[QuitHabitGraphStyles.pickerText, { color: Colors[theme].text }]}>{r}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={[styles.date, { color: Colors[theme].text }]}>
+        <Text style={[QuitHabitGraphStyles.date, { color: Colors[theme].text }]}>
           {range === 'W' ? 'Current Week' : 'Current Month'}
         </Text>
 
@@ -166,47 +167,5 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    paddingTop: 20,
-    borderRadius: 10,
-  },
-  pickerContainer: {
-    flexDirection: 'row',
-    width: '90%',
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginBottom: 10,
-  },
-  pickerButton: {
-    flex: 1,
-    paddingVertical: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  leftButton: {
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-  },
-  rightButton: {
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-  },
-  activeButton: {
-    backgroundColor: '#a39d41',
-  },
-  pickerText: {
-    fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  date: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-});
 
 export default QuitHabitGraph;
