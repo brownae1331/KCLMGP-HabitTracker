@@ -5,7 +5,7 @@ import { useWindowDimensions } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
 import { BASE_URL } from '../lib/client';
-
+import StatsBoxes from './StatsBoxes';
 
 type Range = 'W' | 'M';
 
@@ -15,15 +15,18 @@ interface ChartData {
 }
 
 interface QuitHabitGraphProps {
-    email: string;
-    habitName: string;
-  }
+  email: string;
+  habitName: string;
+}
 
 const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();
   const [range, setRange] = useState<Range>('W');
   const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [currentStreak, setCurrentStreak] = useState<number>(0);
+  const [longestStreak, setLongestStreak] = useState<number>(0);
+  const [completionRate, setCompletionRate] = useState<number>(0);
 
   const labels: Record<Range, string[]> = {
     W: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -58,6 +61,8 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
         });
   
         setChartData(newData);
+        const mostRecentEntry = rawData[rawData.length - 1];
+        setCurrentStreak(mostRecentEntry ? mostRecentEntry.streak : 0); 
       } catch (error) {
         console.error('Error fetching streak data:', error);
       }
@@ -65,6 +70,36 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
   
     fetchData();
   }, [range, email, habitName]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const longestStreakResponse = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/longest-streak`
+        );
+        const longestStreakData = await longestStreakResponse.json();
+        setLongestStreak(longestStreakData.longestStreak);
+
+        const completionRateResponse = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/completion-rate`
+        );
+        const completionRateData = await completionRateResponse.json();
+        setCompletionRate(completionRateData.completionRate);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, [email, habitName]);
+
+  const getGrade = (rate: number): string => {
+    if (rate >= 90) return 'A';
+    if (rate >= 75) return 'B';
+    if (rate >= 60) return 'C';
+    if (rate >= 45) return 'D';
+    return 'F';
+  };
 
   const referenceWidth = 400;
   const baseLineWidth: Record<Range, number> = { W: 3, M: 2 };
@@ -74,8 +109,9 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
   const chartWidth = Math.min(width - 10, 600);
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors[theme].background }]}>
-      <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].background2 }]}>
+    <View>
+    <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground, borderRadius: 10, }]}>
+      <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
         <TouchableOpacity
           style={[
             styles.pickerButton,
@@ -105,7 +141,7 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
       <VictoryChart
         width={chartWidth}
         height={220}
-        domainPadding={{ x: range === 'M' ? 5 : 20, y: 10}}
+        domainPadding={{ x: range === 'M' ? 5 : 20, y: 10 }}
         padding={{ top: 20, bottom: 40, left: 40, right: 40 }}
         theme={VictoryTheme.material}
         domain={{ y: [0, Math.max(5, ...chartData.map(d => d.y + 1))] }}
@@ -138,7 +174,7 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
           data={chartData}
           style={{
             data: {
-              stroke: '#0a7ea4',
+              stroke: '#a39d41',
               strokeWidth: scaledLineWidth,
             },
           }}
@@ -148,10 +184,17 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
           data={chartData}
           size={3.5}
           style={{
-            data: { fill: '#139CC9FF', stroke: '#139CC985', strokeWidth: 1,},
+            data: { fill: '#B7AF3DFF', stroke: '#B7AF3D8B', strokeWidth: 1,},
           }}
         />
       </VictoryChart>
+    </View>
+    <StatsBoxes
+        currentStreak={currentStreak}
+        longestStreak={longestStreak}
+        completionRate={completionRate}
+        fourthStat={{ label: 'Grade', value: getGrade(completionRate) }}
+      />
     </View>
   );
 };
@@ -184,7 +227,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
   },
   activeButton: {
-    backgroundColor: '#00A3FF',
+    backgroundColor: '#a39d41',
   },
   pickerText: {
     fontSize: 16,

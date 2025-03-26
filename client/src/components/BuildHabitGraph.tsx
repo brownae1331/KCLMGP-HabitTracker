@@ -5,6 +5,7 @@ import { useWindowDimensions } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
 import { BASE_URL } from '../lib/client';
+import StatsBoxes from './StatsBoxes';
 
 
 type Range = 'W' | 'M' | 'Y';
@@ -25,6 +26,10 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const [range, setRange] = useState<Range>('W');
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [hasDecimals, setHasDecimals] = useState(false);
+  const [currentStreak, setCurrentStreak] = useState<number>(0);
+  const [longestStreak, setLongestStreak] = useState<number>(0);
+  const [completionRate, setCompletionRate] = useState<number>(0);
+  const [averageProgress, setAverageProgress] = useState<number>(0);
   const today = new Date();
 
   const labels: Record<Range, string[]> = {
@@ -40,7 +45,7 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
           `${BASE_URL}/stats/${email}/${habitName}/progress?range=${range === 'W' ? 'week' : range === 'M' ? 'month' : 'year'}`
         );
         const rawData = await response.json();
-        
+
         const startDate = new Date(today);
         if (range === 'W') {
           startDate.setDate(today.getDate() - ((today.getDay() + 6) % 7));
@@ -94,6 +99,54 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
     fetchData();
   }, [range, email, habitName]);
 
+  useEffect(() => {
+    const fetchStreakData = async () => {
+      try {
+        const response = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/streak?range=${range === 'W' ? 'week' : 'month'}`
+        );
+        const rawData = await response.json();
+
+        const mostRecentEntry = rawData[rawData.length - 1];
+        setCurrentStreak(mostRecentEntry ? mostRecentEntry.streak : 0);
+      } catch (error) {
+        console.error('Error fetching streak data:', error);
+      }
+    };
+
+    fetchStreakData();
+  }, [range, email, habitName]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch Longest Streak
+        const longestStreakResponse = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/longest-streak`
+        );
+        const longestStreakData = await longestStreakResponse.json();
+        setLongestStreak(longestStreakData.longestStreak);
+
+        // Fetch Success Rate
+        const completionRateResponse = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/completion-rate`
+        );
+        const completionRateData = await completionRateResponse.json();
+        setCompletionRate(completionRateData.completionRate);
+
+        const averageProgressResponse = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/average-progress`
+        );
+        const averageProgressData = await averageProgressResponse.json();
+        setAverageProgress(averageProgressData.averageProgress);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, [email, habitName]);
+
   const referenceWidth = 400;
   const baseBarWidth = { W: 15, M: 5, Y: 10 };
   const dynamicBarWidth = baseBarWidth[range] * (Math.min(width, 600) / referenceWidth);
@@ -103,8 +156,9 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const chartWidth = Math.min(width - 10, maxChartWidth);
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors[theme].background }]}>
-      <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].background2 }]}>
+    <View>
+    <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground, borderRadius: 10, }]}>
+      <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
         <TouchableOpacity
           style={[styles.pickerButton, styles.leftButton, range === 'W' && styles.activeButton]}
           onPress={() => setRange('W')}
@@ -166,12 +220,20 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
           data={chartData}
           style={{
             data: {
-              fill: '#0a7ea4',
+              fill: '#a39d41',
               width: scaledBarWidth,
             },
           }}
         />
       </VictoryChart>
+      
+    </View>
+    <StatsBoxes
+        currentStreak={currentStreak}
+        longestStreak={longestStreak}
+        completionRate={completionRate}
+        fourthStat={{ label: 'Average Progress', value: `${averageProgress}` }}
+      />
     </View>
   );
 };
@@ -204,7 +266,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
   },
   activeButton: {
-    backgroundColor: '#00A3FF',
+    backgroundColor: '#a39d41',
   },
   pickerText: {
     fontSize: 16,
