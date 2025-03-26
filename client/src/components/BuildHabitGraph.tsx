@@ -4,9 +4,8 @@ import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme } from 'victory-nat
 import { useWindowDimensions } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
-import { BASE_URL } from '../lib/client';
+import { fetchBuildHabitProgress, fetchStreak, fetchLongestStreak, fetchCompletionRate, fetchAverageProgress } from '../lib/client'
 import StatsBoxes from './StatsBoxes';
-
 
 type Range = 'W' | 'M' | 'Y';
 
@@ -16,9 +15,9 @@ interface ChartData {
 }
 
 interface BuildHabitGraphProps {
-    email: string;
-    habitName: string;
-  }
+  email: string;
+  habitName: string;
+}
 
 const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const { width } = useWindowDimensions();
@@ -41,10 +40,7 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `${BASE_URL}/stats/${email}/${habitName}/progress?range=${range === 'W' ? 'week' : range === 'M' ? 'month' : 'year'}`
-        );
-        const rawData = await response.json();
+        const rawData = await fetchBuildHabitProgress(email, habitName, range === 'W' ? 'week' : range === 'M' ? 'month' : 'year')
 
         const startDate = new Date(today);
         if (range === 'W') {
@@ -92,7 +88,6 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
         setHasDecimals(hasDecimalValues);
         setChartData(newData);
       } catch (error) {
-        console.error('Error fetching progress data:', error);
       }
     };
 
@@ -102,15 +97,11 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   useEffect(() => {
     const fetchStreakData = async () => {
       try {
-        const response = await fetch(
-          `${BASE_URL}/stats/${email}/${habitName}/streak?range=${range === 'W' ? 'week' : 'month'}`
-        );
-        const rawData = await response.json();
+        const rawData = await fetchStreak(email, habitName, 'week')
 
         const mostRecentEntry = rawData[rawData.length - 1];
         setCurrentStreak(mostRecentEntry ? mostRecentEntry.streak : 0);
       } catch (error) {
-        console.error('Error fetching streak data:', error);
       }
     };
 
@@ -120,27 +111,15 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch Longest Streak
-        const longestStreakResponse = await fetch(
-          `${BASE_URL}/stats/${email}/${habitName}/longest-streak`
-        );
-        const longestStreakData = await longestStreakResponse.json();
-        setLongestStreak(longestStreakData.longestStreak);
+        const longestStreak = await fetchLongestStreak(email, habitName);
+        setLongestStreak(longestStreak);
 
-        // Fetch Success Rate
-        const completionRateResponse = await fetch(
-          `${BASE_URL}/stats/${email}/${habitName}/completion-rate`
-        );
-        const completionRateData = await completionRateResponse.json();
-        setCompletionRate(completionRateData.completionRate);
+        const completionRate = await fetchCompletionRate(email, habitName);
+        setCompletionRate(completionRate);
 
-        const averageProgressResponse = await fetch(
-          `${BASE_URL}/stats/${email}/${habitName}/average-progress`
-        );
-        const averageProgressData = await averageProgressResponse.json();
-        setAverageProgress(averageProgressData.averageProgress);
+        const averageProgress = await fetchAverageProgress(email, habitName);
+        setAverageProgress(averageProgress);
       } catch (error) {
-        console.error('Error fetching stats:', error);
       }
     };
 
@@ -155,86 +134,74 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const maxChartWidth = 600;
   const chartWidth = Math.min(width - 10, maxChartWidth);
 
+  const axisStyle = {
+    axis: { stroke: Colors[theme].text },
+    ticks: { stroke: Colors[theme].text, size: 5 },
+    tickLabels: { fill: Colors[theme].text, fontSize: 10 },
+    grid: { stroke: Colors[theme].border, strokeWidth: 0.5, strokeDasharray: '5,5' },
+  }
+
   return (
-    <View>
-    <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground, borderRadius: 10, }]}>
-      <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
-        <TouchableOpacity
-          style={[styles.pickerButton, styles.leftButton, range === 'W' && styles.activeButton]}
-          onPress={() => setRange('W')}
+    <>
+      <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground }]}>
+        <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
+          {(['W', 'M', 'Y'] as Range[]).map((r, index) => (
+            <TouchableOpacity
+              key={r}
+              style={[
+                styles.pickerButton,
+                index === 0 && styles.leftButton,
+                index === 2 && styles.rightButton,
+                range === r && styles.activeButton,
+              ]}
+              onPress={() => setRange(r)}
+            >
+              <Text style={[styles.pickerText, { color: Colors[theme].text }]}>{r}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Text style={[styles.date, { color: Colors[theme].text }]}>
+          {range === 'W' ? 'Current Week' : range === 'M' ? `Current Month` : today.getFullYear().toString()}
+        </Text>
+
+        <VictoryChart
+          width={chartWidth}
+          height={220}
+          domainPadding={{ x: range === 'M' ? 5 : 20, y: 10 }}
+          padding={{ top: 20, bottom: 40, left: 40, right: 40 }}
+          theme={VictoryTheme.material}
+          domain={{ y: [0, Math.max(5, ...chartData.map(d => d.y))] }}
         >
-          <Text style={[styles.pickerText, { color: Colors[theme].text }]}>W</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.pickerButton, range === 'M' && styles.activeButton]}
-          onPress={() => setRange('M')}
-        >
-          <Text style={[styles.pickerText, { color: Colors[theme].text }]}>M</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.pickerButton, styles.rightButton, range === 'Y' && styles.activeButton]}
-          onPress={() => setRange('Y')}
-        >
-          <Text style={[styles.pickerText, { color: Colors[theme].text }]}>Y</Text>
-        </TouchableOpacity>
+          <VictoryAxis
+            tickValues={labels[range]}
+            tickFormat={(tick: string) => (range === 'M' && ![1, 8, 15, 22, 29].includes(parseInt(tick)) ? '' : tick)}
+            style={axisStyle}
+          />
+          <VictoryAxis
+            dependentAxis
+            tickFormat={(tick: number) => (hasDecimals ? tick.toFixed(1) : Math.round(tick))}
+            style={axisStyle}
+          />
+          <VictoryBar
+            data={chartData}
+            style={{
+              data: {
+                fill: '#a39d41',
+                width: scaledBarWidth,
+              },
+            }}
+          />
+        </VictoryChart>
+        
       </View>
-
-      <Text style={[styles.date, { color: Colors[theme].text }]}>
-        {range === 'W' ? 'Current Week' : range === 'M' ? `Current Month` : today.getFullYear().toString()}
-      </Text>
-
-      <VictoryChart
-        width={chartWidth}
-        height={220}
-        domainPadding={{ x: range === 'M' ? 5 : 20, y: 10 }}
-        padding={{ top: 20, bottom: 40, left: 40, right: 40 }}
-        theme={VictoryTheme.material}
-        domain={{ y: [0, Math.max(5, ...chartData.map(d => d.y))] }}
-      >
-        <VictoryAxis
-          tickValues={labels[range]}
-          tickFormat={(tick: string) => {
-            if (range === 'M') {
-              return [1, 8, 15, 22, 29].includes(parseInt(tick)) ? tick : '';
-            }
-            return tick;
-          }}
-          style={{
-            axis: { stroke: Colors[theme].text },
-            ticks: { stroke: Colors[theme].text, size: 5 },
-            tickLabels: { fill: Colors[theme].text, fontSize: 10 },
-            grid: { stroke: Colors[theme].border, strokeWidth: 0.5, strokeDasharray: '5,5' },
-          }}
+      <StatsBoxes
+          currentStreak={currentStreak}
+          longestStreak={longestStreak}
+          completionRate={completionRate}
+          fourthStat={{ label: 'Average Progress', value: `${averageProgress}` }}
         />
-        <VictoryAxis
-          dependentAxis
-          tickFormat={(tick: number) => (hasDecimals ? tick.toFixed(1) : Math.round(tick))}
-          style={{
-            axis: { stroke: Colors[theme].text },
-            ticks: { stroke: Colors[theme].text, size: 5 },
-            tickLabels: { fill: Colors[theme].text, fontSize: 10 },
-            grid: { stroke: Colors[theme].border, strokeWidth: 0.5, strokeDasharray: '5,5' },
-          }}
-        />
-        <VictoryBar
-          data={chartData}
-          style={{
-            data: {
-              fill: '#a39d41',
-              width: scaledBarWidth,
-            },
-          }}
-        />
-      </VictoryChart>
-      
-    </View>
-    <StatsBoxes
-        currentStreak={currentStreak}
-        longestStreak={longestStreak}
-        completionRate={completionRate}
-        fourthStat={{ label: 'Average Progress', value: `${averageProgress}` }}
-      />
-    </View>
+    </>
   );
 };
 
@@ -243,6 +210,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingTop: 20,
+    borderRadius: 10,
   },
   pickerContainer: {
     flexDirection: 'row',

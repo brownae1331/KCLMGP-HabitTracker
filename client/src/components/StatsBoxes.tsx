@@ -7,7 +7,7 @@ import { useTheme } from './ThemeContext';
 interface StatsBoxesProps {
   currentStreak: number;
   longestStreak: number;
-    completionRate: number;
+  completionRate: number;
   fourthStat: {
     label: string;
     value: string | number;
@@ -16,25 +16,24 @@ interface StatsBoxesProps {
 
 const StatsBoxes: React.FC<StatsBoxesProps> = ({ currentStreak, longestStreak, completionRate, fourthStat }) => {
   const { theme } = useTheme();
+  const stats = [
+    { value: currentStreak, label: 'Current Streak' },
+    { value: longestStreak, label: 'Longest Streak' },
+    { value: `${completionRate}%`, label: 'completion Rate' },
+    { value: fourthStat.value, label: fourthStat.label },
+  ];
 
   return (
     <View style={[styles.statsContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
-      <View style={[styles.statBox, { backgroundColor: Colors[theme].graphBackground, borderColor: Colors[theme].border }]}>
-        <ThemedText style={[styles.statValue, { color: Colors[theme].text }]}>{currentStreak}</ThemedText>
-        <ThemedText style={[styles.statLabel, { color: Colors[theme].backgroundText }]}>Current Streak</ThemedText>
-      </View>
-      <View style={[styles.statBox, { backgroundColor: Colors[theme].graphBackground, borderColor: Colors[theme].border }]}>
-        <ThemedText style={[styles.statValue, { color: Colors[theme].text }]}>{longestStreak}</ThemedText>
-        <ThemedText style={[styles.statLabel, { color: Colors[theme].backgroundText }]}>Longest Streak</ThemedText>
-      </View>
-      <View style={[styles.statBox, { backgroundColor: Colors[theme].graphBackground, borderColor: Colors[theme].border }]}>
-        <ThemedText style={[styles.statValue, { color: Colors[theme].text }]}>{completionRate}%</ThemedText>
-        <ThemedText style={[styles.statLabel, { color: Colors[theme].backgroundText }]}>completion Rate</ThemedText>
-      </View>
-      <View style={[styles.statBox, { backgroundColor: Colors[theme].graphBackground, borderColor: Colors[theme].border }]}>
-        <ThemedText style={[styles.statValue, { color: Colors[theme].text }]}>{fourthStat.value}</ThemedText>
-        <ThemedText style={[styles.statLabel, { color: Colors[theme].backgroundText }]}>{fourthStat.label}</ThemedText>
-      </View>
+      {stats.map((stat, index) => (
+        <View
+          key={index}
+          style={[styles.statBox, { backgroundColor: Colors[theme].graphBackground, borderColor: Colors[theme].border }]}
+        >
+          <ThemedText style={[styles.statValue, {color: Colors[theme].text}]}>{stat.value}</ThemedText>
+          <ThemedText style={[styles.statLabel, {color: Colors[theme].backgroundText}]}>{stat.label}</ThemedText>
+        </View>
+      ))}
     </View>
   );
 };
