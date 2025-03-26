@@ -71,10 +71,10 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
         // Only fetch streak if date is not in the future
         if (!isDateInFuture) {
           const streakData = await getHabitStreak(habit.user_email, habit.habitName, date);
-          setStreak(streakData.streak || 0);
+          setStreak(streakData?.streak || 0);
 
           // If it's today and streak is 0, get the last occurrence's streak
-          if (isToday && streakData.streak === 0) {
+          if (isToday && (streakData?.streak || 0) === 0) {
             // Find the last scheduled date for this habit
             const lastScheduledDate = await findLastScheduledDate(habit);
             if (lastScheduledDate) {
@@ -82,7 +82,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
 
               // Fetch last occurrence's streak
               const lastStreakData = await getHabitStreak(habit.user_email, habit.habitName, lastDateStr);
-              if (lastStreakData.streak > 0) {
+              if ((lastStreakData?.streak || 0) > 0) {
                 setStreak(lastStreakData.streak);
               }
             }
@@ -95,7 +95,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
 
     fetchStreak();
   }, [habit, updated, date, isDateInFuture, isToday]);
-  
+
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -121,10 +121,10 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
         console.error('Error fetching habit progress:', error);
       }
     }, 500); // Poll every 10 seconds
-  
+
     return () => clearInterval(interval);
   }, [habit, date]);
-  
+
 
   // Add this helper function to find the last scheduled date for the habit
   const findLastScheduledDate = async (habit: Habit) => {
@@ -207,7 +207,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
         if (isToday) {
           if (isGoalReached) {
             // Goal achieved - set streak to streakData (should be incremented by server)
-            setStreak(streakData.streak || 0);
+            setStreak(streakData?.streak || 0);
           } else {
             // Goal not achieved - maintain previous streak
             const lastScheduledDate = await findLastScheduledDate(habit);
@@ -215,15 +215,15 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
               const lastDateStr = lastScheduledDate.toISOString().split("T")[0];
               const lastStreakData = await getHabitStreak(habit.user_email, habit.habitName, lastDateStr);
               // Always maintain the previous streak regardless of progress value
-              setStreak(lastStreakData.streak || 0);
+              setStreak(lastStreakData?.streak || 0);
             } else {
               // No previous date found, maintain current streak
-              setStreak(streakData.streak || 0);
+              setStreak(streakData?.streak || 0);
             }
           }
         } else {
           // For past dates, just use the streak from the database
-          setStreak(streakData.streak || 0);
+          setStreak(streakData?.streak || 0);
         }
       }
     } catch (error) {
@@ -446,5 +446,4 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: 'center',
   },
-
 });
