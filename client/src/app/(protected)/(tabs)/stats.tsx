@@ -8,7 +8,7 @@ import { SharedStyles } from '../../../components/styles/SharedStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BuildHabitGraph from '../../../components/BuildHabitGraph';
 import QuitHabitGraph from '../../../components/QuitHabitGraph';
-import { BASE_URL } from '../../../lib/client';
+import { fetchHabits } from '../../../lib/client';
 import { useFocusEffect } from '@react-navigation/native';
 
 type Habit = {
@@ -38,33 +38,21 @@ export default function StatsScreen() {
     fetchUserData();
   }, []);
 
-  const fetchHabits = useCallback(async () => {
-    if (!email) return;
-
-    try {
-      const response = await fetch(`${BASE_URL}/habits/${email}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch habits: ${response.statusText}`);
-      }
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setHabits(data);
-      } else {
-        console.error('Invalid habits response format:', data);
-        setHabits([]);
-      }
-    } catch (error) {
-      console.error('Error fetching habits:', error);
-      setHabits([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [email]);
-
   useFocusEffect(
     useCallback(() => {
-      fetchHabits();
-    }, [fetchHabits])
+      if (!email) return;
+
+      const fetchHabitsData = async () => {
+        try {
+          const data = await fetchHabits(email);
+          setHabits(data);
+        } catch (error) {
+          setHabits([]);
+        }
+      };
+
+      fetchHabitsData();
+    }, [email])
   );
 
   if (loading) {
@@ -86,7 +74,7 @@ export default function StatsScreen() {
 
         {habits.length === 0 ? (
           <View style={styles.messageContainer}>
-            <ThemedText type="subtitle" style={styles.backgroundText}>
+            <ThemedText type="subtitle" style={styles.messageText}>
               You don't have any habits yet! Create a habit to see statistics.
             </ThemedText>
           </View>
@@ -106,32 +94,30 @@ export default function StatsScreen() {
                 <Picker.Item
                   label="Select a habit..."
                   value={null}
-                  color={theme === 'dark' ? Colors.dark.backgroundText : Colors.light.backgroundText}
+                  color={Colors[theme].backgroundText}
                 />
                 {habits.map((habit) => (
                   <Picker.Item
                     key={habit.habitName}
                     label={habit.habitName}
                     value={habit.habitName}
-                    color={theme === 'dark' ? Colors.dark.text : Colors.light.text}
+                    color={Colors[theme].text}
                   />
                 ))}
               </Picker>
             </View>
 
             {selectedHabit && selectedHabitData && email ? (
-              <View style={styles.graphSection}>
-                <View style={styles.graphContainer}>
+              <View style={styles.graphContainer}>
                   {(selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
                     <BuildHabitGraph email={email} habitName={selectedHabit} />
                   ) : (
                     <QuitHabitGraph email={email} habitName={selectedHabit} />
                   )}
-                </View>
               </View>
             ) : (
               <View style={styles.messageContainer}>
-                <ThemedText type="subtitle" style={styles.backgroundText}>
+                <ThemedText type="subtitle" style={styles.messageText}>
                   Select a habit above to see statistics about your progress!
                 </ThemedText>
               </View>
@@ -156,12 +142,9 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 10,
   },
-  graphSection: {
+  graphContainer: {
     marginHorizontal: 30,
     marginVertical: 10,
-    borderRadius: 10,
-  },
-  graphContainer: {
     borderRadius: 10,
     overflow: 'hidden',
   },
@@ -172,7 +155,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
   },
-  backgroundText: {
+  messageText: {
     fontSize: 20,
     textAlign: 'center',
     maxWidth: 400,
