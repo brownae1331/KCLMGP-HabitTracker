@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { ActivityIndicator, StyleSheet, View, SafeAreaView, ScrollView } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { ThemedText } from '../../../components/ThemedText';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../../components/styles/Colors';
 import { useTheme } from '../../../components/ThemeContext';
 import { SharedStyles } from '../../../components/styles/SharedStyles';
@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BuildHabitGraph from '../../../components/BuildHabitGraph';
 import QuitHabitGraph from '../../../components/QuitHabitGraph';
 import { BASE_URL } from '../../../lib/client';
+import { useFocusEffect } from '@react-navigation/native';
 
 type Habit = {
   habitName: string;
@@ -22,18 +23,29 @@ export default function StatsScreen() {
   const [username, setUsername] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [containerWidth, setContainerWidth] = useState<number>(0);
   const { theme } = useTheme();
 
-  const habitButtonContainerStyle = {
-    ...styles.habitButtonContainer,
-    backgroundColor: theme === 'dark' ? Colors.dark.background2 : Colors.light.background2,
-    borderColor: theme === 'dark' ? '#555555' : '#CCCCCCFF',
+  const pickerStyle = {
+    ...styles.picker,
+    backgroundColor: theme === 'dark' ? Colors.dark.background2 : '#FAFAFA',
+    color: Colors[theme].text,
+    borderColor: Colors[theme].graphBackground,
   };
 
-  const habitButtonTextStyle = {
-    ...styles.habitButtonText,
-    color: theme === 'dark' ? Colors.dark.text : Colors.light.text,
+  const pickerContainerStyle = {
+    ...styles.pickerContainer,
+    backgroundColor: Colors[theme].graphBackground,
+    borderColor: Colors[theme].pickerBackground,
+  };
+
+  const statBoxStyle = {
+    ...styles.statBox,
+    backgroundColor: Colors[theme].graphBackground
+  };
+
+  const statValueStyle = {
+    ...styles.statValue,
+    color: Colors[theme].text
   };
 
   useEffect(() => {
@@ -52,36 +64,35 @@ export default function StatsScreen() {
     fetchUserData();
   }, []);
 
-  useEffect(() => {
+  const fetchHabits = useCallback(async () => {
     if (!username) return;
 
-    const fetchHabits = async () => {
-      try {
-        const response = await fetch(`${BASE_URL}/habits/${username}`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch habits: ${response.statusText}`);
-        }
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setHabits(data);
-        } else {
-          console.error('Invalid habits response format:', data);
-          setHabits([]);
-        }
-      } catch (error) {
-        console.error('Error fetching habits:', error);
-        setHabits([]);
-      } finally {
-        setLoading(false);
+    try {
+      setLoading(true);
+      const response = await fetch(`${BASE_URL}/habits/${username}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch habits: ${response.statusText}`);
       }
-    };
-    fetchHabits();
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setHabits(data);
+      } else {
+        console.error('Invalid habits response format:', data);
+        setHabits([]);
+      }
+    } catch (error) {
+      console.error('Error fetching habits:', error);
+      setHabits([]);
+    } finally {
+      setLoading(false);
+    }
   }, [username]);
 
-  const onContainerLayout = (event: any) => {
-    const { width } = event.nativeEvent.layout;
-    setContainerWidth(width);
-  };
+  useFocusEffect(
+    useCallback(() => {
+      fetchHabits();
+    }, [fetchHabits])
+  );
 
   if (loading) {
     return (
@@ -93,87 +104,98 @@ export default function StatsScreen() {
 
   const selectedHabitData = habits.find(h => h.habitName === selectedHabit);
 
-  const maxButtonsWithoutScrolling = 3;
-  const shouldScroll = habits.length > maxButtonsWithoutScrolling;
-  const buttonWidth = shouldScroll
-    ? 120
-    : containerWidth / Math.min(habits.length, maxButtonsWithoutScrolling);
+  // placeholder stats
+  const getStats = () => {
+    if (!selectedHabitData) return null;
+
+    const stats = {
+      currentStreak: 8,
+      longestStreak: 20,
+      successRate: '90%',
+    };
+
+    if (selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) {
+      
+      const averageProgress = '75%';
+      return { ...stats, fourthStat: { label: 'Average Progress', value: averageProgress } };
+    } else {
+      return { ...stats, fourthStat: { label: 'Grade', value: 'A' } };
+    }
+  };
+
+  const stats = selectedHabit && selectedHabitData ? getStats() : null;
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme === 'dark' ? Colors.dark.background : Colors.light.background2 }}>
       <ScrollView style={{ flex: 1 }}>
         <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
           <ThemedText type="title" style={{ color: Colors[theme].text }}>Stats</ThemedText>
         </View>
 
         {habits.length === 0 ? (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={styles.messageContainer}>
             <ThemedText type="subtitle" style={styles.backgroundText}>
               You don't have any habits yet! Create a habit to see statistics.
             </ThemedText>
           </View>
         ) : (
           <>
-            <View style={habitButtonContainerStyle} onLayout={onContainerLayout}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                scrollEnabled={shouldScroll}
-                contentContainerStyle={styles.habitButtonContentContainer}
+            {/* Habit Picker */}
+            <View style={pickerContainerStyle}>
+              <Picker
+                selectedValue={selectedHabit}
+                onValueChange={(itemValue) => setSelectedHabit(itemValue)}
+                style={pickerStyle}
               >
-                {habits.map((habit, index) => {
-                  const isSelected = selectedHabit === habit.habitName;
-                  const isFirst = index === 0;
-                  const isLast = index === habits.length - 1;
-
-                  const buttonStyle = {
-                    ...styles.habitButton,
-                    width: buttonWidth,
-                    backgroundColor: isSelected
-                      ? '#00A3FF'
-                      : theme === 'dark'
-                        ? Colors.dark.background2
-                        : Colors.light.background,
-                    borderTopLeftRadius: isFirst ? 10 : 0,
-                    borderBottomLeftRadius: isFirst ? 10 : 0,
-                    borderTopRightRadius: isLast ? 10 : 0,
-                    borderBottomRightRadius: isLast ? 10 : 0,
-                  };
-
-                  return (
-                    <TouchableOpacity
-                      key={habit.habitName}
-                      style={buttonStyle}
-                      onPress={() => setSelectedHabit(habit.habitName)}
-                    >
-                      <ThemedText
-                        style={{
-                          ...habitButtonTextStyle,
-                          color: isSelected
-                            ? '#ffffff'
-                            : theme === 'dark'
-                              ? Colors.dark.text
-                              : Colors.light.text,
-                        }}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                      >
-                        {habit.habitName}
-                      </ThemedText>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
+                <Picker.Item
+                  label="Select a habit..."
+                  value={null}
+                  color={theme === 'dark' ? Colors.dark.backgroundText : Colors.light.backgroundText}
+                />
+                {habits.map((habit) => (
+                  <Picker.Item
+                    key={habit.habitName}
+                    label={habit.habitName}
+                    value={habit.habitName}
+                    color={theme === 'dark' ? Colors.dark.text : Colors.light.text}
+                  />
+                ))}
+              </Picker>
             </View>
 
             {selectedHabit && selectedHabitData && email ? (
-              (selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
-                <BuildHabitGraph email={email} habitName={selectedHabit} />
-              ) : (
-                <QuitHabitGraph email={email} habitName={selectedHabit} />
-              )
+              <View style={styles.graphSection}>
+                <View style={styles.graphContainer}>
+                  {(selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
+                    <BuildHabitGraph email={email} habitName={selectedHabit} />
+                  ) : (
+                    <QuitHabitGraph email={email} habitName={selectedHabit} />
+                  )}
+                </View>
+
+                {stats && (
+                  <View style={styles.statsContainer}>
+                    <View style={statBoxStyle}>
+                      <ThemedText style={statValueStyle}>{stats.currentStreak}</ThemedText>
+                      <ThemedText style={styles.statLabel}>Current Streak</ThemedText>
+                    </View>
+                    <View style={statBoxStyle}>
+                      <ThemedText style={statValueStyle}>{stats.longestStreak}</ThemedText>
+                      <ThemedText style={styles.statLabel}>Longest Streak</ThemedText>
+                    </View>
+                    <View style={statBoxStyle}>
+                      <ThemedText style={statValueStyle}>{stats.successRate}</ThemedText>
+                      <ThemedText style={styles.statLabel}>Success Rate</ThemedText>
+                    </View>
+                    <View style={statBoxStyle}>
+                      <ThemedText style={statValueStyle}>{stats.fourthStat.value}</ThemedText>
+                      <ThemedText style={styles.statLabel}>{stats.fourthStat.label}</ThemedText>
+                    </View>
+                  </View>
+                )}
+              </View>
             ) : (
-              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginVertical: 40 }}>
+              <View style={styles.messageContainer}>
                 <ThemedText type="subtitle" style={styles.backgroundText}>
                   Select a habit above to see statistics about your progress!
                 </ThemedText>
@@ -187,32 +209,61 @@ export default function StatsScreen() {
 }
 
 const styles = StyleSheet.create({
-  habitButtonContainer: {
-    marginHorizontal: 20,
-    marginVertical: 10,
-    borderRadius: 10,
+  pickerContainer: {
+    width: '80%',
+    alignSelf: 'center',
+    marginVertical: 20,
+    borderRadius: 11,
     overflow: 'hidden',
     borderWidth: 1,
   },
-  habitButtonContentContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
+  picker: {
+    height: 50,
+    borderRadius: 10,
   },
-  habitButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+  graphSection: {
+    marginHorizontal: 30,
+    marginVertical: 10,
+    borderRadius: 10,
+  },
+  graphContainer: {
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  messageContainer: {
+    marginHorizontal: 20,
+    marginVertical: 20,
+    borderRadius: 10,
+    padding: 20,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: '5%', //space between graph&boxes
+    paddingHorizontal: '5%', //space between edge of graph & boxes
+    paddingBottom: '5%', 
+  },
+  statBox: {
+    width: '45%',
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: '5%',
     alignItems: 'center',
   },
-  habitButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
-    maxWidth: 100,
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  statLabel: {
+    fontSize: 14,
+    color: Colors.light.backgroundText,
+    marginTop: 4,
   },
   backgroundText: {
     fontSize: 20,
     textAlign: 'center',
-    maxWidth: 500,
-    color: Colors.light.backgroundText
+    maxWidth: 400,
+    color: Colors.light.backgroundText,
   },
 });

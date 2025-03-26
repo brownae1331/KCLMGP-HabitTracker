@@ -1,4 +1,4 @@
-const tintColorLight = '#0a7ea4';
+const tintColorLight = '#A39D41';
 const tintColorDark = '#fff';
 
 export const Colors = {
@@ -13,6 +13,8 @@ export const Colors = {
         tabIconSelected: tintColorLight,
         border: '#ddd',
         placeholder: '#888',
+        graphBackground : '#fff',
+        pickerBackground : '#f0f0f0',
     },
     dark: {
         text: '#ECEDEE',
@@ -25,5 +27,7 @@ export const Colors = {
         tabIconSelected: tintColorDark,
         border: '#444',
         placeholder: '#aaa',
+        graphBackground : '#202224',
+        pickerBackground : '#151718',
     },
 };

@@ -74,8 +74,8 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
   const chartWidth = Math.min(width - 10, 600);
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors[theme].background }]}>
-      <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].background2 }]}>
+    <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground }]}>
+      <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
         <TouchableOpacity
           style={[
             styles.pickerButton,
@@ -138,7 +138,7 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
           data={chartData}
           style={{
             data: {
-              stroke: '#0a7ea4',
+              stroke: '#a39d41',
               strokeWidth: scaledLineWidth,
             },
           }}
@@ -148,7 +148,7 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
           data={chartData}
           size={3.5}
           style={{
-            data: { fill: '#139CC9FF', stroke: '#139CC985', strokeWidth: 1,},
+            data: { fill: '#B7AF3DFF', stroke: '#B7AF3D8B', strokeWidth: 1,},
           }}
         />
       </VictoryChart>
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
   },
   activeButton: {
-    backgroundColor: '#00A3FF',
+    backgroundColor: '#a39d41',
   },
   pickerText: {
     fontSize: 16,

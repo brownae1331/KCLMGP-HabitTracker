@@ -40,7 +40,7 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
           `${BASE_URL}/stats/${email}/${habitName}/progress?range=${range === 'W' ? 'week' : range === 'M' ? 'month' : 'year'}`
         );
         const rawData = await response.json();
-        
+
         const startDate = new Date(today);
         if (range === 'W') {
           startDate.setDate(today.getDate() - ((today.getDay() + 6) % 7));
@@ -103,8 +103,8 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const chartWidth = Math.min(width - 10, maxChartWidth);
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors[theme].background }]}>
-      <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].background2 }]}>
+    <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground }]}>
+      <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
         <TouchableOpacity
           style={[styles.pickerButton, styles.leftButton, range === 'W' && styles.activeButton]}
           onPress={() => setRange('W')}
@@ -166,7 +166,7 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
           data={chartData}
           style={{
             data: {
-              fill: '#0a7ea4',
+              fill: '#a39d41',
               width: scaledBarWidth,
             },
           }}
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
   },
   activeButton: {
-    backgroundColor: '#00A3FF',
+    backgroundColor: '#a39d41',
   },
   pickerText: {
     fontSize: 16,

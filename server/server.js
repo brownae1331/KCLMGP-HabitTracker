@@ -430,7 +430,7 @@ app.get('/habits/:username', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     const userEmail = user[0].email;
-    const [habits] = await pool.query('SELECT habitName, habitType FROM habits WHERE user_email = ?', [userEmail]);
+    const [habits] = await pool.query('SELECT habitName, habitType, goalValue FROM habits WHERE user_email = ?', [userEmail]);
 
     if (habits.length === 0) {
       return res.json([]);
