@@ -52,7 +52,6 @@ export async function getHabitsForDate(email, date, type) {
   return rows;
 }
 
-
 const syncHabits = async (userEmail) => {
   try {
     // catch up on all past and current due habits

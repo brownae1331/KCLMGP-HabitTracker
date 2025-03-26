@@ -133,7 +133,7 @@ export default function HomeScreen() {
 
     // Construct the new habit object with validations applied
     const newHabit = {
-      email: email, // assuming this is set correctly
+      email,
       habitName: habitName.trim(),
       habitDescription,
       habitType,
@@ -146,11 +146,19 @@ export default function HomeScreen() {
     };
 
     try {
-      await addHabit(newHabit);
-      fetchHabits(); // Refresh the habit list after adding a new habit
+      // In edit mode: call updateHabit
+      // Otherwise: call addHabit
+      if (isEditMode && currentEditHabit) {
+        await updateHabit(newHabit);
+      } else {
+        await addHabit(newHabit);
+      }
+
+      // Refresh the habit list
+      await fetchHabits();
     } catch (error) {
-      console.error('Error adding habit:', error);
-      showAlert("Error adding habit");
+      console.error('Error adding/updating habit:', error);
+      showAlert("Error saving habit");
       return;
     }
 
@@ -168,9 +176,8 @@ export default function HomeScreen() {
     setModalVisible(false);
   };
 
-
-
   const [dbHabits, setDbHabits] = useState<any[]>([]);
+
 
   const fetchHabits = async () => {
     if (!email) return;
