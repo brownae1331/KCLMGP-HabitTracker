@@ -4,8 +4,8 @@ import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme } from 'victory-nat
 import { useWindowDimensions } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
-import { BASE_URL } from '../lib/client';
-
+import { fetchBuildHabitProgress, fetchStreak, fetchLongestStreak, fetchCompletionRate, fetchAverageProgress } from '../lib/client'
+import StatsBoxes from './StatsBoxes';
 
 type Range = 'W' | 'M' | 'Y';
 
@@ -15,9 +15,9 @@ interface ChartData {
 }
 
 interface BuildHabitGraphProps {
-    email: string;
-    habitName: string;
-  }
+  email: string;
+  habitName: string;
+}
 
 const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const { width } = useWindowDimensions();
@@ -25,6 +25,10 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const [range, setRange] = useState<Range>('W');
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [hasDecimals, setHasDecimals] = useState(false);
+  const [currentStreak, setCurrentStreak] = useState<number>(0);
+  const [longestStreak, setLongestStreak] = useState<number>(0);
+  const [completionRate, setCompletionRate] = useState<number>(0);
+  const [averageProgress, setAverageProgress] = useState<number>(0);
   const today = new Date();
 
   const labels: Record<Range, string[]> = {
@@ -36,11 +40,8 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `${BASE_URL}/stats/${email}/${habitName}/progress?range=${range === 'W' ? 'week' : range === 'M' ? 'month' : 'year'}`
-        );
-        const rawData = await response.json();
-        
+        const rawData = await fetchBuildHabitProgress(email, habitName, range === 'W' ? 'week' : range === 'M' ? 'month' : 'year')
+
         const startDate = new Date(today);
         if (range === 'W') {
           startDate.setDate(today.getDate() - ((today.getDay() + 6) % 7));
@@ -87,12 +88,43 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
         setHasDecimals(hasDecimalValues);
         setChartData(newData);
       } catch (error) {
-        console.error('Error fetching progress data:', error);
       }
     };
 
     fetchData();
   }, [range, email, habitName]);
+
+  useEffect(() => {
+    const fetchStreakData = async () => {
+      try {
+        const rawData = await fetchStreak(email, habitName, 'week')
+
+        const mostRecentEntry = rawData[rawData.length - 1];
+        setCurrentStreak(mostRecentEntry ? mostRecentEntry.streak : 0);
+      } catch (error) {
+      }
+    };
+
+    fetchStreakData();
+  }, [range, email, habitName]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const longestStreak = await fetchLongestStreak(email, habitName);
+        setLongestStreak(longestStreak);
+
+        const completionRate = await fetchCompletionRate(email, habitName);
+        setCompletionRate(completionRate);
+
+        const averageProgress = await fetchAverageProgress(email, habitName);
+        setAverageProgress(averageProgress);
+      } catch (error) {
+      }
+    };
+
+    fetchStats();
+  }, [email, habitName]);
 
   const referenceWidth = 400;
   const baseBarWidth = { W: 15, M: 5, Y: 10 };
@@ -102,77 +134,74 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const maxChartWidth = 600;
   const chartWidth = Math.min(width - 10, maxChartWidth);
 
+  const axisStyle = {
+    axis: { stroke: Colors[theme].text },
+    ticks: { stroke: Colors[theme].text, size: 5 },
+    tickLabels: { fill: Colors[theme].text, fontSize: 10 },
+    grid: { stroke: Colors[theme].border, strokeWidth: 0.5, strokeDasharray: '5,5' },
+  }
+
   return (
-    <View style={[styles.container, { backgroundColor: Colors[theme].background }]}>
-      <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].background2 }]}>
-        <TouchableOpacity
-          style={[styles.pickerButton, styles.leftButton, range === 'W' && styles.activeButton]}
-          onPress={() => setRange('W')}
+    <>
+      <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground }]}>
+        <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
+          {(['W', 'M', 'Y'] as Range[]).map((r, index) => (
+            <TouchableOpacity
+              key={r}
+              style={[
+                styles.pickerButton,
+                index === 0 && styles.leftButton,
+                index === 2 && styles.rightButton,
+                range === r && styles.activeButton,
+              ]}
+              onPress={() => setRange(r)}
+            >
+              <Text style={[styles.pickerText, { color: Colors[theme].text }]}>{r}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Text style={[styles.date, { color: Colors[theme].text }]}>
+          {range === 'W' ? 'Current Week' : range === 'M' ? `Current Month` : today.getFullYear().toString()}
+        </Text>
+
+        <VictoryChart
+          width={chartWidth}
+          height={220}
+          domainPadding={{ x: range === 'M' ? 5 : 20, y: 10 }}
+          padding={{ top: 20, bottom: 40, left: 40, right: 40 }}
+          theme={VictoryTheme.material}
+          domain={{ y: [0, Math.max(5, ...chartData.map(d => d.y))] }}
         >
-          <Text style={[styles.pickerText, { color: Colors[theme].text }]}>W</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.pickerButton, range === 'M' && styles.activeButton]}
-          onPress={() => setRange('M')}
-        >
-          <Text style={[styles.pickerText, { color: Colors[theme].text }]}>M</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.pickerButton, styles.rightButton, range === 'Y' && styles.activeButton]}
-          onPress={() => setRange('Y')}
-        >
-          <Text style={[styles.pickerText, { color: Colors[theme].text }]}>Y</Text>
-        </TouchableOpacity>
+          <VictoryAxis
+            tickValues={labels[range]}
+            tickFormat={(tick: string) => (range === 'M' && ![1, 8, 15, 22, 29].includes(parseInt(tick)) ? '' : tick)}
+            style={axisStyle}
+          />
+          <VictoryAxis
+            dependentAxis
+            tickFormat={(tick: number) => (hasDecimals ? tick.toFixed(1) : Math.round(tick))}
+            style={axisStyle}
+          />
+          <VictoryBar
+            data={chartData}
+            style={{
+              data: {
+                fill: '#a39d41',
+                width: scaledBarWidth,
+              },
+            }}
+          />
+        </VictoryChart>
+        
       </View>
-
-      <Text style={[styles.date, { color: Colors[theme].text }]}>
-        {range === 'W' ? 'Current Week' : range === 'M' ? `Current Month` : today.getFullYear().toString()}
-      </Text>
-
-      <VictoryChart
-        width={chartWidth}
-        height={220}
-        domainPadding={{ x: range === 'M' ? 5 : 20, y: 10 }}
-        padding={{ top: 20, bottom: 40, left: 40, right: 40 }}
-        theme={VictoryTheme.material}
-        domain={{ y: [0, Math.max(5, ...chartData.map(d => d.y))] }}
-      >
-        <VictoryAxis
-          tickValues={labels[range]}
-          tickFormat={(tick: string) => {
-            if (range === 'M') {
-              return [1, 8, 15, 22, 29].includes(parseInt(tick)) ? tick : '';
-            }
-            return tick;
-          }}
-          style={{
-            axis: { stroke: Colors[theme].text },
-            ticks: { stroke: Colors[theme].text, size: 5 },
-            tickLabels: { fill: Colors[theme].text, fontSize: 10 },
-            grid: { stroke: Colors[theme].border, strokeWidth: 0.5, strokeDasharray: '5,5' },
-          }}
+      <StatsBoxes
+          currentStreak={currentStreak}
+          longestStreak={longestStreak}
+          completionRate={completionRate}
+          fourthStat={{ label: 'Average Progress', value: `${averageProgress}` }}
         />
-        <VictoryAxis
-          dependentAxis
-          tickFormat={(tick: number) => (hasDecimals ? tick.toFixed(1) : Math.round(tick))}
-          style={{
-            axis: { stroke: Colors[theme].text },
-            ticks: { stroke: Colors[theme].text, size: 5 },
-            tickLabels: { fill: Colors[theme].text, fontSize: 10 },
-            grid: { stroke: Colors[theme].border, strokeWidth: 0.5, strokeDasharray: '5,5' },
-          }}
-        />
-        <VictoryBar
-          data={chartData}
-          style={{
-            data: {
-              fill: '#0a7ea4',
-              width: scaledBarWidth,
-            },
-          }}
-        />
-      </VictoryChart>
-    </View>
+    </>
   );
 };
 
@@ -181,6 +210,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingTop: 20,
+    borderRadius: 10,
   },
   pickerContainer: {
     flexDirection: 'row',
@@ -204,7 +234,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
   },
   activeButton: {
-    backgroundColor: '#00A3FF',
+    backgroundColor: '#a39d41',
   },
   pickerText: {
     fontSize: 16,

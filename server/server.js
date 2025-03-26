@@ -237,67 +237,6 @@ app.delete('/users/:email', async (req, res) => {
   }
 });
 
-
-// // Get all habits for a user
-// app.get('/habits/:email', async (req, res) => {
-//   const { email } = req.params;
-
-//   try {
-//     // Get habits plus any associated day
-//     const [rows] = await pool.query(`
-//       SELECT h.user_email, h.habitName, h.habitDescription, h.habitType,
-//              h.habitColor, h.scheduleOption, 
-//              h.goalValue, h.goalUnit, 
-//              hd.day
-//       FROM habits h
-//       LEFT JOIN habit_days hd
-//          ON h.user_email = hd.user_email
-//          AND h.habitName = hd.habitName
-//       WHERE h.user_email = ?
-//     `, [email]);
-
-//     // rows might look like this:
-//     // [
-//     //   { user_email: 'abc@gmail.com', habitName: 'Gym', ..., day: 'Monday' },
-//     //   { user_email: 'abc@gmail.com', habitName: 'Gym', ..., day: 'Wednesday' },
-//     //   { user_email: 'abc@gmail.com', habitName: 'Meditate', ..., day: 'Tuesday' }
-//     // ]
-
-//     // We need to group them by habitName to collect the days into an array:
-//     const habitMap = new Map();
-//     for (const row of rows) {
-//       const key = row.habitName;
-//       if (!habitMap.has(key)) {
-//         // Create a new habit object
-//         habitMap.set(key, {
-//           email: row.user_email,
-//           habitName: row.habitName,
-//           habitDescription: row.habitDescription,
-//           habitType: row.habitType,
-//           habitColor: row.habitColor,
-//           scheduleOption: row.scheduleOption,
-//           isGoalEnabled: row.goalValue !== null,
-//           goalValue: row.goalValue,
-//           goalUnit: row.goalUnit,
-//           selectedDays: [],
-//         });
-//       }
-//       // If there's a day, push it into the array
-//       if (row.day) {
-//         habitMap.get(key).selectedDays.push(row.day);
-//       }
-//     }
-
-//     // Convert that map to an array
-//     const habits = Array.from(habitMap.values());
-
-//     res.json(habits);
-//   } catch (error) {
-//     console.error('Error retrieving habits:', error);
-//     res.status(500).json({ error: 'Error retrieving habits' });
-//   }
-// });
-
 // Get all habits for a particular date
 app.get('/habits/:email/:date', async (req, res) => {
   const { email, date } = req.params;
@@ -421,6 +360,23 @@ app.post('/habits', async (req, res) => {
   }
 });
 
+// Get the names and types of all habits for a user
+app.get('/habits/:email', async (req, res) => {
+  const { email } = req.params;
+  try {
+    const [habits] = await pool.query(`
+      SELECT habitName, habitType, goalValue 
+      FROM habits 
+      WHERE user_email = ?`, [email]);
+    if (habits.length === 0) {
+      return res.json([]);
+    }
+    res.json(habits);
+  } catch (error) {
+    console.error('Error fetching habits:', error);
+    res.status(500).json({ error: 'Error fetching habit names and types' });
+  }
+});
 
 // Delete a habit
 app.delete('/habits/:user_email/:habitName', async (req, res) => {
@@ -519,6 +475,60 @@ app.get('/stats/:email/:habitName/streak', async (req, res) => {
     return res.status(400).json({ error: 'Invalid range: use "week" or "month"' });
   }
 });
+
+app.get('/stats/:email/:habitName/longest-streak', async (req, res) => {
+  const { email, habitName } = req.params;
+  try {
+    const [rows] = await pool.query(`
+      SELECT MAX(streak) as longestStreak
+      FROM habit_progress
+      WHERE user_email = ? AND habitName = ?`, 
+      [email, habitName]
+    );
+    const longestStreak = rows[0].longestStreak || 0;
+    res.json({ longestStreak });
+  } catch (error) {
+    console.error('Error fetching longest streak: ', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/stats/:email/:habitName/completion-rate', async (req, res) => {
+  const { email, habitName } = req.params;
+  try {
+    const [rows] = await pool.query(`
+      SELECT
+        SUM(CASE WHEN completed = true THEN 1 ELSE 0 END) as completedDays,
+        COUNT(*) as totalDays
+      FROM habit_progress
+      WHERE user_email = ? AND habitName = ?`,
+      [email, habitName]
+    );
+    const { completedDays, totalDays } = rows[0];
+    const completionRate = totalDays > 0 ? (completedDays/totalDays)*100 : 0;
+    res.json({ completionRate: Math.round(completionRate) });
+    } catch (error) {
+      console.error('Error fetching completion rate: ', error);
+      res.status(500).json({ error: 'Server error' });
+  }
+})
+
+app.get('/stats/:email/:habitName/average-progress', async (req, res) => {
+  const { email, habitName } = req.params;
+  try {
+    const [rows] = await pool.query(`
+      SELECT AVG(progress) as averageProgress
+      FROM habit_progress
+      WHERE user_email = ? AND habitName = ?`,
+    [email, habitName]);
+    const averageProgress = rows[0].averageProgress || 0;
+    res.json({ averageProgress : Math.round(averageProgress) });
+
+  } catch (error) {
+    console.error('Error fetching average progress: ', error);
+      res.status(500).json({ error: 'Server error' });
+  }
+})
 
 // get progress for build habits
 app.get('/stats/:email/:habitName/progress', async (req, res) => {

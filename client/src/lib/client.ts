@@ -281,3 +281,56 @@ export async function getHabitStreak(email: string, habitName: string, date: str
   }
   return response.json();
 }
+
+// generic function to handle api requests
+async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  try {
+    const response = await fetch(endpoint, options);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Failed to fetch from ${endpoint}: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching from ${endpoint}:`, error);
+    throw error;
+  }
+}
+
+// fetch a user's habits
+export const fetchHabits = async (email: string): Promise<any[]> => {
+  const data = await apiRequest<any[]>(`${BASE_URL}/habits/${email}`);
+  if (!Array.isArray(data)) {
+    console.error('Invalid habits response format:', data);
+    return [];
+  }
+  return data;
+};
+
+// fetch progress data for a build habit
+export async function fetchBuildHabitProgress(email: string, habitName: string, range: 'week' | 'month' | 'year') {
+  return apiRequest<any[]>(`${BASE_URL}/stats/${email}/${habitName}/progress?range=${range}`);
+}
+
+// fetch streak data
+export async function fetchStreak(email: string, habitName: string, range: 'week' | 'month') {
+  return apiRequest<any[]>(`${BASE_URL}/stats/${email}/${habitName}/streak?range=${range}`);
+}
+
+// fetch longest streak
+export async function fetchLongestStreak(email: string, habitName: string): Promise<number> {
+  const data = await apiRequest<{ longestStreak: number }>(`${BASE_URL}/stats/${email}/${habitName}/longest-streak`);
+  return data.longestStreak;
+}
+
+// fetch completion rate
+export async function fetchCompletionRate(email: string, habitName: string): Promise<number> {
+  const data = await apiRequest<{ completionRate: number }>(`${BASE_URL}/stats/${email}/${habitName}/completion-rate`);
+  return data.completionRate;
+}
+
+// fetch average progress
+export async function fetchAverageProgress(email: string, habitName: string): Promise<number> {
+  const data = await apiRequest<{ averageProgress: number }>(`${BASE_URL}/stats/${email}/${habitName}/average-progress`);
+  return data.averageProgress;
+}
