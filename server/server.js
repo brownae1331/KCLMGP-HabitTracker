@@ -279,8 +279,10 @@ export const fillMissedProgress = async (userEmail) => {
 };
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
+}
 
 export default app;

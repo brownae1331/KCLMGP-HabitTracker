@@ -12,8 +12,7 @@ jest.mock('mysql2/promise', () => ({
 }));
 
 
-import request from 'supertest';
-import bcrypt from 'bcrypt';
+
 import app, { generateIntervalInstances, generateDayInstances, getHabitsForDate, migrateInstances, syncHabits, getLastDate, fillMissedProgress, generateIntervalDates, generateWeeklyDates } from '../server';
 
 // for ensuring the server is closed after all tests
