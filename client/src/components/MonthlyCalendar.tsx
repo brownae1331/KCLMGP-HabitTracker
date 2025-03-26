@@ -50,6 +50,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
 
     return (
         <Calendar
+            testID="calendar"
             onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
             onMonthChange={(month: DateData) => {
                 calculateVisibleDates(month);
