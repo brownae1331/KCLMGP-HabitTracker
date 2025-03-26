@@ -85,7 +85,7 @@ describe('NewHabitModal', () => {
         const { getByPlaceholderText } = render(<NewHabitModal {...defaultProps} />);
         fireEvent.changeText(getByPlaceholderText('Habit Name'), 'New Habit');
         fireEvent.changeText(getByPlaceholderText('Habit Description'), 'New Description');
-        fireEvent.changeText(getByPlaceholderText('#ffaa00'), '#123abc');
+        fireEvent.changeText(getByPlaceholderText('#ffCC00'), '#123abc');
         expect(defaultProps.setHabitName).toHaveBeenCalledWith('New Habit');
         expect(defaultProps.setHabitDescription).toHaveBeenCalledWith('New Description');
         expect(defaultProps.setHabitColor).toHaveBeenCalledWith('#123abc');
