@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, useWindowDimensions } from 'react-native';
 import { VictoryLine, VictoryChart, VictoryAxis, VictoryTheme, VictoryScatter } from 'victory-native';
-import { useWindowDimensions } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
 import { fetchStreak, fetchLongestStreak, fetchCompletionRate } from '../lib/client';
@@ -33,53 +33,55 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
     M: Array.from({ length: 31 }, (_, i) => (i + 1).toString()),
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const rawData = await fetchStreak(email, habitName, range === 'W' ? 'week' : 'month');
-  
-        const today = new Date();
-        const startDate = new Date(today);
+  const fetchData = async () => {
+    try {
+      const rawData = await fetchStreak(email, habitName, range === 'W' ? 'week' : 'month');
+
+      const today = new Date();
+      const startDate = new Date(today);
+      if (range === 'W') {
+        startDate.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+      } else {
+        startDate.setDate(1);
+      }
+      
+      const newData = rawData.map((entry: { progressDate: string; streak: number }) => {
+        const date = new Date(entry.progressDate);
         if (range === 'W') {
-          startDate.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-        } else {
-          startDate.setDate(1);
+          const dayIndex = (date.getDay() + 6) % 7;
+          return { x: labels[range][dayIndex], y: entry.streak };
         }
-        
-        const newData = rawData.map((entry: { progressDate: string; streak: number }) => {
-          const date = new Date(entry.progressDate);
-          if (range === 'W') {
-            const dayIndex = (date.getDay() + 6) % 7;
-            return { x: labels[range][dayIndex], y: entry.streak };
-          }
-          return { x: date.getDate().toString(), y: entry.streak };
-        });
-  
-        setChartData(newData);
-        const mostRecentEntry = rawData[rawData.length - 1];
-        setCurrentStreak(mostRecentEntry ? mostRecentEntry.streak : 0); 
-      } catch (error) {
-        console.error('Error fetching streak data:', error);
-      }
-    };
-  
-    fetchData();
-  }, [range, email, habitName]);
+        return { x: date.getDate().toString(), y: entry.streak };
+      });
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const longestStreak = await fetchLongestStreak(email, habitName);
-        setLongestStreak(longestStreak);
+      setChartData(newData);
+      const mostRecentEntry = rawData[rawData.length - 1];
+      setCurrentStreak(mostRecentEntry ? mostRecentEntry.streak : 0); 
+    } catch (error) {
+      console.error('Error fetching streak data:', error);
+    }
+  };
 
-        const completionRate = await fetchCompletionRate(email, habitName);
-        setCompletionRate(completionRate);
-      } catch (error) {
-      }
-    };
+  const fetchStats = async () => {
+    try {
+      const longestStreak = await fetchLongestStreak(email, habitName);
+      setLongestStreak(longestStreak);
 
-    fetchStats();
-  }, [email, habitName]);
+      const completionRate = await fetchCompletionRate(email, habitName);
+      setCompletionRate(completionRate);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      setLongestStreak(0);
+      setCompletionRate(0);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+      fetchStats();
+    }, [range, email, habitName])
+  );
 
   const getGrade = (rate: number): string => {
     if (rate >= 90) return 'A';
