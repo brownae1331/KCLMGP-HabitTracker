@@ -2,14 +2,8 @@ import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 
-//
-//  1) Load environment variables
-//     (Adjust the path if your .env is elsewhere)
 dotenv.config({ path: './server/.env' });
 
-//
-//  2) Database configuration
-//
 const DB_CONFIG = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -22,22 +16,61 @@ const DB_CONFIG = {
 
 const SALT_ROUNDS = 10;
 
-//
-//  3) Utility for formatting dates (YYYY-MM-DD)
-//
+// Configuration: Adjust these as you see fit
+const NUM_USERS = 3;               // How many random users
+const MIN_HABITS_PER_USER = 3;     // Each user will get a random number of habits in [MIN, MAX]
+const MAX_HABITS_PER_USER = 6;     
+const DAYS_BACK = 30;              // Seed data for the past 30 days
+const INSTANCE_CHANCE = 0.7;       // 70% chance of generating a habit_instance for a given day
+
+// Some placeholder data to build random habit details
+const SAMPLE_HABIT_NAMES = [
+  'Exercise', 'Read More', 'Quit Smoking', 'Meditate', 'Learn Guitar',
+  'Drink More Water', 'Stop Snacking', 'Study Spanish', 'Run 5K', 'Write Journal'
+];
+const SAMPLE_DESCRIPTIONS = [
+  'Improve my daily routine',
+  'Focus on better health',
+  'Build consistency',
+  'Cut out bad habits',
+  'Develop a new skill'
+];
+const SAMPLE_COLORS = ['#FF5733', '#33FF57', '#0055ff', '#FF9900', '#123456', '#007AFF', '#FFFF00'];
+
+// Simple utility to format a Date as YYYY-MM-DD
 function formatDate(date: Date): string {
   return date.toISOString().split('T')[0];
+}
+
+// Generate a random integer in [min, max]
+function randInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Pick a random element from an array
+function randFromArray<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// Create a random email
+function randomEmail(): string {
+  const prefix = Math.random().toString(36).substring(2, 6);
+  const domain = Math.random().toString(36).substring(2, 5);
+  return `${prefix}@${domain}.com`;
+}
+
+// Create a random username
+function randomUsername(): string {
+  return 'user_' + Math.random().toString(36).substring(2, 7);
 }
 
 async function seed() {
   const pool = mysql.createPool(DB_CONFIG);
   try {
     const connection = await pool.getConnection();
-    console.log('Seeding database...');
+    console.log('Seeding database with randomized data...');
 
-    //----------------------------------------------------------------------
-    // 4) [Optional] Clear existing data — be mindful of foreign key order
-    //----------------------------------------------------------------------
+    // 1) Clear existing data in correct order
     await connection.query('DELETE FROM habit_progress');
     await connection.query('DELETE FROM habit_instances');
     await connection.query('DELETE FROM habit_days');
@@ -45,160 +78,186 @@ async function seed() {
     await connection.query('DELETE FROM habits');
     await connection.query('DELETE FROM users');
 
-    //----------------------------------------------------------------------
-    // 5) Insert a sample user
-    //----------------------------------------------------------------------
-    const sampleUser = {
-      email: 'test@example.com',
-      username: 'testuser',
-      password: 'password123'
-    };
+    // 2) Create random users
+    const userList: { email: string; username: string; password: string }[] = [];
+    for (let i = 0; i < NUM_USERS; i++) {
+      userList.push({
+        email: randomEmail(),
+        username: randomUsername(),
+        password: 'password' + randInt(100, 999)
+      });
+    }
 
-    const hashedPassword = await bcrypt.hash(sampleUser.password, SALT_ROUNDS);
+    // Insert those users into DB
+    for (const u of userList) {
+      const hashed = await bcrypt.hash(u.password, SALT_ROUNDS);
+      await connection.query(
+        'INSERT INTO users (email, password, username) VALUES (?, ?, ?)',
+        [u.email, hashed, u.username]
+      );
+        // Print the un-hashed credentials so you can use them to log in
+      console.log(`
+        Created user:
+          Email: ${u.email}
+          Username: ${u.username}
+          Password (plain): ${u.password}
+      `);
+    }
 
-    await connection.query(
-      `INSERT INTO users (email, password, username)
-       VALUES (?, ?, ?)`,
-      [sampleUser.email, hashedPassword, sampleUser.username]
-    );
+    // 3) For each user, create random habits
+    const allHabits: Array<{
+      user_email: string;
+      habitName: string;
+      habitType: 'build' | 'quit';
+      scheduleOption: 'weekly' | 'interval';
+      goalValue: number | null;
+      goalUnit: string | null;
+      habitColor: string;
+    }> = [];
 
-    //----------------------------------------------------------------------
-    // 6) Insert sample habits
-    //    - One build (weekly) habit with a goalValue
-    //    - One quit (interval) habit with null goalValue
-    //----------------------------------------------------------------------
-    const sampleHabits = [
-      {
-        user_email: sampleUser.email,
-        habitName: 'Exercise',
-        habitDescription: 'Daily exercise routine',
-        habitType: 'build', // 'build' habit requires a non-null goalValue
-        habitColor: '#FF5733',
-        scheduleOption: 'weekly',
-        goalValue: 30,
-        goalUnit: 'minutes'
-      },
-      {
-        user_email: sampleUser.email,
-        habitName: 'Quit Smoking',
-        habitDescription: 'Kick the habit!',
-        habitType: 'quit', // 'quit' habit uses a null goalValue
-        habitColor: '#33FF57',
-        scheduleOption: 'interval',
-        goalValue: null,
-        goalUnit: null
+    for (const user of userList) {
+      const numHabits = randInt(MIN_HABITS_PER_USER, MAX_HABITS_PER_USER);
+      for (let i = 0; i < numHabits; i++) {
+        const name = randFromArray(SAMPLE_HABIT_NAMES);
+        const desc = randFromArray(SAMPLE_DESCRIPTIONS);
+        const color = randFromArray(SAMPLE_COLORS);
+
+        // Randomly pick 'build' or 'quit'
+        const type: 'build' | 'quit' = Math.random() > 0.5 ? 'build' : 'quit';
+
+        // Randomly pick weekly or interval
+        const sched: 'weekly' | 'interval' = Math.random() > 0.5 ? 'weekly' : 'interval';
+
+        // If it's a build habit, there's a 50% chance we'll have a numeric goal
+        let goalVal: number | null = null;
+        let goalU: string | null = null;
+        if (type === 'build' && Math.random() > 0.5) {
+          goalVal = randInt(5, 50); // e.g. 5 to 50
+          goalU = 'units';         // you can adapt
+        }
+
+        allHabits.push({
+          user_email: user.email,
+          habitName: `${name} ${randInt(1000, 9999)}`, // add random digits to avoid duplicates
+          habitType: type,
+          scheduleOption: sched,
+          goalValue: goalVal,
+          goalUnit: goalU,
+          habitColor: color
+        });
       }
-    ];
+    }
 
-    for (const habit of sampleHabits) {
+    // Insert those habits into DB
+    for (const h of allHabits) {
       await connection.query(
         `INSERT INTO habits
          (user_email, habitName, habitDescription, habitType, habitColor,
           scheduleOption, goalValue, goalUnit)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          habit.user_email,
-          habit.habitName,
-          habit.habitDescription,
-          habit.habitType,
-          habit.habitColor,
-          habit.scheduleOption,
-          habit.goalValue,
-          habit.goalUnit
+          h.user_email,
+          h.habitName,
+          // Random description
+          randFromArray(SAMPLE_DESCRIPTIONS),
+          h.habitType,
+          h.habitColor,
+          h.scheduleOption,
+          h.goalValue,
+          h.goalUnit
         ]
       );
     }
 
-    //----------------------------------------------------------------------
-    // 7) Insert into habit_days for the "Exercise" (weekly) habit
-    //----------------------------------------------------------------------
-    // Example: M / W / F
-    await connection.query(
-      `INSERT INTO habit_days (user_email, habitName, day)
-       VALUES (?, ?, 'Monday'), (?, ?, 'Wednesday'), (?, ?, 'Friday')`,
-      [
-        sampleUser.email, 'Exercise',
-        sampleUser.email, 'Exercise',
-        sampleUser.email, 'Exercise'
-      ]
-    );
-
-    //----------------------------------------------------------------------
-    // 8) Insert into habit_intervals for the "Quit Smoking" (interval) habit
-    //----------------------------------------------------------------------
-    // Example: increment every 3 days
-    await connection.query(
-      `INSERT INTO habit_intervals (user_email, habitName, increment)
-       VALUES (?, ?, 3)`,
-      [sampleUser.email, 'Quit Smoking']
-    );
-
-    //----------------------------------------------------------------------
-    // 9) Insert future/pending instances into habit_instances
-    //    Just as an example, we’ll add three upcoming instances for each habit
-    //----------------------------------------------------------------------
-    const today = new Date();
-    const tomorrow = new Date(today);
-    const dayAfter = new Date(today);
-
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    dayAfter.setDate(dayAfter.getDate() + 2);
-
-    const datesToInsert = [today, tomorrow, dayAfter].map(formatDate);
-
-    // We'll add the same set of dates for both habits, though typically
-    // real intervals/schedules might differ
-    for (const dateStr of datesToInsert) {
-      // For "Exercise"
-      await connection.query(
-        `INSERT INTO habit_instances (user_email, habitName, dueDate)
-         VALUES (?, ?, ?)`,
-        [sampleUser.email, 'Exercise', dateStr]
-      );
-
-      // For "Quit Smoking"
-      await connection.query(
-        `INSERT INTO habit_instances (user_email, habitName, dueDate)
-         VALUES (?, ?, ?)`,
-        [sampleUser.email, 'Quit Smoking', dateStr]
-      );
+    // 4) Insert into habit_days or habit_intervals
+    //    We won't do real scheduling logic; we'll just pick random days or increments
+    for (const h of allHabits) {
+      if (h.scheduleOption === 'weekly') {
+        // Pick random days of the week
+        const daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+        // e.g. choose 3 random days
+        const shuffled = daysOfWeek.sort(() => 0.5 - Math.random()).slice(0, 3);
+        for (const d of shuffled) {
+          await connection.query(
+            `INSERT INTO habit_days (user_email, habitName, day)
+             VALUES (?, ?, ?)`,
+            [h.user_email, h.habitName, d]
+          );
+        }
+      } else {
+        // random increment 2 to 7
+        const inc = randInt(2,7);
+        await connection.query(
+          `INSERT INTO habit_intervals (user_email, habitName, increment)
+           VALUES (?, ?, ?)`,
+          [h.user_email, h.habitName, inc]
+        );
+      }
     }
 
-    //----------------------------------------------------------------------
-    // 10) Insert sample progress data into habit_progress
-    //     We’ll insert minimal progress for "today" for both habits
-    //----------------------------------------------------------------------
-    const todayStr = formatDate(today);
+    // 5) For the last 30 days, randomly generate habit_instances & progress
+    for (const h of allHabits) {
+      for (let dayOffset = 0; dayOffset < DAYS_BACK; dayOffset++) {
+        const date = new Date();
+        date.setDate(date.getDate() - dayOffset);
+        const dateStr = formatDate(date);
 
-    // For "Exercise"
-    await connection.query(
-      `INSERT INTO habit_progress
-       (user_email, habitName, progressDate, progress, completed, streak)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [sampleUser.email, 'Exercise', todayStr, 10, false, 0]
-    );
+        // Random chance we actually create an instance for that day
+        if (Math.random() < INSTANCE_CHANCE) {
+          // Create an instance
+          await connection.query(
+            `INSERT INTO habit_instances (user_email, habitName, dueDate)
+             VALUES (?, ?, ?)`,
+            [h.user_email, h.habitName, dateStr]
+          );
 
-    // For "Quit Smoking"
-    await connection.query(
-      `INSERT INTO habit_progress
-       (user_email, habitName, progressDate, progress, completed, streak)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [sampleUser.email, 'Quit Smoking', todayStr, 0, true, 1] 
-      // e.g., user "didn't smoke" today => completed = true, streak = 1
-    );
+          // Also create some progress
+          // If it's a 'quit' habit, a progress of 0 might be "success"
+          // If it's 'build' with a numeric goal, let's randomly pick partial or full
+          let progress = 0;
+          let completed = false;
+          let streak = 0;
 
-    //----------------------------------------------------------------------
-    // 11) Finish
-    //----------------------------------------------------------------------
-    console.log('Database seeding completed successfully!');
+          if (h.habitType === 'build') {
+            if (h.goalValue) {
+              // random progress up to 150% of the goal
+              progress = Math.random() * (1.5 * h.goalValue);
+              completed = progress >= h.goalValue;
+              streak = completed ? randInt(1, 5) : 0; 
+            } else {
+              // build with no numeric goal => just store 0-5
+              progress = randInt(0,5);
+              completed = progress > 0; // random definition
+              streak = completed ? randInt(1, 5) : 0;
+            }
+          } else {
+            // quit habit => 50% chance user messed up
+            const messedUp = Math.random() > 0.5;
+            progress = messedUp ? 1 : 0; // 1 might represent "did the bad habit"
+            completed = !messedUp;       // if they didn't do it, it's completed
+            streak = completed ? randInt(1, 5) : 0;
+          }
+
+          await connection.query(
+            `INSERT INTO habit_progress
+             (user_email, habitName, progressDate, progress, completed, streak)
+             VALUES (?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE
+               progress = VALUES(progress),
+               completed = VALUES(completed),
+               streak = VALUES(streak)`,
+            [h.user_email, h.habitName, dateStr, progress, completed, streak]
+          );
+        }
+      }
+    }
+
+    console.log('Seeding completed with randomized data for the past 30 days!');
     connection.release();
     await pool.end();
   } catch (error) {
-    console.error('Error seeding database:', error);
+    console.error('Error seeding database with random data:', error);
   }
 }
 
 seed();
-
-// Just to verify that dotenv is loading:
-console.log('DB_USER:', process.env.DB_USER);
