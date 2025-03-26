@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Modal } from 'reac
 import { ThemedText } from './ThemedText';
 import { Colors } from './styles/Colors';
 import { useTheme } from './ThemeContext';
+import { ProgressEntryStyles } from './styles/ProgressEntryStyles';
 import { CircleProgress } from './CircleProgress';
 
 interface ProgressEntryProps {
@@ -98,26 +99,26 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
             animationType="slide"
             onRequestClose={onClose}
         >
-            <View style={styles.modalOverlay}>
-                <View style={[styles.container, { backgroundColor: Colors[theme].background }]}>
-                    <ThemedText type="title" style={[styles.title, { color: Colors[theme].text }]}>{habit.habitName}</ThemedText>
-                    <ThemedText style={[styles.description, { color: Colors[theme].text }]}>{habit.habitDescription}</ThemedText>
+            <View style={ProgressEntryStyles.modalOverlay}>
+                <View style={[ProgressEntryStyles.container, { backgroundColor: Colors[theme].background }]}>
+                    <ThemedText type="title" style={[ProgressEntryStyles.title, { color: Colors[theme].text }]}>{habit.habitName}</ThemedText>
+                    <ThemedText style={[ProgressEntryStyles.description, { color: Colors[theme].text }]}>{habit.habitDescription}</ThemedText>
 
                     {/* Only show progress circle for build habits with goals */}
                     {!useBinaryControls && (
-                        <View style={styles.progressContainer}>
+                        <View style={ProgressEntryStyles.progressContainer}>
                             <CircleProgress
                                 percentage={progressPercentage}
                                 color={habit.habitColor}
                                 size={200}
                             />
 
-                            <View style={styles.progressTextContainer}>
+                            <View style={ProgressEntryStyles.progressTextContainer}>
                                 <TextInput
                                     style={[
-                                        styles.progressInput,
+                                        ProgressEntryStyles.progressInput,
                                         { color: Colors[theme].text },
-                                        !isEditable && styles.disabledInput
+                                        !isEditable && ProgressEntryStyles.disabledInput
                                     ]}
                                     value={progressText}
                                     onChangeText={handleTextChange}
@@ -126,7 +127,7 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
                                     editable={isEditable}
                                 />
                                 {habit.goalUnit && (
-                                    <ThemedText style={[styles.unitText, { color: Colors[theme].text }]}>{habit.goalUnit}</ThemedText>
+                                    <ThemedText style={[ProgressEntryStyles.unitText, { color: Colors[theme].text }]}>{habit.goalUnit}</ThemedText>
                                 )}
                             </View>
                         </View>
@@ -134,8 +135,8 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
 
                     {/* For binary habits, show completion status */}
                     {useBinaryControls && (
-                        <View style={[styles.binaryStatusContainer, { borderColor: habit.habitColor }]}>
-                            <ThemedText style={[styles.binaryStatusText, { color: Colors[theme].text }]}>
+                        <View style={[ProgressEntryStyles.binaryStatusContainer, { borderColor: habit.habitColor }]}>
+                            <ThemedText style={[ProgressEntryStyles.binaryStatusText, { color: Colors[theme].text }]}>
                                 Status: {progress > 0 ? 'Completed' : 'Not Completed'}
                             </ThemedText>
                         </View>
@@ -144,11 +145,11 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
                     {isEditable ? (
                         <>
                             {useBinaryControls ? (
-                                <View style={styles.binaryControlContainer}>
+                                <View style={ProgressEntryStyles.binaryControlContainer}>
                                     <TouchableOpacity
                                         style={[
-                                            styles.binaryButton,
-                                            progress > 0 && styles.binaryButtonSelected,
+                                            ProgressEntryStyles.binaryButton,
+                                            progress > 0 && ProgressEntryStyles.binaryButtonSelected,
                                             { backgroundColor: progress > 0 ? habit.habitColor : 'rgba(0,0,0,0.1)' }
                                         ]}
                                         onPress={() => {
@@ -156,12 +157,12 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
                                             setProgressText("1");
                                         }}
                                     >
-                                        <Text style={styles.binaryButtonText}>Completed</Text>
+                                        <Text style={ProgressEntryStyles.binaryButtonText}>Completed</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         style={[
-                                            styles.binaryButton,
-                                            progress === 0 && styles.binaryButtonSelected,
+                                            ProgressEntryStyles.binaryButton,
+                                            progress === 0 && ProgressEntryStyles.binaryButtonSelected,
                                             { backgroundColor: progress === 0 ? habit.habitColor : 'rgba(0,0,0,0.1)' }
                                         ]}
                                         onPress={() => {
@@ -169,45 +170,45 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
                                             setProgressText("0");
                                         }}
                                     >
-                                        <Text style={styles.binaryButtonText}>Not Completed</Text>
+                                        <Text style={ProgressEntryStyles.binaryButtonText}>Not Completed</Text>
                                     </TouchableOpacity>
                                 </View>
                             ) : (
-                                <View style={styles.goalContainer}>
+                                <View style={ProgressEntryStyles.goalContainer}>
                                     <TouchableOpacity
-                                        style={[styles.circleButton, { backgroundColor: habit.habitColor }]}
+                                        style={[ProgressEntryStyles.circleButton, { backgroundColor: habit.habitColor }]}
                                         onPress={decreaseProgress}
                                     >
-                                        <Text style={styles.buttonText}>-</Text>
+                                        <Text style={ProgressEntryStyles.buttonText}>-</Text>
                                     </TouchableOpacity>
 
                                     {habit.goalValue && (
-                                        <ThemedText style={[styles.goalText, { color: Colors[theme].text }]}>
+                                        <ThemedText style={[ProgressEntryStyles.goalText, { color: Colors[theme].text }]}>
                                             Goal: {habit.goalValue} {habit.goalUnit}
                                         </ThemedText>
                                     )}
 
                                     <TouchableOpacity
-                                        style={[styles.circleButton, { backgroundColor: habit.habitColor }]}
+                                        style={[ProgressEntryStyles.circleButton, { backgroundColor: habit.habitColor }]}
                                         onPress={increaseProgress}
                                     >
-                                        <Text style={styles.buttonText}>+</Text>
+                                        <Text style={ProgressEntryStyles.buttonText}>+</Text>
                                     </TouchableOpacity>
                                 </View>
                             )}
 
                             <TouchableOpacity
-                                style={[styles.saveButton, { backgroundColor: habit.habitColor }]}
+                                style={[ProgressEntryStyles.saveButton, { backgroundColor: habit.habitColor }]}
                                 onPress={handleSave}
                             >
-                                <ThemedText style={styles.saveButtonText}>Save Progress</ThemedText>
+                                <ThemedText style={ProgressEntryStyles.saveButtonText}>Save Progress</ThemedText>
                             </TouchableOpacity>
                         </>
                     ) : (
-                        <View style={styles.readOnlyContainer}>
+                        <View style={ProgressEntryStyles.readOnlyContainer}>
                             {/* Only show progress text for non-binary habits */}
                             {!useBinaryControls && (
-                                <ThemedText style={[styles.readOnlyText, { color: Colors[theme].text }]}>
+                                <ThemedText style={[ProgressEntryStyles.readOnlyText, { color: Colors[theme].text }]}>
                                     Progress: {progress} {habit.goalUnit || ''}
                                     {habit.goalValue && ` / ${habit.goalValue} ${habit.goalUnit || ''}`}
                                 </ThemedText>
@@ -216,7 +217,7 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
                     )}
 
                     <TouchableOpacity
-                        style={styles.cancelButton}
+                        style={ProgressEntryStyles.cancelButton}
                         onPress={onClose}
                     >
                         <ThemedText style={{ color: Colors[theme].text }}>
@@ -228,164 +229,3 @@ export const ProgressEntry: React.FC<ProgressEntryProps> = ({
         </Modal>
     );
 };
-
-const styles = StyleSheet.create({
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    container: {
-        width: '90%',
-        maxWidth: 400,
-        borderRadius: 20,
-        padding: 20,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    description: {
-        marginBottom: 24,
-        textAlign: 'center',
-    },
-    progressContainer: {
-        position: 'relative',
-        width: 200,
-        height: 200,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginVertical: 20,
-    },
-    progressTextContainer: {
-        position: 'absolute',
-        alignItems: 'center',
-    },
-    progressInput: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        width: 80,
-        height: 50,
-        textAlign: 'center',
-    },
-    unitText: {
-        fontSize: 16,
-        marginTop: 5,
-    },
-    goalContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '100%',
-        marginVertical: 20,
-    },
-    circleButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    buttonText: {
-        fontSize: 24,
-        color: 'white',
-        fontWeight: 'bold',
-    },
-    goalText: {
-        fontSize: 18,
-        fontWeight: '500',
-    },
-    saveButton: {
-        width: '100%',
-        paddingVertical: 15,
-        borderRadius: 10,
-        alignItems: 'center',
-        marginTop: 20,
-    },
-    saveButtonText: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    cancelButton: {
-        paddingVertical: 15,
-        marginTop: 10,
-    },
-    binaryControlContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '100%',
-        marginVertical: 20,
-    },
-    binaryButton: {
-        width: '48%',
-        paddingVertical: 15,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    binaryButtonSelected: {
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    },
-    binaryButtonText: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    disabledInput: {
-        opacity: 0.7,
-    },
-    readOnlyContainer: {
-        marginVertical: 20,
-        alignItems: 'center',
-        padding: 10,
-    },
-    readOnlyText: {
-        fontSize: 18,
-        fontWeight: '500',
-        textAlign: 'center',
-    },
-    binaryStatusContainer: {
-        marginVertical: 20,
-        padding: 20,
-        borderWidth: 2,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 100,
-        width: '100%',
-    },
-    binaryStatusText: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-}); 

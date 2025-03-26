@@ -1,9 +1,7 @@
 import { StyleSheet, useWindowDimensions, Platform } from 'react-native';
 
-
 export const useWeekCalendarStyles = () => {
     const { width } = useWindowDimensions();
-
 
     return StyleSheet.create({
         calendarWrapper: {
@@ -52,7 +50,8 @@ export const useWeekCalendarStyles = () => {
             marginHorizontal: 10,
             justifyContent: "center",
             alignItems: "center",
-            backgroundColor: Platform.OS === 'web' ? "#f0f0f0" : "transparent",
+            // Changed backgroundColor to transparent for all platforms
+            backgroundColor: "transparent",
             borderRadius: 10,
             minWidth: 40,
         },

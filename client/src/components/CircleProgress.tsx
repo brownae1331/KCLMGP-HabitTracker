@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { Colors } from './styles/Colors';
+import { CircleProgressStyles } from './styles/CircleProgressStyles';
 import { useTheme } from './ThemeContext';
 
 interface CircleProgressProps {
@@ -23,7 +24,7 @@ export const CircleProgress: React.FC<CircleProgressProps> = ({
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
     return (
-        <View style={styles.container}>
+        <View style={CircleProgressStyles.container}>
             <Svg width={size} height={size}>
                 {/* Background Circle */}
                 <Circle
@@ -51,10 +52,3 @@ export const CircleProgress: React.FC<CircleProgressProps> = ({
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-}); 

@@ -8,7 +8,6 @@ import TabBarBackground from '../../../components/ui/TabBarBackground';
 import { Colors } from '../../../components/styles/Colors';
 
 export default function TabLayout() {
-  // const colorScheme = useColorScheme() as 'light'| 'dark';
   const { theme, refreshKey } = useTheme();
 
   return (

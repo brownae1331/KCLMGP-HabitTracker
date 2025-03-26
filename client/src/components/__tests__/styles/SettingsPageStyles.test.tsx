@@ -1,4 +1,4 @@
-import { SettingsPageStyles } from '../../styles/SettingsPageStyle';
+import { SettingsPageStyles } from '../../styles/SettingsPageStyles';
 
 describe('SettingsPageStyles', () => {
     it('exports the expected style keys for Settings page', () => {

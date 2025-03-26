@@ -132,7 +132,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                 color: Colors[theme].text,
                                 backgroundColor: isEditMode ? Colors[theme].background2 : Colors[theme].background
                             }]}
-                            placeholder="Habit Name"
+                            placeholder="Name"
                             placeholderTextColor={Colors[theme].placeholder}
                             value={habitName}
                             onChangeText={setHabitName}
@@ -141,7 +141,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
 
                         <TextInput
                             style={[SharedStyles.input, HabitModalStyles.descriptionInput, { color: Colors[theme].text }]}
-                            placeholder="Habit Description"
+                            placeholder="Description"
                             placeholderTextColor={Colors[theme].placeholder}
                             value={habitDescription}
                             onChangeText={setHabitDescription}
@@ -152,7 +152,6 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                             Select a Color
                         </ThemedText>
 
-                        <ThemedText style={{ marginTop: 12 }}>Custom Color</ThemedText>
                         <TextInput
                             style={[SharedStyles.input, { color: Colors[theme].text }]}
                             placeholder="#ffCC00"
@@ -180,11 +179,8 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
 
                         {habitType === 'build' && (
                             <>
-                                <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
-                                    Goal
-                                </ThemedText>
                                 <View style={HabitModalStyles.goalToggleContainer}>
-                                    <ThemedText style={{ color: Colors[theme].text }}>Enable Goal</ThemedText>
+                                    <ThemedText style={{ color: Colors[theme].text }}>Select a Goal</ThemedText>
                                     <Switch
                                         value={isGoalEnabled}
                                         onValueChange={setIsGoalEnabled}
@@ -242,7 +238,7 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
                                 <ThemedText style={{ color: Colors[theme].text, marginLeft: 8 }}>days</ThemedText>
                             </View>
                         ) : (
-                            <View style={HabitModalStyles.weeklyContainer}>
+                            <View style={[HabitModalStyles.weeklyContainer, {padding: 16}]}>
                                 {daysOfWeek.map((day) => (
                                     <TouchableOpacity
                                         key={day}

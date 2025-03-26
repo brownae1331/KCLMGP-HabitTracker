@@ -5,6 +5,7 @@ import { ThemedText } from '../../components/ThemedText';
 import { useTheme } from '../../components/ThemeContext';
 import { Colors } from '../../components/styles/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AccountPageStyles } from '../../components/styles/AccountPageStyles';
 import { getUserDetails, updatePassword } from '../../lib/client';
 
 export default function AccountScreen() {
@@ -75,44 +76,44 @@ export default function AccountScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
-      <View style={[styles.section, { backgroundColor: Colors[theme].background }]}>
-        <ThemedText type="title" style={[styles.headerText, { color: Colors[theme].text }]}>Account Information</ThemedText>
+      <View style={[AccountPageStyles.section, { backgroundColor: Colors[theme].background }]}>
+        <ThemedText type="title" style={[AccountPageStyles.headerText, { color: Colors[theme].text }]}>Account Information</ThemedText>
         {successMessage ? (
           <Text style={{ color: 'green', marginTop: 5 }}>{successMessage}</Text>
         ) : null}
       </View>
 
       {/* Username Field */}
-      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
-        <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Username</ThemedText>
-        <TextInput style={[styles.input, { color: Colors[theme].text }]} value={username} editable={false} />
+      <View style={[AccountPageStyles.inputContainer, { backgroundColor: Colors[theme].background }]}>
+        <ThemedText style={[AccountPageStyles.label, { color: Colors[theme].text }]}>Username</ThemedText>
+        <TextInput style={[AccountPageStyles.input, { color: Colors[theme].text }]} value={username} editable={false} />
       </View>
 
       {/* Email Field */}
-      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
-        <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Email Address</ThemedText>
-        <TextInput style={[styles.input, { color: Colors[theme].text }]} value={email} editable={false} />
+      <View style={[AccountPageStyles.inputContainer, { backgroundColor: Colors[theme].background }]}>
+        <ThemedText style={[AccountPageStyles.label, { color: Colors[theme].text }]}>Email Address</ThemedText>
+        <TextInput style={[AccountPageStyles.input, { color: Colors[theme].text }]} value={email} editable={false} />
       </View>
 
       {/* Password Field */}
-      <View style={[styles.inputContainer, { backgroundColor: Colors[theme].background }]}>
-        <ThemedText style={[styles.label, { color: Colors[theme].text }]}>Password</ThemedText>
-        <TextInput style={[styles.input, { color: Colors[theme].text }]} value="******" editable={false} secureTextEntry />
-        <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.changeButton}>
+      <View style={[AccountPageStyles.inputContainer, { backgroundColor: Colors[theme].background }]}>
+        <ThemedText style={[AccountPageStyles.label, { color: Colors[theme].text }]}>Password</ThemedText>
+        <TextInput style={[AccountPageStyles.input, { color: Colors[theme].text }]} value="******" editable={false} secureTextEntry />
+        <TouchableOpacity onPress={() => setModalVisible(true)} style={AccountPageStyles.changeButton}>
           <Text style={{ color: 'white' }}>Change</Text>
         </TouchableOpacity>
       </View>
 
       {/* Password Change Modal */}
       <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor: Colors[theme].background2 }]}>
+        <View style={AccountPageStyles.modalContainer}>
+          <View style={[AccountPageStyles.modalContent, { backgroundColor: Colors[theme].background2 }]}>
             <ThemedText type="title" style={{ color: Colors[theme].text, fontWeight: 'bold' }}>Change Password</ThemedText>
 
             {error ? <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text> : null}
 
             <TextInput
-              style={[styles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]}
+              style={[AccountPageStyles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]}
               placeholder="Old Password"
               placeholderTextColor={Colors[theme].placeholder}
               secureTextEntry
@@ -120,7 +121,7 @@ export default function AccountScreen() {
               onChangeText={setOldPassword}
             />
             <TextInput
-              style={[styles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]}
+              style={[AccountPageStyles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]}
               placeholder="New Password"
               placeholderTextColor={Colors[theme].placeholder}
               secureTextEntry
@@ -128,7 +129,7 @@ export default function AccountScreen() {
               onChangeText={setNewPassword}
             />
             <TextInput
-              style={[styles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]}
+              style={[AccountPageStyles.input, { color: Colors[theme].text, backgroundColor: Colors[theme].background }]}
               placeholder="Confirm Password"
               placeholderTextColor={Colors[theme].placeholder}
               secureTextEntry
@@ -136,10 +137,10 @@ export default function AccountScreen() {
               onChangeText={setConfirmPassword}
             />
 
-            <TouchableOpacity style={styles.modalButton} onPress={handlePasswordChange}>
+            <TouchableOpacity style={AccountPageStyles.modalButton} onPress={handlePasswordChange}>
               <Text style={{ color: 'white' }}>Confirm</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.modalButton, { backgroundColor: 'gray' }]} onPress={() => setModalVisible(false)}>
+            <TouchableOpacity style={[AccountPageStyles.modalButton, { backgroundColor: 'gray' }]} onPress={() => setModalVisible(false)}>
               <Text style={{ color: 'white' }}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -148,57 +149,3 @@ export default function AccountScreen() {
     </SafeAreaView>
   );
 }
-
-
-const styles = StyleSheet.create({
-  section: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  inputContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    alignItems: 'flex-start',
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 5,
-  },
-  changeButton: {
-    marginTop: 10,
-    alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    backgroundColor: '#a39d41',
-    borderRadius: 5
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#00000080'
-  },
-  modalContent: {
-    width: 300,
-    padding: 20,
-    borderRadius: 10,
-  },
-  modalButton: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: '#a39d41',
-    alignItems: 'center',
-    borderRadius: 5
-  }
-});
