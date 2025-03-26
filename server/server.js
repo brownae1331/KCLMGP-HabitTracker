@@ -421,27 +421,6 @@ app.post('/habits', async (req, res) => {
   }
 });
 
-// Get the names and types of all habits for a user
-app.get('/habits/:username', async (req, res) => {
-  const { username } = req.params;
-  try {
-    const [user] = await pool.query('SELECT email FROM users WHERE username = ?', [username]);
-    if (user.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    const userEmail = user[0].email;
-    const [habits] = await pool.query('SELECT habitName, habitType FROM habits WHERE user_email = ?', [userEmail]);
-
-    if (habits.length === 0) {
-      return res.json([]);
-    }
-
-    res.json(habits);
-  } catch (error) {
-    console.error('Error fetching habits:', error);
-    res.status(500).json({ error: 'Error fetching habit names and types' });
-  }
-});
 
 // Delete a habit
 app.delete('/habits/:user_email/:habitName', async (req, res) => {
