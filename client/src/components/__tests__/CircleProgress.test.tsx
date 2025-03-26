@@ -1,4 +1,3 @@
-// CircleProgress.test.tsx
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Circle } from 'react-native-svg';

@@ -175,8 +175,12 @@ export default function HomeScreen() {
     setGoalUnit('');
     setModalVisible(false);
   };
+<<<<<<<<< Temporary merge branch 1
   
   
+=========
+
+>>>>>>>>> Temporary merge branch 2
 
 
   const [dbHabits, setDbHabits] = useState<any[]>([]);
