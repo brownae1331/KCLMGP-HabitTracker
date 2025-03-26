@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, useWindowDimensions, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, useWindowDimensions, Platform, Image } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { getWeekDates } from '../utils/dateUtils';
 import { useWeekCalendarStyles } from './styles/WeekCalendarStyles';
@@ -76,7 +76,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, se
             {Platform.OS === 'web' ? (
                 <View style={[styles.weekContainer, { width: width }]}>
                     <TouchableOpacity onPress={() => changeWeek(-1)} style={styles.arrowButton}>
-                        <Text style={{ fontSize: 20 }}>{"<"}</Text>
+                    <Image source={require('../../assets/images/arrowLeft.png')}/>
                     </TouchableOpacity>
 
                     {currentWeek.map(({ day, date, fullDate }: DayType, index: number) => {
@@ -104,7 +104,7 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, se
                     })}
 
                     <TouchableOpacity onPress={() => changeWeek(1)} style={styles.arrowButton}>
-                        <Text style={{ fontSize: 20 }}>{">"}</Text>
+                    <Image source={require('../../assets/images/arrowRight.png')} />
                     </TouchableOpacity>
                 </View>
             ) : (
