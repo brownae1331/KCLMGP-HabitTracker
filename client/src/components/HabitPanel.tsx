@@ -32,7 +32,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
   // For build habits: track numeric progress
   const [buildProgress, setBuildProgress] = useState<string>('');
   // For quit habits: track yes/no status
-  const [quitStatus, setQuitStatus] = useState<'yes' | 'no' | ''>('');
+  const [quitStatus, setQuitStatus] = useState<'COMPLETE' | 'INCOMPLETE' | ''>('');
   // Local flag to indicate an update was made
   const [updated, setUpdated] = useState(false);
   // Track the habit streak
@@ -95,6 +95,36 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
 
     fetchStreak();
   }, [habit, updated, date, isDateInFuture, isToday]);
+  
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const progressData = await getHabitProgressByDateAndHabit(
+          habit.user_email,
+          habit.habitName,
+          date
+        );
+        const progressValue =
+          progressData && typeof progressData.progress !== 'undefined'
+            ? progressData.progress
+            : 0;
+        setCurrentProgress(progressValue);
+        const isBuildWithoutGoal =
+          habit.habitType === 'build' &&
+          (habit.goalValue === undefined || habit.goalValue === null);
+        if (habit.habitType === 'build' && !isBuildWithoutGoal) {
+          setBuildProgress(progressValue.toString());
+        } else {
+          setQuitStatus(progressValue > 0 ? 'COMPLETE' : 'INCOMPLETE');
+        }
+      } catch (error) {
+        console.error('Error fetching habit progress:', error);
+      }
+    }, 500); // Poll every 10 seconds
+  
+    return () => clearInterval(interval);
+  }, [habit, date]);
+  
 
   // Add this helper function to find the last scheduled date for the habit
   const findLastScheduledDate = async (habit: Habit) => {
@@ -161,7 +191,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
         setCurrentProgress(progress);
       } else {
         // For quit habits and build habits without goals, set the yes/no state
-        setQuitStatus(progress > 0 ? 'yes' : 'no');
+        setQuitStatus(progress > 0 ? 'COMPLETE' : 'INCOMPLETE');
         setCurrentProgress(progressValue);
       }
 
@@ -264,7 +294,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
 
       const progressValue = habit.habitType === 'build' && !isBuildWithoutGoal
         ? (buildProgress ? parseFloat(buildProgress) : 0)
-        : (quitStatus === 'yes' ? 1 : 0);
+        : (quitStatus === 'COMPLETE' ? 1 : 0);
 
       setCurrentProgress(progressValue);
       setProgressModalVisible(true);
@@ -309,19 +339,18 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
           )}
         </View>
         <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
-        {habit.goalValue != null && (
+        {habit.goalValue != null ? (
           <Text style={styles.progressText}>
-            {"🏁"} {buildProgress !== '' ? buildProgress : currentProgress} {habit.goalUnit} / {habit.goalValue} {habit.goalUnit} {"🏆"}
+            {buildProgress !== '' ? parseFloat(buildProgress) : currentProgress}{" "}
+            {habit.goalUnit} / {habit.goalValue} {habit.goalUnit}{" "}
+            {parseFloat(buildProgress !== '' ? buildProgress : currentProgress.toString()) >= habit.goalValue ? "🏆" : "🚧"}
+          </Text>
+        ) : (
+          <Text style={styles.progressText}>
+            {quitStatus === 'COMPLETE' ? "🏆" : "🚧"} {quitStatus}
           </Text>
         )}
 
-        {updated && (
-          <ThemedText style={styles.updateStatus}>
-            {habit.habitType === 'build' && habit.goalValue != null
-              ? `Progress updated to ${buildProgress} / ${habit.goalValue} ${habit.goalUnit}`
-              : `Status updated to ${quitStatus}`}
-          </ThemedText>
-        )}
       </TouchableOpacity>
 
       <ProgressEntry
