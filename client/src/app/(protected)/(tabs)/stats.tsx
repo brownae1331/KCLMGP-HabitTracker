@@ -104,27 +104,6 @@ export default function StatsScreen() {
 
   const selectedHabitData = habits.find(h => h.habitName === selectedHabit);
 
-  // placeholder stats
-  const getStats = () => {
-    if (!selectedHabitData) return null;
-
-    const stats = {
-      currentStreak: 8,
-      longestStreak: 20,
-      successRate: '90%',
-    };
-
-    if (selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) {
-      
-      const averageProgress = '75%';
-      return { ...stats, fourthStat: { label: 'Average Progress', value: averageProgress } };
-    } else {
-      return { ...stats, fourthStat: { label: 'Grade', value: 'A' } };
-    }
-  };
-
-  const stats = selectedHabit && selectedHabitData ? getStats() : null;
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme === 'dark' ? Colors.dark.background : Colors.light.background2 }}>
       <ScrollView style={{ flex: 1 }}>
@@ -172,27 +151,6 @@ export default function StatsScreen() {
                     <QuitHabitGraph email={email} habitName={selectedHabit} />
                   )}
                 </View>
-
-                {stats && (
-                  <View style={styles.statsContainer}>
-                    <View style={statBoxStyle}>
-                      <ThemedText style={statValueStyle}>{stats.currentStreak}</ThemedText>
-                      <ThemedText style={styles.statLabel}>Current Streak</ThemedText>
-                    </View>
-                    <View style={statBoxStyle}>
-                      <ThemedText style={statValueStyle}>{stats.longestStreak}</ThemedText>
-                      <ThemedText style={styles.statLabel}>Longest Streak</ThemedText>
-                    </View>
-                    <View style={statBoxStyle}>
-                      <ThemedText style={statValueStyle}>{stats.successRate}</ThemedText>
-                      <ThemedText style={styles.statLabel}>Success Rate</ThemedText>
-                    </View>
-                    <View style={statBoxStyle}>
-                      <ThemedText style={statValueStyle}>{stats.fourthStat.value}</ThemedText>
-                      <ThemedText style={styles.statLabel}>{stats.fourthStat.label}</ThemedText>
-                    </View>
-                  </View>
-                )}
               </View>
             ) : (
               <View style={styles.messageContainer}>

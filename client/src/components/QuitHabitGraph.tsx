@@ -5,7 +5,7 @@ import { useWindowDimensions } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
 import { BASE_URL } from '../lib/client';
-
+import StatsBoxes from './StatsBoxes';
 
 type Range = 'W' | 'M';
 
@@ -15,15 +15,18 @@ interface ChartData {
 }
 
 interface QuitHabitGraphProps {
-    email: string;
-    habitName: string;
-  }
+  email: string;
+  habitName: string;
+}
 
 const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();
   const [range, setRange] = useState<Range>('W');
   const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [currentStreak, setCurrentStreak] = useState<number>(0);
+  const [longestStreak, setLongestStreak] = useState<number>(0);
+  const [completionRate, setCompletionRate] = useState<number>(0);
 
   const labels: Record<Range, string[]> = {
     W: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -58,6 +61,8 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
         });
   
         setChartData(newData);
+        const mostRecentEntry = rawData[rawData.length - 1];
+        setCurrentStreak(mostRecentEntry ? mostRecentEntry.streak : 0); 
       } catch (error) {
         console.error('Error fetching streak data:', error);
       }
@@ -65,6 +70,36 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
   
     fetchData();
   }, [range, email, habitName]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const longestStreakResponse = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/longest-streak`
+        );
+        const longestStreakData = await longestStreakResponse.json();
+        setLongestStreak(longestStreakData.longestStreak);
+
+        const completionRateResponse = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/completion-rate`
+        );
+        const completionRateData = await completionRateResponse.json();
+        setCompletionRate(completionRateData.completionRate);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, [email, habitName]);
+
+  const getGrade = (rate: number): string => {
+    if (rate >= 90) return 'A';
+    if (rate >= 75) return 'B';
+    if (rate >= 60) return 'C';
+    if (rate >= 45) return 'D';
+    return 'F';
+  };
 
   const referenceWidth = 400;
   const baseLineWidth: Record<Range, number> = { W: 3, M: 2 };
@@ -105,7 +140,7 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
       <VictoryChart
         width={chartWidth}
         height={220}
-        domainPadding={{ x: range === 'M' ? 5 : 20, y: 10}}
+        domainPadding={{ x: range === 'M' ? 5 : 20, y: 10 }}
         padding={{ top: 20, bottom: 40, left: 40, right: 40 }}
         theme={VictoryTheme.material}
         domain={{ y: [0, Math.max(5, ...chartData.map(d => d.y + 1))] }}
@@ -152,6 +187,12 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
           }}
         />
       </VictoryChart>
+      <StatsBoxes
+        currentStreak={currentStreak}
+        longestStreak={longestStreak}
+        completionRate={completionRate}
+        fourthStat={{ label: 'Grade', value: getGrade(completionRate) }}
+      />
     </View>
   );
 };

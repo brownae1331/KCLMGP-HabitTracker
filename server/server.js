@@ -541,6 +541,60 @@ app.get('/stats/:email/:habitName/streak', async (req, res) => {
   }
 });
 
+app.get('/stats/:email/:habitName/longest-streak', async (req, res) => {
+  const { email, habitName } = req.params;
+  try {
+    const [rows] = await pool.query(`
+      SELECT MAX(streak) as longestStreak
+      FROM habit_progress
+      WHERE user_email = ? AND habitName = ?`, 
+      [email, habitName]
+    );
+    const longestStreak = rows[0].longestStreak || 0;
+    res.json({ longestStreak });
+  } catch (error) {
+    console.error('Error fetching longest streak: ', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/stats/:email/:habitName/completion-rate', async (req, res) => {
+  const { email, habitName } = req.params;
+  try {
+    const [rows] = await pool.query(`
+      SELECT
+        SUM(CASE WHEN completed = true THEN 1 ELSE 0 END) as completedDays,
+        COUNT(*) as totalDays
+      FROM habit_progress
+      WHERE user_email = ? AND habitName = ?`,
+      [email, habitName]
+    );
+    const { completedDays, totalDays } = rows[0];
+    const completionRate = totalDays > 0 ? (completedDays/totalDays)*100 : 0;
+    res.json({ completionRate: Math.round(completionRate) });
+    } catch (error) {
+      console.error('Error fetching completion rate: ', error);
+      res.status(500).json({ error: 'Server error' });
+  }
+})
+
+app.get('/stats/:email/:habitName/average-progress', async (req, res) => {
+  const { email, habitName } = req.params;
+  try {
+    const [rows] = await pool.query(`
+      SELECT AVG(progress) as averageProgress
+      FROM habit_progress
+      WHERE user_email = ? AND habitName = ?`,
+    [email, habitName]);
+    const averageProgress = rows[0].averageProgress || 0;
+    res.json({ averageProgress : Math.round(averageProgress) });
+
+  } catch (error) {
+    console.error('Error fetching average progress: ', error);
+      res.status(500).json({ error: 'Server error' });
+  }
+})
+
 // get progress for build habits
 app.get('/stats/:email/:habitName/progress', async (req, res) => {
   const { email, habitName } = req.params;

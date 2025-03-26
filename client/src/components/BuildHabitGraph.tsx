@@ -5,6 +5,7 @@ import { useWindowDimensions } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
 import { BASE_URL } from '../lib/client';
+import StatsBoxes from './StatsBoxes';
 
 
 type Range = 'W' | 'M' | 'Y';
@@ -25,6 +26,10 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const [range, setRange] = useState<Range>('W');
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [hasDecimals, setHasDecimals] = useState(false);
+  const [currentStreak, setCurrentStreak] = useState<number>(0);
+  const [longestStreak, setLongestStreak] = useState<number>(0);
+  const [completionRate, setCompletionRate] = useState<number>(0);
+  const [averageProgress, setAverageProgress] = useState<number>(0);
   const today = new Date();
 
   const labels: Record<Range, string[]> = {
@@ -93,6 +98,54 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
 
     fetchData();
   }, [range, email, habitName]);
+
+  useEffect(() => {
+    const fetchStreakData = async () => {
+      try {
+        const response = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/streak?range=${range === 'W' ? 'week' : 'month'}`
+        );
+        const rawData = await response.json();
+
+        const mostRecentEntry = rawData[rawData.length - 1];
+        setCurrentStreak(mostRecentEntry ? mostRecentEntry.streak : 0);
+      } catch (error) {
+        console.error('Error fetching streak data:', error);
+      }
+    };
+
+    fetchStreakData();
+  }, [range, email, habitName]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch Longest Streak
+        const longestStreakResponse = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/longest-streak`
+        );
+        const longestStreakData = await longestStreakResponse.json();
+        setLongestStreak(longestStreakData.longestStreak);
+
+        // Fetch Success Rate
+        const completionRateResponse = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/completion-rate`
+        );
+        const completionRateData = await completionRateResponse.json();
+        setCompletionRate(completionRateData.completionRate);
+
+        const averageProgressResponse = await fetch(
+          `${BASE_URL}/stats/${email}/${habitName}/average-progress`
+        );
+        const averageProgressData = await averageProgressResponse.json();
+        setAverageProgress(averageProgressData.averageProgress);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, [email, habitName]);
 
   const referenceWidth = 400;
   const baseBarWidth = { W: 15, M: 5, Y: 10 };
@@ -172,6 +225,12 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
           }}
         />
       </VictoryChart>
+      <StatsBoxes
+        currentStreak={currentStreak}
+        longestStreak={longestStreak}
+        completionRate={completionRate}
+        fourthStat={{ label: 'Average Progress', value: `${averageProgress}` }}
+      />
     </View>
   );
 };
