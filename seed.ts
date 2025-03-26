@@ -49,7 +49,7 @@ const SAMPLE_DESCRIPTIONS = [
 const SAMPLE_COLORS = ['#FF5733', '#33FF57', '#0055ff', '#FF9900', '#123456', '#007AFF', '#FFFF00'];
 
 // Days of the week for weekly scheduling
-const ALL_WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const ALL_WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 // Utility: return a new date with Y/M/D only (no time).
 function stripTime(date: Date): Date {
@@ -138,8 +138,8 @@ function getIntervalDatesInRange(
 // For build with no goal, success => any progress>0, fail => progress=0
 // For quit habits, success => progress=0 (didn't do it), fail => progress=1
 function getDailyOutcome(habit: {
-  habitType: 'build'|'quit';
-  goalValue: number|null;
+  habitType: 'build' | 'quit';
+  goalValue: number | null;
 }, prevStreak: number): {
   progress: number;
   completed: boolean;
@@ -244,10 +244,10 @@ async function seed() {
     type HabitRecord = {
       user_email: string;
       habitName: string;
-      habitType: 'build'|'quit';
-      scheduleOption: 'weekly'|'interval';
-      goalValue: number|null;
-      goalUnit: string|null;
+      habitType: 'build' | 'quit';
+      scheduleOption: 'weekly' | 'interval';
+      goalValue: number | null;
+      goalUnit: string | null;
       habitColor: string;
     };
 
@@ -260,20 +260,20 @@ async function seed() {
         const desc = randFromArray(SAMPLE_DESCRIPTIONS);
         const color = randFromArray(SAMPLE_COLORS);
 
-        const habitType: 'build'|'quit' = Math.random() > 0.5 ? 'build' : 'quit';
-        const scheduleOption: 'weekly'|'interval' = Math.random() > 0.5 ? 'weekly' : 'interval';
+        const habitType: 'build' | 'quit' = Math.random() > 0.5 ? 'build' : 'quit';
+        const scheduleOption: 'weekly' | 'interval' = Math.random() > 0.5 ? 'weekly' : 'interval';
 
         // If it's a build habit, 50% chance we set an integer goal
-        let goalVal: number|null = null;
-        let goalU: string|null = null;
+        let goalVal: number | null = null;
+        let goalU: string | null = null;
         if (habitType === 'build' && Math.random() > 0.5) {
           goalVal = randInt(5, 50); // integer from 5..50
-          goalU = 'units';         
+          goalU = 'units';
         }
 
         const habitObj: HabitRecord = {
           user_email: user.email,
-          habitName: `${name} ${randInt(100,9999)}`, // ensure uniqueness
+          habitName: `${name} ${randInt(100, 9999)}`, // ensure uniqueness
           habitType,
           scheduleOption,
           goalValue: goalVal,
@@ -325,7 +325,7 @@ async function seed() {
       if (h.scheduleOption === 'weekly') {
         // Randomly pick 1..4 days of the week
         const shuffled = [...ALL_WEEKDAYS].sort(() => 0.5 - Math.random());
-        const selectedDays = shuffled.slice(0, randInt(1,4));
+        const selectedDays = shuffled.slice(0, randInt(1, 4));
         // Insert them
         for (const d of selectedDays) {
           await connection.query(
@@ -351,7 +351,7 @@ async function seed() {
         }
       } else {
         // interval
-        const inc = randInt(2,7);
+        const inc = randInt(2, 7);
         await connection.query(
           `INSERT INTO habit_intervals (user_email, habitName, increment)
            VALUES (?, ?, ?)`,
@@ -369,7 +369,7 @@ async function seed() {
         // as the base, then keep incrementing
         let baseDate = randomStart;
         if (historicalDates.length > 0) {
-          baseDate = historicalDates[historicalDates.length-1];
+          baseDate = historicalDates[historicalDates.length - 1];
         }
         // Generate interval for [tomorrow..futureEnd]
         // We'll do a small function that continues from baseDate forward

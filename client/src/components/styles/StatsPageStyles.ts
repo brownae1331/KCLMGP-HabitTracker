@@ -32,4 +32,13 @@ export const StatsPageStyles = StyleSheet.create({
     maxWidth: 400,
     color: '#808080',
   },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 50
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16
+  },
 });
