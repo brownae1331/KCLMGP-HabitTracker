@@ -45,7 +45,8 @@
     "react-native-sqlite-storage": "^6.0.1",
     "react-native-url-polyfill": "^2.0.0",
     "react-native-web": "~0.19.13",
-    "react-native-webview": "13.12.5"
+    "react-native-webview": "13.12.5",
+    "@react-native-picker/picker": "2.9.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
