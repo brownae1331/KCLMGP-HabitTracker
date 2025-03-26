@@ -5,6 +5,7 @@ import { initDatabase, pool } from './db.js';
 import usersRouter from './routes/users.js';
 import habitsRouter from './routes/habits.js';
 import progressRouter from './routes/progress.js';
+import statsRouter from './routes/stats.js';
 
 dotenv.config();
 const app = express();
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/users', usersRouter);
 app.use('/habits', habitsRouter);
 app.use('/progress', progressRouter);
+app.use('/stats', statsRouter);
 
 // Default Route
 app.get('/', (req, res) => {

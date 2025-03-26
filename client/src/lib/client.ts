@@ -300,29 +300,29 @@ export const fetchHabits = async (email: string): Promise<any[]> => {
 
 // fetch progress data for a build habit
 export async function fetchBuildHabitProgress(email: string, habitName: string, range: 'week' | 'month' | 'year') {
-  return apiRequest<any[]>(`${BASE_URL}/progress/stats/progress/${email}/${habitName}?range=${range}`);
+  return apiRequest<any[]>(`${BASE_URL}/stats/${email}/${habitName}?range=${range}`);
 }
 
 // fetch streak data
 export async function fetchStreak(email: string, habitName: string, range: 'week' | 'month') {
-  return apiRequest<any[]>(`${BASE_URL}/progress/stats/streak/${email}/${habitName}?range=${range}`);
+  return apiRequest<any[]>(`${BASE_URL}/stats/streak/${email}/${habitName}?range=${range}`);
 }
 
 // fetch longest streak
 export async function fetchLongestStreak(email: string, habitName: string): Promise<number> {
-  const data = await apiRequest<{ longestStreak: number }>(`${BASE_URL}/progress/stats/longest-streak/${email}/${habitName}`);
+  const data = await apiRequest<{ longestStreak: number }>(`${BASE_URL}/stats/longest-streak/${email}/${habitName}`);
   return data.longestStreak;
 }
 
 // fetch completion rate
 export async function fetchCompletionRate(email: string, habitName: string): Promise<number> {
-  const data = await apiRequest<{ completionRate: number }>(`${BASE_URL}/progress/stats/completion-rate/${email}/${habitName}`);
+  const data = await apiRequest<{ completionRate: number }>(`${BASE_URL}/stats/completion-rate/${email}/${habitName}`);
   return data.completionRate;
 }
 
 // fetch average progress
 export async function fetchAverageProgress(email: string, habitName: string): Promise<number> {
-  const data = await apiRequest<{ averageProgress: number }>(`${BASE_URL}/progress/stats/average-progress/${email}/${habitName}`);
+  const data = await apiRequest<{ averageProgress: number }>(`${BASE_URL}/stats/average-progress/${email}/${habitName}`);
   return data.averageProgress;
 }
 

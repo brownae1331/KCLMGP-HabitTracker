@@ -18,10 +18,11 @@ type Habit = {
 };
 
 export default function StatsScreen() {
-  const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
+  const [selectedHabit, setSelectedHabit] = useState<string>("");
   const [habits, setHabits] = useState<Habit[]>([]);
   const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -44,21 +45,30 @@ export default function StatsScreen() {
 
       const fetchHabitsData = async () => {
         try {
+          setRefreshing(true);
           const data = await fetchHabits(email);
           setHabits(data);
+
+          // Reset selection if the selected habit no longer exists
+          if (selectedHabit && !data.some(habit => habit.habitName === selectedHabit)) {
+            setSelectedHabit("");
+          }
         } catch (error) {
+          console.error('Error fetching habits:', error);
           setHabits([]);
+        } finally {
+          setRefreshing(false);
         }
       };
 
       fetchHabitsData();
-    }, [email])
+    }, [email, selectedHabit])
   );
 
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={Colors[theme].tint} />
       </SafeAreaView>
     );
   }
@@ -80,20 +90,22 @@ export default function StatsScreen() {
           </View>
         ) : (
           <>
-            <View style={[styles.pickerContainer, { 
-              backgroundColor: Colors[theme].graphBackground, 
-              borderColor: Colors[theme].pickerBackground }]}>
+            <View style={[styles.pickerContainer, {
+              backgroundColor: Colors[theme].graphBackground,
+              borderColor: Colors[theme].pickerBackground
+            }]}>
               <Picker
                 selectedValue={selectedHabit}
                 onValueChange={(itemValue) => setSelectedHabit(itemValue)}
-                style={[styles.picker, { 
-                  backgroundColor: theme === 'dark' ? Colors.dark.background2 : '#FAFAFA', 
+                style={[styles.picker, {
+                  backgroundColor: theme === 'dark' ? Colors.dark.background2 : '#FAFAFA',
                   color: Colors[theme].text,
-                  borderColor: Colors[theme].graphBackground, }]}
+                  borderColor: Colors[theme].graphBackground,
+                }]}
               >
                 <Picker.Item
                   label="Select a habit..."
-                  value={null}
+                  value=""
                   color={Colors[theme].backgroundText}
                 />
                 {habits.map((habit) => (
@@ -107,13 +119,18 @@ export default function StatsScreen() {
               </Picker>
             </View>
 
-            {selectedHabit && selectedHabitData && email ? (
+            {refreshing ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={Colors[theme].tint} />
+                <ThemedText style={styles.loadingText}>Loading stats...</ThemedText>
+              </View>
+            ) : selectedHabit && selectedHabitData && email ? (
               <View style={styles.graphContainer}>
-                  {(selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
-                    <BuildHabitGraph email={email} habitName={selectedHabit} />
-                  ) : (
-                    <QuitHabitGraph email={email} habitName={selectedHabit} />
-                  )}
+                {(selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
+                  <BuildHabitGraph email={email} habitName={selectedHabit} />
+                ) : (
+                  <QuitHabitGraph email={email} habitName={selectedHabit} />
+                )}
               </View>
             ) : (
               <View style={styles.messageContainer}>
@@ -161,4 +178,13 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     color: Colors.light.backgroundText,
   },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 50
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16
+  }
 });

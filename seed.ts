@@ -19,7 +19,7 @@ const SALT_ROUNDS = 10;
 // Configuration: Adjust these as you see fit
 const NUM_USERS = 3;               // How many random users
 const MIN_HABITS_PER_USER = 3;     // Each user will get a random number of habits in [MIN, MAX]
-const MAX_HABITS_PER_USER = 6;     
+const MAX_HABITS_PER_USER = 6;
 const DAYS_BACK = 30;              // Seed data for the past 30 days
 const INSTANCE_CHANCE = 0.7;       // 70% chance of generating a habit_instance for a given day
 
@@ -95,7 +95,7 @@ async function seed() {
         'INSERT INTO users (email, password, username) VALUES (?, ?, ?)',
         [u.email, hashed, u.username]
       );
-        // Print the un-hashed credentials so you can use them to log in
+      // Print the un-hashed credentials so you can use them to log in
       console.log(`
         Created user:
           Email: ${u.email}
@@ -174,7 +174,7 @@ async function seed() {
     for (const h of allHabits) {
       if (h.scheduleOption === 'weekly') {
         // Pick random days of the week
-        const daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         // e.g. choose 3 random days
         const shuffled = daysOfWeek.sort(() => 0.5 - Math.random()).slice(0, 3);
         for (const d of shuffled) {
@@ -186,7 +186,7 @@ async function seed() {
         }
       } else {
         // random increment 2 to 7
-        const inc = randInt(2,7);
+        const inc = randInt(2, 7);
         await connection.query(
           `INSERT INTO habit_intervals (user_email, habitName, increment)
            VALUES (?, ?, ?)`,
@@ -223,10 +223,10 @@ async function seed() {
               // random progress up to 150% of the goal
               progress = Math.random() * (1.5 * h.goalValue);
               completed = progress >= h.goalValue;
-              streak = completed ? randInt(1, 5) : 0; 
+              streak = completed ? randInt(1, 5) : 0;
             } else {
               // build with no numeric goal => just store 0-5
-              progress = randInt(0,5);
+              progress = randInt(0, 5);
               completed = progress > 0; // random definition
               streak = completed ? randInt(1, 5) : 0;
             }
