@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableOpacity, Alert, FlatList, View, Switch } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { deleteUser, BASE_URL } from '../../../lib/client';
+import { deleteUser, exportUserData } from '../../../lib/client';
 import { ThemedText } from '../../../components/ThemedText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system';
@@ -56,7 +56,6 @@ export default function SettingsScreen() {
 
   const handleExportData = async () => {
     try {
-      // Retrieve the stored email (adjust key if needed)
       const storedEmail = await AsyncStorage.getItem('email');
       if (!storedEmail) {
         Platform.OS === 'web'
@@ -64,11 +63,8 @@ export default function SettingsScreen() {
           : Alert.alert('Error', 'No email found');
         return;
       }
-      const response = await fetch(`${BASE_URL}/export/${storedEmail}`);
-      if (!response.ok) {
-        throw new Error('Error exporting data');
-      }
-      const exportData = await response.json();
+      const exportData = await exportUserData(storedEmail);
+
       if (Platform.OS === 'ios') {
         const fileUri = FileSystem.documentDirectory + 'exportData.json';
         await FileSystem.writeAsStringAsync(
@@ -97,7 +93,7 @@ export default function SettingsScreen() {
       } else {
         Alert.alert('Failed to export data');
       }
-    };
+    }
   };
 
   const handleSignOut = async () => {

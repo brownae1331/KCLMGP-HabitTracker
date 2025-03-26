@@ -61,19 +61,19 @@ export default function HomeScreen() {
         Alert.alert("Validation Error", message);
       }
     };
-  
+
     // 1. Validate Habit Name: It must not be empty.
     if (!habitName || habitName.trim() === '') {
       showAlert("Habit name cannot be empty.");
       return;
     }
-  
+
     // 2. Validate Habit Name Uniqueness: BUT only for new habits or when the name has changed
     if (!isEditMode && dbHabits.some((habit: any) => habit.habitName.toLowerCase() === habitName.trim().toLowerCase())) {
       showAlert("A habit with this name already exists for this user.");
       return;
     }
-  
+
     // For edit mode, only check for duplicate names if the name has changed
     if (isEditMode && currentEditHabit && habitName.trim().toLowerCase() !== currentEditHabit.habitName.toLowerCase()) {
       if (dbHabits.some((habit: any) =>
@@ -84,13 +84,13 @@ export default function HomeScreen() {
         return;
       }
     }
-  
+
     // 3. Validate Color: If no color is picked, default to yellow (#FFFF00)
     let chosenColor = habitColor;
     if (!chosenColor || chosenColor.trim() === '') {
       chosenColor = '#FFFF00'; // default yellow
     }
-  
+
     // 4. If schedule is "interval", ensure intervalDays is a valid number and not negative.
     if (scheduleOption === 'interval') {
       if (!intervalDays || isNaN(parseInt(intervalDays, 10))) {
@@ -102,7 +102,7 @@ export default function HomeScreen() {
         return;
       }
     }
-  
+
     // 5. If schedule is "weekly", ensure at least one day is selected.
     if (scheduleOption === 'weekly') {
       if (!selectedDays || selectedDays.length === 0) {
@@ -110,7 +110,7 @@ export default function HomeScreen() {
         return;
       }
     }
-  
+
     // 6. Validate goal value: if goal is enabled, ensure the goal value is not negative.
     if (isGoalEnabled) {
       if (!goalValue || goalValue.trim() === '') {
@@ -130,7 +130,7 @@ export default function HomeScreen() {
         return;
       }
     }
-  
+
     // Construct the new habit object with validations applied
     const newHabit = {
       email: email, // assuming this is set correctly
@@ -144,7 +144,7 @@ export default function HomeScreen() {
       goalValue: isGoalEnabled ? parseFloat(goalValue) : null,
       goalUnit: isGoalEnabled ? goalUnit : null,
     };
-  
+
     try {
       await addHabit(newHabit);
       fetchHabits(); // Refresh the habit list after adding a new habit
@@ -153,7 +153,7 @@ export default function HomeScreen() {
       showAlert("Error adding habit");
       return;
     }
-  
+
     // Reset form values and close modal
     setHabitName('');
     setHabitDescription('');
@@ -167,38 +167,10 @@ export default function HomeScreen() {
     setGoalUnit('');
     setModalVisible(false);
   };
-  
+
 
 
   const [dbHabits, setDbHabits] = useState<any[]>([]);
-
-  // const fetchHabits = async () => {
-  //   try {
-  //     const habits = await getHabits(email);
-
-  //     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  //     const selectedDayName = dayNames[selectedDate.fullDate.getDay()];
-
-  //     const filtered = habits.filter((habit: any) => {
-  //       if (habit.scheduleOption === 'weekly') {
-  //         // For weekly habits, check if the selected day's name is in the selectedDays array.
-  //         return habit.selectedDays && habit.selectedDays.includes(selectedDayName);
-  //       } else {
-  //         // For interval (or date-specific) habits, check the habit.date.
-  //         if (!habit.date) return false;
-  //         const habitDate = new Date(habit.date);
-  //         return (
-  //           habitDate.getDate() === selectedDate.fullDate.getDate() &&
-  //           habitDate.getMonth() === selectedDate.fullDate.getMonth() &&
-  //           habitDate.getFullYear() === selectedDate.fullDate.getFullYear()
-  //         );
-  //       }
-  //     });
-  //     setDbHabits(filtered);
-  //   } catch (error) {
-  //     console.error('Error fetching habits for selected date:', error);
-  //   }
-  // };
 
   const fetchHabits = async () => {
     if (!email) return;
@@ -380,11 +352,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 12,
     padding: 12,
-    // No backgroundColor here—so if there are habits, it won’t show a grey box.
     borderRadius: 8,
   },
-  
-  
+
+
   noHabitsText: {
     textAlign: 'center',
     marginVertical: 20,
