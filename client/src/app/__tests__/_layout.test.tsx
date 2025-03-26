@@ -1,61 +1,53 @@
-import React from "react";
-import RootLayout from "../_layout";
-import { render, waitFor } from "@testing-library/react-native";
-import { ThemeProvider } from "../../components/ThemeContext";
-import { AuthProvider } from "../../components/AuthContext";
-import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
+import React from 'react';
+import RootLayout from '../_layout';
+import { render, waitFor } from '@testing-library/react-native';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 
-// Mock expo-font to prevent errors with useFonts
-jest.mock("expo-font", () => ({
-    useFonts: jest.fn(() => [true]),
+// PARTIALLY MOCK expo-font
+jest.mock('expo-font', () => ({
+  useFonts: jest.fn(),
 }));
 
-// Mock expo-splash-screen to prevent errors with SplashScreen
-jest.mock("expo-splash-screen", () => ({
-    preventAutoHideAsync: jest.fn(),
+// PARTIALLY MOCK expo-splash-screen so we keep real code coverage
+jest.mock('expo-splash-screen', () => {
+  // import the *real* module so Jest can instrument it
+  const actual = jest.requireActual('expo-splash-screen');
+  return {
+    ...actual,
+    // We overwrite just the methods so we can spy on them
     hideAsync: jest.fn(),
-}));
+    preventAutoHideAsync: jest.fn(),
+  };
+});
 
-jest.mock("../../components/ThemeContext", () => ({
-    ThemeProvider: jest.fn(({ children }: { children: React.ReactNode }) => { children }),
-    useTheme: jest.fn(() => ({ theme: "light", refreshKey: 'test-key' })),
-}));
+// You can mock other dependencies (like ThemeContext) similarly, but
+// ensure you do a partial mock or at least let `_layout.tsx` actually run.
 
-jest.mock("../../components/AuthContext", () => ({
-    AuthProvider: jest.fn(({ children }: { children: React.ReactNode }) => { children }),
-}));
+describe('RootLayout Component', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-jest.mock("expo-router", () => ({
-    Stack: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
+  it('renders null when fonts are NOT loaded', () => {
+    // Simulate fonts not loaded yet
+    (useFonts as jest.Mock).mockReturnValue([false]);
+    const { toJSON } = render(<RootLayout />);
+    // Because loaded = false, we expect it to return null
+    expect(toJSON()).toBeNull();
+  });
 
-jest.mock("@react-navigation/native", () => ({
-    DarkTheme: { dark: true },
-    DefaultTheme: { dark: false },
-    NavigationThemeProvider: jest.fn(({ children }: { children: React.ReactNode }) => { children }),
-}));
+  it('calls SplashScreen.hideAsync when fonts are loaded', async () => {
+    // Simulate fonts are loaded
+    (useFonts as jest.Mock).mockReturnValue([true]);
 
-jest.mock("expo-status-bar", () => ({
-    StatusBar: ({ style }: { style: string }) => <></>,
-}));
+    render(<RootLayout />);
 
-describe("RootLayout Component", () => {
-    afterEach(() => {
-        jest.clearAllMocks();
+    // The code in `_layout.tsx`:
+    //   useEffect(() => { if (loaded) { SplashScreen.hideAsync(); } }, [loaded]);
+    // We expect hideAsync to be called once fonts load
+    await waitFor(() => {
+      expect(SplashScreen.hideAsync).toHaveBeenCalled();
     });
-
-    test('renders null when fonts are not loaded', () => {
-        (useFonts as jest.Mock).mockReturnValue([false]);
-        const { toJSON } = render(<RootLayout />);
-        expect(toJSON()).toBeNull();
-    });
-
-    test('renders content when fonts are loaded and calls SplashScreen.hideAsync', async () => {
-        (useFonts as jest.Mock).mockReturnValue([true]);
-        render(<RootLayout />);
-        await waitFor(() => {
-            expect(SplashScreen.hideAsync).toHaveBeenCalled();
-        });
-    });
+  });
 });
