@@ -4,6 +4,8 @@ import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme } from 'victory-nat
 import { useWindowDimensions } from 'react-native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
+import { BASE_URL } from '../lib/client';
+
 
 type Range = 'W' | 'M' | 'Y';
 
@@ -35,7 +37,7 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3000/stats/${email}/${habitName}/progress?range=${range === 'W' ? 'week' : range === 'M' ? 'month' : 'year'}`
+          `${BASE_URL}/stats/${email}/${habitName}/progress?range=${range === 'W' ? 'week' : range === 'M' ? 'month' : 'year'}`
         );
         const rawData = await response.json();
         

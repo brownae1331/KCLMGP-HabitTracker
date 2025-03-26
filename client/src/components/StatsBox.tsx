@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { Svg, Circle } from "react-native-svg";
 import { ThemedText } from "./ThemedText";
 import { CalendarPageStyles } from "./styles/CalendarPageStyles";
 import { Colors } from "./styles/Colors";
 import { useTheme } from "./ThemeContext";
+import { CircleProgress } from "./CircleProgress";
 
 interface StatsBoxComponentProps {
     selectedDate: string;
@@ -27,10 +27,10 @@ export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
     return (
         <View style={[CalendarPageStyles.statsContainer, { backgroundColor: Colors[theme].background2 }]}>
             <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
-                🔥 Current Streak: <Text style={{ color: "#FFD700" }}>{currentStreak} days</Text>
+                🔥 Current Streak: <Text style={{ color: "#a39d41" }}>{currentStreak} days</Text>
             </ThemedText>
             <ThemedText type="subtitle" style={{ color: Colors[theme].text }}>
-                🏆 Longest Streak: <Text style={{ color: "#FFD700" }}>{longestStreak} days</Text>
+                🏆 Longest Streak: <Text style={{ color: "#a39d41" }}>{longestStreak} days</Text>
             </ThemedText>
 
             {/* Separating Line */}
@@ -43,29 +43,14 @@ export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
                 </ThemedText>
             </View>
 
-            {/* Large Progress Circle */}
+            {/* Large Progress Circle using CircleProgress component */}
             <View style={CalendarPageStyles.progressContainer}>
-                <Svg width={120} height={120} viewBox="0 0 120 120">
-                    <Circle
-                        cx="60"
-                        cy="60"
-                        r="50"
-                        stroke={Colors[theme].border}
-                        strokeWidth="10"
-                        fill="none"
-                    />
-                    <Circle
-                        cx="60"
-                        cy="60"
-                        r="50"
-                        stroke="#FFD700"
-                        strokeWidth="10"
-                        fill="none"
-                        strokeDasharray={2 * Math.PI * 50}
-                        strokeDashoffset={(1 - completionPercentage / 100) * 2 * Math.PI * 50}
-                        strokeLinecap="round"
-                    />
-                </Svg>
+                <CircleProgress
+                    percentage={completionPercentage}
+                    color="#a39d41"
+                    size={120}
+                    strokeWidth={10}
+                />
                 <View style={CalendarPageStyles.percentageTextContainer}>
                     <ThemedText style={CalendarPageStyles.percentageText}>
                         {completionPercentage}%

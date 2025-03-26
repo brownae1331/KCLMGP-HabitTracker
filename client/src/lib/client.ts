@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // const BASE_URL = 'https://kclmgp-habittracker.onrender.com';
-const BASE_URL = 'http://localhost:3000';
+export const BASE_URL = 'http://localhost:3000';
 
 // Define the Habit type
 export type Habit = {
@@ -167,15 +167,15 @@ export async function deleteHabit(user_email: string, habitName: string) {
 }
 
 // Delete a specific user by email (primary key)
-export async function deleteUser(email: string) {
-  const response = await fetch(`${BASE_URL}/users/${email}`, {
-    method: 'DELETE',
-  });
+export async function deleteUser(user_email: string) {
+  const response = await fetch(
+    `${BASE_URL}/users/${user_email}`,
+    {
+      method: 'DELETE',
+    }
+  );
   if (!response.ok) {
     throw new Error('Error deleting user');
-  }
-  if (response.status === 204) {
-    return { success: true };
   }
   return response.json();
 }
@@ -201,6 +201,17 @@ export async function getHabitProgressByDate(email: string, date: string) {
   const formattedDate = new Date(date).toISOString().split('T')[0];
 
   const response = await fetch(`${BASE_URL}/habit-progress-by-date/${encodedEmail}/${formattedDate}`);
+  if (!response.ok) {
+    throw new Error('Error fetching habit progress');
+  }
+  return response.json();
+}
+
+// Get habit progress for a specific habit on a specific date
+export async function getHabitProgressByDateAndHabit(email: string, habitName: string, date: string) {
+  const encodedEmail = encodeURIComponent(email);
+  const formattedDate = new Date(date).toISOString().split('T')[0];
+  const response = await fetch(`${BASE_URL}/habit-progress-by-date/${encodedEmail}/${habitName}/${formattedDate}`);
   if (!response.ok) {
     throw new Error('Error fetching habit progress');
   }

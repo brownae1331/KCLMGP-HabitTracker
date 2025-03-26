@@ -96,16 +96,6 @@ export const initDatabase = async () => {
       );
     `);
 
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS habit_locations (
-        user_email VARCHAR(255) NOT NULL,
-        habitName VARCHAR(255) NOT NULL,
-        location VARCHAR(255) NOT NULL,
-        PRIMARY KEY (user_email, habitName, location),
-        FOREIGN KEY (user_email, habitName) REFERENCES habits(user_email, habitName) ON DELETE CASCADE
-      );
-    `);
-
     connection.release();
     console.log('Database initialized successfully');
   } catch (error) {
@@ -219,19 +209,34 @@ app.post('/users/signup', async (req, res) => {
 });
 
 // Delete a user
-app.delete('/users/:username', async (req, res) => {
-  const { username } = req.params;
+app.delete('/users/:email', async (req, res) => {
+  const { email } = req.params;
+  const connection = await pool.getConnection();
   try {
-    const [result] = await pool.query('DELETE FROM users WHERE username = ?', [username]);
+    await connection.beginTransaction();
+    const [result] = await connection.query(
+      'DELETE FROM users WHERE email = ?',
+      [email]
+    );
     if (result.affectedRows > 0) {
-      res.json({ success: true, message: `User ${username} deleted successfully.` });
+      await connection.commit();
+      res.json({
+        success: true,
+        message: `All data for user with email ${email} deleted successfully.`
+      });
     } else {
-      res.status(404).json({ error: `User ${username} not found.` });
+      await connection.rollback();
+      res.status(404).json({ error: `User with email ${email} not found.` });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Error deleting user' });
+    await connection.rollback();
+    console.error('Error deleting user data:', error);
+    res.status(500).json({ error: 'Server error deleting user data' });
+  } finally {
+    connection.release();
   }
 });
+
 
 // // Get all habits for a user
 // app.get('/habits/:email', async (req, res) => {
@@ -453,8 +458,6 @@ app.delete('/habits/:user_email/:habitName', async (req, res) => {
   }
 });
 
-
-
 //log progress of a specific habit
 app.post('/habit-progress', async (req, res) => {
   const { email, habitName, progress } = req.body
@@ -615,6 +618,23 @@ app.get('/habit-streak-by-date/:email/:habitName/:date', async (req, res) => {
   }
 });
 
+// Get habit progress for a specific habit on a specific date
+app.get('/habit-progress-by-date/:email/:habitName/:date', async (req, res) => {
+  const { email, habitName, date } = req.params;
+  try {
+    const [progressData] = await pool.query(
+      `SELECT progress FROM habit_progress 
+       WHERE user_email = ? AND habitName = ? AND progressDate = ?`,
+      [email, habitName, date]
+    );
+    res.json(progressData[0] || { progress: 0 });
+  } catch (error) {
+    console.error('Error fetching habit progress:', error);
+    res.status(500).json({ error: 'Error fetching habit progress data' });
+  }
+});
+
+
 const syncHabits = async (userEmail) => {
   try {
     // catch up on all past and current due habits
@@ -702,7 +722,7 @@ export const generateIntervalInstances = async (userEmail, habitName, daysAhead 
     const today = new Date();
     const cutoff = new Date();
     cutoff.setDate(today.getDate() + daysAhead);
-    
+
     const lastDate = await getLastDate('habit_instances', userEmail, habitName, 'dueDate', today);
     const dates = generateIntervalDates(lastDate, cutoff, increment);
     for (const date of dates) {
@@ -854,15 +874,12 @@ app.get('/export/:email', async (req, res) => {
     const [habitRows] = await pool.query('SELECT * FROM habits WHERE user_email = ?', [userEmail]);
     // Get habit progress for the user
     const [progressRows] = await pool.query('SELECT * FROM habit_progress WHERE user_email = ?', [userEmail]);
-    // Get habit locations for the user
-    const [locationRows] = await pool.query('SELECT * FROM habit_locations WHERE user_email = ?', [userEmail]);
 
     // Combine the data
     const exportData = {
       user,
       habits: habitRows,
       progress: progressRows,
-      locations: locationRows,
     };
 
     res.json(exportData);

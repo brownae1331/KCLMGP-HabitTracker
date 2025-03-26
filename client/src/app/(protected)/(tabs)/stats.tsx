@@ -8,11 +8,12 @@ import { SharedStyles } from '../../../components/styles/SharedStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BuildHabitGraph from '../../../components/BuildHabitGraph';
 import QuitHabitGraph from '../../../components/QuitHabitGraph';
-//import { Habit } from '../../../lib/client';
+import { BASE_URL } from '../../../lib/client';
 
 type Habit = {
   habitName: string;
   habitType: 'build' | 'quit';
+  goalValue: number | null;
 };
 
 export default function StatsScreen() {
@@ -56,7 +57,7 @@ export default function StatsScreen() {
 
     const fetchHabits = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/habits/${username}`);
+        const response = await fetch(`${BASE_URL}/habits/${username}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch habits: ${response.statusText}`);
         }
@@ -108,7 +109,7 @@ export default function StatsScreen() {
         {habits.length === 0 ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
             <ThemedText type="subtitle" style={styles.backgroundText}>
-              You don’t have any habits yet! Create a habit to see statistics.
+              You don't have any habits yet! Create a habit to see statistics.
             </ThemedText>
           </View>
         ) : (
@@ -131,8 +132,8 @@ export default function StatsScreen() {
                     backgroundColor: isSelected
                       ? '#00A3FF'
                       : theme === 'dark'
-                      ? Colors.dark.background2
-                      : Colors.light.background,
+                        ? Colors.dark.background2
+                        : Colors.light.background,
                     borderTopLeftRadius: isFirst ? 10 : 0,
                     borderBottomLeftRadius: isFirst ? 10 : 0,
                     borderTopRightRadius: isLast ? 10 : 0,
@@ -151,8 +152,8 @@ export default function StatsScreen() {
                           color: isSelected
                             ? '#ffffff'
                             : theme === 'dark'
-                            ? Colors.dark.text
-                            : Colors.light.text,
+                              ? Colors.dark.text
+                              : Colors.light.text,
                         }}
                         numberOfLines={1}
                         ellipsizeMode="tail"
@@ -166,7 +167,7 @@ export default function StatsScreen() {
             </View>
 
             {selectedHabit && selectedHabitData && email ? (
-              selectedHabitData.habitType === 'build' ? (
+              (selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
                 <BuildHabitGraph email={email} habitName={selectedHabit} />
               ) : (
                 <QuitHabitGraph email={email} habitName={selectedHabit} />
@@ -175,7 +176,7 @@ export default function StatsScreen() {
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginVertical: 40 }}>
                 <ThemedText type="subtitle" style={styles.backgroundText}>
                   Select a habit above to see statistics about your progress!
-                  </ThemedText>
+                </ThemedText>
               </View>
             )}
           </>
@@ -209,9 +210,9 @@ const styles = StyleSheet.create({
     maxWidth: 100,
   },
   backgroundText: {
-    fontSize: 20, 
-    textAlign: 'center', 
-    maxWidth: 500,  
+    fontSize: 20,
+    textAlign: 'center',
+    maxWidth: 500,
     color: Colors.light.backgroundText
   },
 });

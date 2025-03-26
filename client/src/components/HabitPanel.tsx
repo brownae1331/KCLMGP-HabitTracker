@@ -1,14 +1,14 @@
-import { updateHabitProgress, getHabitStreak, getHabitInterval, getHabitDays } from '../lib/client';
+import { updateHabitProgress, getHabitStreak, getHabitInterval, getHabitDays, getHabitProgressByDateAndHabit } from '../lib/client';
 import { IconSymbol } from './ui/IconSymbol';
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, TextInput, Text, StyleSheet, Alert } from 'react-native';
-import { ThemedText } from './ThemedText'; // Adjust path if needed
+import { Platform, View, TouchableOpacity, TextInput, Text, StyleSheet, Alert } from 'react-native';
+import { ThemedText } from './ThemedText';
 import { deleteHabit } from '../lib/client';
+import { ProgressEntry } from './ProgressEntry';
 
-
-// Define the Habit interface (adjust if your structure is different)
+// Define the Habit interface (using user_email to match your DB)
 export interface Habit {
-  user_email: string; // this corresponds to user_email in your DB
+  user_email: string;
   habitName: string;
   habitDescription: string;
   habitType: 'build' | 'quit';
@@ -25,19 +25,22 @@ interface HabitPanelProps {
   habit: Habit;
   onEdit?: (habit: Habit) => void;
   selectedDate?: Date;
-
   onDelete?: () => void;
 }
 
 const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, selectedDate }) => {
-  // For build habits: allow the user to enter progress
+  // For build habits: track numeric progress
   const [buildProgress, setBuildProgress] = useState<string>('');
-  // For quit habits: allow the user to select yes/no
-  const [quitStatus, setQuitStatus] = useState<'yes' | 'no' | ''>('');
+  // For quit habits: track yes/no status
+  const [quitStatus, setQuitStatus] = useState<'COMPLETE' | 'INCOMPLETE' | ''>('');
   // Local flag to indicate an update was made
   const [updated, setUpdated] = useState(false);
   // Track the habit streak
   const [streak, setStreak] = useState<number>(0);
+  // State to control the progress entry modal
+  const [progressModalVisible, setProgressModalVisible] = useState(false);
+  // Track numeric progress
+  const [currentProgress, setCurrentProgress] = useState<number>(0);
 
   const date = selectedDate
     ? selectedDate.toISOString().split("T")[0]
@@ -92,6 +95,36 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
 
     fetchStreak();
   }, [habit, updated, date, isDateInFuture, isToday]);
+  
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const progressData = await getHabitProgressByDateAndHabit(
+          habit.user_email,
+          habit.habitName,
+          date
+        );
+        const progressValue =
+          progressData && typeof progressData.progress !== 'undefined'
+            ? progressData.progress
+            : 0;
+        setCurrentProgress(progressValue);
+        const isBuildWithoutGoal =
+          habit.habitType === 'build' &&
+          (habit.goalValue === undefined || habit.goalValue === null);
+        if (habit.habitType === 'build' && !isBuildWithoutGoal) {
+          setBuildProgress(progressValue.toString());
+        } else {
+          setQuitStatus(progressValue > 0 ? 'COMPLETE' : 'INCOMPLETE');
+        }
+      } catch (error) {
+        console.error('Error fetching habit progress:', error);
+      }
+    }, 500); // Poll every 10 seconds
+  
+    return () => clearInterval(interval);
+  }, [habit, date]);
+  
 
   // Add this helper function to find the last scheduled date for the habit
   const findLastScheduledDate = async (habit: Habit) => {
@@ -138,19 +171,37 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
     }
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (progress: number) => {
     try {
-      const progressValue = habit.habitType === 'build' ? parseFloat(buildProgress) : quitStatus === 'yes' ? 1 : 0;
+      // Determine if this is a build habit without a goal
+      const isBuildWithoutGoal = habit.habitType === 'build' &&
+        (habit.goalValue === undefined || habit.goalValue === null);
+
+      // Set progress based on habit type and goal presence
+      const progressValue = habit.habitType === 'quit' || isBuildWithoutGoal
+        ? progress > 0 ? 1 : 0  // For quit habits and build habits without goals: binary 0/1
+        : progress;  // For build habits with goals: numeric value
+
       await updateHabitProgress(habit.user_email, habit.habitName, progressValue);
       setUpdated(true);
+
+      // For build habits with goals, update the progress state numerically
+      if (habit.habitType === 'build' && !isBuildWithoutGoal) {
+        setBuildProgress(progress.toString());
+        setCurrentProgress(progress);
+      } else {
+        // For quit habits and build habits without goals, set the yes/no state
+        setQuitStatus(progress > 0 ? 'COMPLETE' : 'INCOMPLETE');
+        setCurrentProgress(progressValue);
+      }
 
       if (!isDateInFuture) {
         const streakData = await getHabitStreak(habit.user_email, habit.habitName, date);
 
         // Determine if the goal was reached
-        const isGoalReached = habit.habitType === 'build'
-          ? (habit.goalValue !== undefined && habit.goalValue !== null && progressValue >= habit.goalValue)
-          : (progressValue === 1); // For 'quit' habits, 1 means success
+        const isGoalReached = habit.habitType === 'build' && habit.goalValue
+          ? progressValue >= habit.goalValue  // Build habit with goal
+          : progressValue === 1;  // Quit habit or build habit without goal
 
         // For today's update
         if (isToday) {
@@ -181,91 +232,136 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
   };
 
   const handleDelete = async () => {
-    try {
-      await deleteHabit(habit.user_email, habit.habitName);
-      Alert.alert("Success", "Habit deleted successfully");
-      if (onDelete) {
-        onDelete();
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm("Are you sure you want to delete this habit?");
+      if (!confirmed) return;
+      try {
+        await deleteHabit(habit.user_email, habit.habitName);
+        window.alert("Habit deleted successfully");
+        if (onDelete) onDelete();
+      } catch (error) {
+        window.alert("Error deleting habit");
+        console.error('Error deleting habit:', error);
       }
-    } catch (error) {
-      Alert.alert("Error", "Error deleting habit");
-      console.error('Error deleting habit:', error);
+    } else {
+      Alert.alert(
+        "Confirm Delete",
+        "Are you sure you want to delete this habit?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            onPress: async () => {
+              try {
+                await deleteHabit(habit.user_email, habit.habitName);
+                Alert.alert("Success", "Habit deleted successfully");
+                if (onDelete) onDelete();
+              } catch (error) {
+                Alert.alert("Error", "Error deleting habit");
+                console.error('Error deleting habit:', error);
+              }
+            },
+            style: "destructive",
+          },
+        ]
+      );
     }
   };
 
+  const openProgressEntry = async () => {
+    // Don't allow editing future dates
+    if (isDateInFuture) return;
+
+    try {
+      const progressData = await getHabitProgressByDateAndHabit(habit.user_email, habit.habitName, date);
+      console.log('Progress data:', progressData);
+
+      // Make sure we're handling the API response correctly
+      const progressValue = progressData && typeof progressData.progress !== 'undefined'
+        ? progressData.progress
+        : 0;
+
+      setCurrentProgress(progressValue);
+      setProgressModalVisible(true);
+    } catch (error) {
+      console.error('Error fetching habit progress:', error);
+      // Fall back to using local state
+      const isBuildWithoutGoal = habit.habitType === 'build' &&
+        (habit.goalValue === undefined || habit.goalValue === null);
+
+      const progressValue = habit.habitType === 'build' && !isBuildWithoutGoal
+        ? (buildProgress ? parseFloat(buildProgress) : 0)
+        : (quitStatus === 'COMPLETE' ? 1 : 0);
+
+      setCurrentProgress(progressValue);
+      setProgressModalVisible(true);
+    }
+  };
+
+  const handleSaveProgress = (progress: number) => {
+    handleUpdate(progress);
+  };
 
   return (
-    <View style={[styles.habitPanel, { backgroundColor: habit.habitColor }]}>
-      <View style={styles.headerContainer}>
-        <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
-        {onEdit && (
-          <View style={styles.actionsContainer}>
-            {/* Only show streak if date is not in the future */}
-            {!isDateInFuture && (
-              <>
-                <Text style={styles.fireEmoji}>🔥</Text>
-                <Text style={styles.streakCount}>{streak}</Text>
-              </>
-            )}
-            <TouchableOpacity
-              style={styles.editButton}
-              onPress={() => onEdit(habit)}
-            >
-              <IconSymbol name="pencil" size={16} color="#fff" />
-            </TouchableOpacity>
-          </View>
+    <>
+      <TouchableOpacity
+        style={[styles.habitPanel, { backgroundColor: habit.habitColor }]}
+        onPress={openProgressEntry}
+        disabled={isDateInFuture ?? false}
+      >
+        <View style={styles.headerContainer}>
+          <ThemedText style={styles.habitName}>{habit.habitName}</ThemedText>
+          {onEdit && (
+            <View style={styles.actionsContainer}>
+              {/* Only show streak if date is not in the future */}
+              {!isDateInFuture && (
+                <>
+                  <Text style={styles.fireEmoji}>🔥</Text>
+                  <Text style={styles.streakCount}>{streak}</Text>
+                </>
+              )}
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => onEdit(habit)}
+              >
+                <IconSymbol name="pencil" size={16} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={handleDelete}
+              >
+                <Text style={styles.deleteIcon}>×</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+        <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
+        {habit.goalValue != null ? (
+          <Text style={styles.progressText}>
+            {buildProgress !== '' ? parseFloat(buildProgress) : currentProgress}{" "}
+            {habit.goalUnit} / {habit.goalValue} {habit.goalUnit}{" "}
+            {parseFloat(buildProgress !== '' ? buildProgress : currentProgress.toString()) >= habit.goalValue ? "🏆" : "🚧"}
+          </Text>
+        ) : (
+          <Text style={styles.progressText}>
+            {quitStatus === 'COMPLETE' ? "🏆" : "🚧"} {quitStatus}
+          </Text>
         )}
-      </View>
-      <ThemedText style={styles.habitDescription}>{habit.habitDescription}</ThemedText>
-      {habit.goalValue != null && (
-        <ThemedText style={styles.habitGoal}>
-          Goal: {habit.goalValue} {habit.goalUnit}
-        </ThemedText>
-      )}
-      {habit.habitType === 'build' ? (
-        <View style={styles.updateContainer}>
-          <Text style={styles.updateLabel}>Enter your progress:</Text>
-          <TextInput
-            style={styles.updateInput}
-            placeholder="e.g. 10"
-            keyboardType="numeric"
-            value={buildProgress}
-            onChangeText={setBuildProgress}
-          />
-        </View>
-      ) : (
-        <View style={styles.updateContainer}>
-          <Text style={styles.updateLabel}>Did you quit? (yes/no)</Text>
-          <View style={styles.yesNoContainer}>
-            <TouchableOpacity
-              style={[styles.yesNoButton, quitStatus === 'yes' && styles.selectedYesNo]}
-              onPress={() => setQuitStatus('yes')}
-            >
-              <Text style={styles.yesNoText}>Yes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.yesNoButton, quitStatus === 'no' && styles.selectedYesNo]}
-              onPress={() => setQuitStatus('no')}
-            >
-              <Text style={styles.yesNoText}>No</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-      <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
-        <ThemedText style={styles.updateButtonText}>Update</ThemedText>
+
       </TouchableOpacity>
-      {updated && (
-        <ThemedText style={styles.updateStatus}>
-          {habit.habitType === 'build'
-            ? `Progress updated to ${buildProgress}`
-            : `Quit status updated to ${quitStatus}`}
-        </ThemedText>
-      )}
-      <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-        <ThemedText style={styles.deleteButtonText}>Delete Habit</ThemedText>
-      </TouchableOpacity>
-    </View>
+
+      <ProgressEntry
+        visible={progressModalVisible}
+        onClose={() => setProgressModalVisible(false)}
+        habit={habit}
+        initialProgress={currentProgress}
+        onSave={handleSaveProgress}
+        isEditable={isToday ?? false}
+      />
+    </>
   );
 };
 
@@ -286,56 +382,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#fff',
     marginVertical: 5,
-  },
-  habitGoal: {
-    fontSize: 14,
-    color: '#fff',
-  },
-  updateContainer: {
-    marginVertical: 10,
-  },
-  updateLabel: {
-    color: '#fff',
-    marginBottom: 5,
-  },
-  updateInput: {
-    borderWidth: 1,
-    borderColor: '#fff',
-    backgroundColor: '#fff',
-    color: '#000',
-    borderRadius: 4,
-    padding: 8,
-  },
-  yesNoContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 5,
-  },
-  yesNoButton: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#fff',
-    borderRadius: 4,
-    width: '40%',
-    alignItems: 'center',
-  },
-  selectedYesNo: {
-    backgroundColor: '#fff',
-  },
-  yesNoText: {
-    color: '#000',
-    fontWeight: 'bold',
-  },
-  updateButton: {
-    padding: 10,
-    backgroundColor: '#00000080',
-    borderRadius: 5,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  updateButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
   updateStatus: {
     marginTop: 10,
@@ -360,19 +406,45 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   streakCount: {
-    color: '#FFD700',
+    color: '#a39d41',
     fontWeight: 'bold',
     marginRight: 8,
   },
   deleteButton: {
     padding: 10,
-    backgroundColor: '#ff4d4d',
+    backgroundColor: '#FF6B6B',
     borderRadius: 5,
-    marginTop: 10,
-    alignItems: 'center',
+    marginTop: 0,
+    marginLeft: 8,
   },
   deleteButtonText: {
     color: '#fff',
     fontWeight: 'bold',
   },
+  progressIndicator: {
+    marginTop: 10,
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  futureMessage: {
+    marginTop: 10,
+    color: '#fff',
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  deleteIcon: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  progressText: {
+    fontSize: 20,
+    color: '#fff',
+    marginTop: 5,
+    textAlign: 'center',
+  },
+
 });
