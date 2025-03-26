@@ -24,19 +24,6 @@ export default function StatsScreen() {
   const [loading, setLoading] = useState<boolean>(true);
   const { theme } = useTheme();
 
-  const pickerStyle = {
-    ...styles.picker,
-    backgroundColor: theme === 'dark' ? Colors.dark.background2 : '#FAFAFA',
-    color: Colors[theme].text,
-    borderColor: Colors[theme].graphBackground,
-  };
-
-  const pickerContainerStyle = {
-    ...styles.pickerContainer,
-    backgroundColor: Colors[theme].graphBackground,
-    borderColor: Colors[theme].pickerBackground,
-  };
-
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -105,11 +92,16 @@ export default function StatsScreen() {
           </View>
         ) : (
           <>
-            <View style={pickerContainerStyle}>
+            <View style={[styles.pickerContainer, { 
+              backgroundColor: Colors[theme].graphBackground, 
+              borderColor: Colors[theme].pickerBackground }]}>
               <Picker
                 selectedValue={selectedHabit}
                 onValueChange={(itemValue) => setSelectedHabit(itemValue)}
-                style={pickerStyle}
+                style={[styles.picker, { 
+                  backgroundColor: theme === 'dark' ? Colors.dark.background2 : '#FAFAFA', 
+                  color: Colors[theme].text,
+                  borderColor: Colors[theme].graphBackground, }]}
               >
                 <Picker.Item
                   label="Select a habit..."
@@ -174,6 +166,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   messageContainer: {
+    alignSelf: 'center',
     marginHorizontal: 20,
     marginVertical: 20,
     borderRadius: 10,
