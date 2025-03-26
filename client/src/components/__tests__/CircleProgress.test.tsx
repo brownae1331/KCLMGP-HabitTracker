@@ -5,7 +5,7 @@ import { Circle } from 'react-native-svg';
 import { CircleProgress } from '../CircleProgress';
 
 // Mock the useTheme hook
-jest.mock('../path/to/ThemeContext', () => ({
+jest.mock('../ThemeContext', () => ({
   useTheme: () => ({ theme: 'light' }),
 }));
 
