@@ -18,7 +18,7 @@ const StatsBoxes: React.FC<StatsBoxesProps> = ({ currentStreak, longestStreak, c
   const { theme } = useTheme();
 
   return (
-    <View style={styles.statsContainer}>
+    <View style={[styles.statsContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
       <View style={[styles.statBox, { backgroundColor: Colors[theme].graphBackground, borderColor: Colors[theme].border }]}>
         <ThemedText style={[styles.statValue, { color: Colors[theme].text }]}>{currentStreak}</ThemedText>
         <ThemedText style={[styles.statLabel, { color: Colors[theme].backgroundText }]}>Current Streak</ThemedText>
@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
     marginTop: '5%',
     paddingHorizontal: '5%',
     paddingBottom: '5%',
+    borderRadius: 8,
   },
   statBox: {
     width: '45%',

@@ -20,7 +20,6 @@ type Habit = {
 export default function StatsScreen() {
   const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
   const [habits, setHabits] = useState<Habit[]>([]);
-  const [username, setUsername] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { theme } = useTheme();
@@ -38,22 +37,10 @@ export default function StatsScreen() {
     borderColor: Colors[theme].pickerBackground,
   };
 
-  const statBoxStyle = {
-    ...styles.statBox,
-    backgroundColor: Colors[theme].graphBackground
-  };
-
-  const statValueStyle = {
-    ...styles.statValue,
-    color: Colors[theme].text
-  };
-
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const storedUsername = await AsyncStorage.getItem('username');
         const storedEmail = await AsyncStorage.getItem('email');
-        if (storedUsername) setUsername(storedUsername);
         if (storedEmail) setEmail(storedEmail);
       } catch (error) {
         console.error('Error retrieving user data:', error);
@@ -65,11 +52,10 @@ export default function StatsScreen() {
   }, []);
 
   const fetchHabits = useCallback(async () => {
-    if (!username) return;
+    if (!email) return;
 
     try {
-      setLoading(true);
-      const response = await fetch(`${BASE_URL}/habits/${username}`);
+      const response = await fetch(`${BASE_URL}/habits/${email}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch habits: ${response.statusText}`);
       }
@@ -86,7 +72,7 @@ export default function StatsScreen() {
     } finally {
       setLoading(false);
     }
-  }, [username]);
+  }, [email]);
 
   useFocusEffect(
     useCallback(() => {
@@ -119,7 +105,6 @@ export default function StatsScreen() {
           </View>
         ) : (
           <>
-            {/* Habit Picker */}
             <View style={pickerContainerStyle}>
               <Picker
                 selectedValue={selectedHabit}
@@ -193,30 +178,6 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     borderRadius: 10,
     padding: 20,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: '5%', //space between graph&boxes
-    paddingHorizontal: '5%', //space between edge of graph & boxes
-    paddingBottom: '5%', 
-  },
-  statBox: {
-    width: '45%',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: '5%',
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  statLabel: {
-    fontSize: 14,
-    color: Colors.light.backgroundText,
-    marginTop: 4,
   },
   backgroundText: {
     fontSize: 20,

@@ -109,7 +109,8 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
   const chartWidth = Math.min(width - 10, 600);
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground }]}>
+    <View>
+    <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground, borderRadius: 10, }]}>
       <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
         <TouchableOpacity
           style={[
@@ -187,7 +188,8 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
           }}
         />
       </VictoryChart>
-      <StatsBoxes
+    </View>
+    <StatsBoxes
         currentStreak={currentStreak}
         longestStreak={longestStreak}
         completionRate={completionRate}

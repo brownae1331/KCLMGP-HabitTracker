@@ -156,7 +156,8 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const chartWidth = Math.min(width - 10, maxChartWidth);
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground }]}>
+    <View>
+    <View style={[styles.container, { backgroundColor: Colors[theme].graphBackground, borderRadius: 10, }]}>
       <View style={[styles.pickerContainer, { backgroundColor: Colors[theme].pickerBackground }]}>
         <TouchableOpacity
           style={[styles.pickerButton, styles.leftButton, range === 'W' && styles.activeButton]}
@@ -225,7 +226,9 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
           }}
         />
       </VictoryChart>
-      <StatsBoxes
+      
+    </View>
+    <StatsBoxes
         currentStreak={currentStreak}
         longestStreak={longestStreak}
         completionRate={completionRate}

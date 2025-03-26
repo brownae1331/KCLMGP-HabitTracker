@@ -237,67 +237,6 @@ app.delete('/users/:email', async (req, res) => {
   }
 });
 
-
-// // Get all habits for a user
-// app.get('/habits/:email', async (req, res) => {
-//   const { email } = req.params;
-
-//   try {
-//     // Get habits plus any associated day
-//     const [rows] = await pool.query(`
-//       SELECT h.user_email, h.habitName, h.habitDescription, h.habitType,
-//              h.habitColor, h.scheduleOption, 
-//              h.goalValue, h.goalUnit, 
-//              hd.day
-//       FROM habits h
-//       LEFT JOIN habit_days hd
-//          ON h.user_email = hd.user_email
-//          AND h.habitName = hd.habitName
-//       WHERE h.user_email = ?
-//     `, [email]);
-
-//     // rows might look like this:
-//     // [
-//     //   { user_email: 'abc@gmail.com', habitName: 'Gym', ..., day: 'Monday' },
-//     //   { user_email: 'abc@gmail.com', habitName: 'Gym', ..., day: 'Wednesday' },
-//     //   { user_email: 'abc@gmail.com', habitName: 'Meditate', ..., day: 'Tuesday' }
-//     // ]
-
-//     // We need to group them by habitName to collect the days into an array:
-//     const habitMap = new Map();
-//     for (const row of rows) {
-//       const key = row.habitName;
-//       if (!habitMap.has(key)) {
-//         // Create a new habit object
-//         habitMap.set(key, {
-//           email: row.user_email,
-//           habitName: row.habitName,
-//           habitDescription: row.habitDescription,
-//           habitType: row.habitType,
-//           habitColor: row.habitColor,
-//           scheduleOption: row.scheduleOption,
-//           isGoalEnabled: row.goalValue !== null,
-//           goalValue: row.goalValue,
-//           goalUnit: row.goalUnit,
-//           selectedDays: [],
-//         });
-//       }
-//       // If there's a day, push it into the array
-//       if (row.day) {
-//         habitMap.get(key).selectedDays.push(row.day);
-//       }
-//     }
-
-//     // Convert that map to an array
-//     const habits = Array.from(habitMap.values());
-
-//     res.json(habits);
-//   } catch (error) {
-//     console.error('Error retrieving habits:', error);
-//     res.status(500).json({ error: 'Error retrieving habits' });
-//   }
-// });
-
 // Get all habits for a particular date
 app.get('/habits/:email/:date', async (req, res) => {
   const { email, date } = req.params;
@@ -422,20 +361,16 @@ app.post('/habits', async (req, res) => {
 });
 
 // Get the names and types of all habits for a user
-app.get('/habits/:username', async (req, res) => {
-  const { username } = req.params;
+app.get('/habits/:email', async (req, res) => {
+  const { email } = req.params;
   try {
-    const [user] = await pool.query('SELECT email FROM users WHERE username = ?', [username]);
-    if (user.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    const userEmail = user[0].email;
-    const [habits] = await pool.query('SELECT habitName, habitType, goalValue FROM habits WHERE user_email = ?', [userEmail]);
-
+    const [habits] = await pool.query(`
+      SELECT habitName, habitType, goalValue 
+      FROM habits 
+      WHERE user_email = ?`, [email]);
     if (habits.length === 0) {
       return res.json([]);
     }
-
     res.json(habits);
   } catch (error) {
     console.error('Error fetching habits:', error);
