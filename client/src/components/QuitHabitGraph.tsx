@@ -13,9 +13,9 @@ interface ChartData {
 }
 
 interface QuitHabitGraphProps {
-    email: string;
-    habitName: string;
-  }
+  email: string;
+  habitName: string;
+}
 
 const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
   const { width } = useWindowDimensions();
@@ -35,7 +35,7 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
           `http://localhost:3000/stats/${email}/${habitName}/streak?range=${range === 'W' ? 'week' : 'month'}`
         );
         const rawData = await response.json();
-  
+
         const today = new Date();
         const startDate = new Date(today);
         if (range === 'W') {
@@ -43,7 +43,7 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
         } else {
           startDate.setDate(1);
         }
-  
+
         // Map only the actual due dates
         const newData = rawData.map((entry: { progressDate: string; streak: number }) => {
           const date = new Date(entry.progressDate);
@@ -54,13 +54,22 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
             return { x: date.getDate().toString(), y: entry.streak };
           }
         });
-  
-        setChartData(newData);
+
+        if (range === 'W') {
+          const paddedData = labels['W'].map(label => {
+            const found = newData.find((d: { x: string; }) => d.x === label);
+            return found || { x: label, y: 0 };
+          });
+          setChartData(paddedData);
+        } else {
+          setChartData(newData);
+        }
+        
       } catch (error) {
         console.error('Error fetching streak data:', error);
       }
     };
-  
+
     fetchData();
   }, [range, email, habitName]);
 
@@ -103,7 +112,7 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
       <VictoryChart
         width={chartWidth}
         height={220}
-        domainPadding={{ x: range === 'M' ? 5 : 20, y: 10}}
+        domainPadding={{ x: range === 'M' ? 5 : 20, y: 10 }}
         padding={{ top: 20, bottom: 40, left: 40, right: 40 }}
         theme={VictoryTheme.material}
         domain={{ y: [0, Math.max(5, ...chartData.map(d => d.y + 1))] }}
@@ -146,7 +155,7 @@ const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
           data={chartData}
           size={3.5}
           style={{
-            data: { fill: '#139CC9FF', stroke: '#139CC985', strokeWidth: 1,},
+            data: { fill: '#139CC9FF', stroke: '#139CC985', strokeWidth: 1, },
           }}
         />
       </VictoryChart>
