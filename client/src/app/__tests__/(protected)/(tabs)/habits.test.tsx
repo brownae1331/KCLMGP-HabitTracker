@@ -141,14 +141,14 @@ describe('HomeScreen', () => {
         expect(await findByText('Test Habit')).toBeTruthy();
     });
 
-    test('shows "No habits found for this date." when there are no habits', async () => {
+    test('shows "Press the plus button to add new habits!" when there are no habits', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
         const { getByText } = render(<HomeScreen />);
         await waitFor(() => {
             expect(getHabitsForDate).toHaveBeenCalled();
         });
-        expect(getByText('No habits found for this date.')).toBeTruthy();
+        expect(getByText('Press the plus button to add new habits!')).toBeTruthy();
     });
 
     test('opens NewHabitModal when add habit button is pressed', async () => {
@@ -476,65 +476,6 @@ describe('HomeScreen', () => {
         consoleErrorSpy.mockRestore();
     });
 
-    // Test that an empty habit name triggers the appropriate alert and early return.
-    test('shows alert when habit name is empty', async () => {
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
-        (getHabitsForDate as jest.Mock).mockResolvedValue([]); // no existing habits
-
-        const { getByTestId } = render(<HomeScreen />);
-        await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
-
-        // Open the modal.
-        await act(async () => {
-            fireEvent.press(getByTestId('icon-symbol'));
-        });
-        const modal = getByTestId('new-habit-modal');
-        // Do not set habitName, so it remains empty.
-        await act(async () => {
-            await modal.props.onAddHabit();
-        });
-
-        expect(window.alert).toHaveBeenCalledWith('Habit name cannot be empty.');
-        // Modal should remain open as the habit wasn't added.
-        expect(modal.props.modalVisible).toBe(true);
-    });
-
-    // Test that a duplicate habit name triggers the appropriate alert.
-    test('shows alert if a habit with the same name already exists', async () => {
-        const existingHabit = {
-            user_email: 'user@example.com',
-            habitName: 'Existing Habit',
-            scheduleOption: 'interval',
-        };
-
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
-        // Return an array with the existing habit
-        (getHabitsForDate as jest.Mock).mockResolvedValue([existingHabit]);
-
-        const { getByTestId, findByTestId } = render(<HomeScreen />);
-        await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
-
-        // Open the modal.
-        await act(async () => {
-            fireEvent.press(getByTestId('icon-symbol'));
-        });
-        const modal = getByTestId('new-habit-modal');
-        act(() => {
-            modal.props.setHabitName('Existing Habit');
-            // Set schedule option and valid intervalDays to pass validations.
-            modal.props.setScheduleOption('interval');
-            modal.props.setIntervalDays('5');
-        });
-        await act(async () => {
-            await modal.props.onAddHabit();
-        });
-
-        expect(window.alert).toHaveBeenCalledWith(
-            'A habit with this name already exists for this user.'
-        );
-        expect(modal.props.modalVisible).toBe(true);
-    });
-
     // Test fallback color: if habitColor is empty, it should default to '#FFFF00'
     test('defaults to #FFFF00 if no color is chosen', async () => {
         // Simulate that email is already stored and no habits exist.
@@ -585,60 +526,6 @@ describe('HomeScreen', () => {
                 selectedDays: [],
             })
         );
-    });
-
-    // Test that an invalid intervalDays (non-numeric) triggers the correct alert.
-    test('shows alert if intervalDays is not a valid number', async () => {
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
-        (getHabitsForDate as jest.Mock).mockResolvedValue([]);
-
-        const { getByTestId } = render(<HomeScreen />);
-        await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
-
-        // Open modal.
-        await act(async () => {
-            fireEvent.press(getByTestId('icon-symbol'));
-        });
-        const modal = getByTestId('new-habit-modal');
-        act(() => {
-            modal.props.setHabitName('Interval Habit');
-            modal.props.setScheduleOption('interval');
-            modal.props.setIntervalDays('abc'); // invalid number
-        });
-        await act(async () => {
-            await modal.props.onAddHabit();
-        });
-        expect(window.alert).toHaveBeenCalledWith(
-            'Please enter a valid number of days for the interval schedule.'
-        );
-        expect(modal.props.modalVisible).toBe(true);
-    });
-
-    // Test that an empty selectedDays array for weekly schedule triggers the alert.
-    test('shows alert if no days selected for weekly schedule', async () => {
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
-        (getHabitsForDate as jest.Mock).mockResolvedValue([]);
-
-        const { getByTestId } = render(<HomeScreen />);
-        await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
-
-        // Open modal.
-        await act(async () => {
-            fireEvent.press(getByTestId('icon-symbol'));
-        });
-        const modal = getByTestId('new-habit-modal');
-        act(() => {
-            modal.props.setHabitName('Weekly Habit');
-            modal.props.setScheduleOption('weekly');
-            modal.props.setSelectedDays([]); // no days selected
-        });
-        await act(async () => {
-            await modal.props.onAddHabit();
-        });
-        expect(window.alert).toHaveBeenCalledWith(
-            'Please select at least one day for the weekly schedule.'
-        );
-        expect(modal.props.modalVisible).toBe(true);
     });
 
     // Test that when isGoalEnabled is true, goal fields are handled correctly.
@@ -743,4 +630,124 @@ describe('HomeScreen', () => {
         expect(modal.props.goalValue).toBe('5');     // from habit.goalValue.toString()
         expect(modal.props.goalUnit).toBe('minutes');
     });
+});
+
+describe('Validation error tests', () => {
+    beforeEach(() => {
+        Object.defineProperty(require('react-native').Platform, 'OS', { get: () => 'web' });
+    });
+
+    // Test that an empty habit name triggers the appropriate alert and early return.
+    test('shows alert when habit name is empty', async () => {
+        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
+        (getHabitsForDate as jest.Mock).mockResolvedValue([]); // no existing habits
+
+        const { getByTestId } = render(<HomeScreen />);
+        await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
+
+        // Open the modal.
+        await act(async () => {
+            fireEvent.press(getByTestId('icon-symbol'));
+        });
+        const modal = getByTestId('new-habit-modal');
+        // Do not set habitName, so it remains empty.
+        await act(async () => {
+            await modal.props.onAddHabit();
+        });
+
+        expect(window.alert).toHaveBeenCalledWith('Habit name cannot be empty.');
+        // Modal should remain open as the habit wasn't added.
+        expect(modal.props.modalVisible).toBe(true);
+    });
+
+    // Test that a duplicate habit name triggers the appropriate alert.
+    test('shows alert if a habit with the same name already exists', async () => {
+        const existingHabit = {
+            user_email: 'user@example.com',
+            habitName: 'Existing Habit',
+            scheduleOption: 'interval',
+        };
+
+        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
+        // Return an array with the existing habit
+        (getHabitsForDate as jest.Mock).mockResolvedValue([existingHabit]);
+
+        const { getByTestId, findByTestId } = render(<HomeScreen />);
+        await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
+
+        // Open the modal.
+        await act(async () => {
+            fireEvent.press(getByTestId('icon-symbol'));
+        });
+        const modal = getByTestId('new-habit-modal');
+        act(() => {
+            modal.props.setHabitName('Existing Habit');
+            // Set schedule option and valid intervalDays to pass validations.
+            modal.props.setScheduleOption('interval');
+            modal.props.setIntervalDays('5');
+        });
+        await act(async () => {
+            await modal.props.onAddHabit();
+        });
+
+        expect(window.alert).toHaveBeenCalledWith(
+            'A habit with this name already exists for this user.'
+        );
+        expect(modal.props.modalVisible).toBe(true);
+    });
+
+    // Test that an invalid intervalDays (non-numeric) triggers the correct alert.
+    test('shows alert if intervalDays is not a valid number', async () => {
+        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
+        (getHabitsForDate as jest.Mock).mockResolvedValue([]);
+
+        const { getByTestId } = render(<HomeScreen />);
+        await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
+
+        // Open modal.
+        await act(async () => {
+            fireEvent.press(getByTestId('icon-symbol'));
+        });
+        const modal = getByTestId('new-habit-modal');
+        act(() => {
+            modal.props.setHabitName('Interval Habit');
+            modal.props.setScheduleOption('interval');
+            modal.props.setIntervalDays('abc'); // invalid number
+        });
+        await act(async () => {
+            await modal.props.onAddHabit();
+        });
+        expect(window.alert).toHaveBeenCalledWith(
+            'Please enter a valid number of days for the interval schedule.'
+        );
+        expect(modal.props.modalVisible).toBe(true);
+    });
+
+    // Test that an empty selectedDays array for weekly schedule triggers the alert.
+    test('shows alert if no days selected for weekly schedule', async () => {
+        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
+        (getHabitsForDate as jest.Mock).mockResolvedValue([]);
+
+        const { getByTestId } = render(<HomeScreen />);
+        await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
+
+        // Open modal.
+        await act(async () => {
+            fireEvent.press(getByTestId('icon-symbol'));
+        });
+        const modal = getByTestId('new-habit-modal');
+        act(() => {
+            modal.props.setHabitName('Weekly Habit');
+            modal.props.setScheduleOption('weekly');
+            modal.props.setSelectedDays([]); // no days selected
+        });
+        await act(async () => {
+            await modal.props.onAddHabit();
+        });
+        expect(window.alert).toHaveBeenCalledWith(
+            'Please select at least one day for the weekly schedule.'
+        );
+        expect(modal.props.modalVisible).toBe(true);
+    });
+
 });
