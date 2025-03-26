@@ -8,6 +8,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "reset-db": "node scripts/reset-server.js",
+    "seed": "node seed.ts",
     "test": "jest --detectOpenHandles --forceExit"
   },
   "dependencies": {
