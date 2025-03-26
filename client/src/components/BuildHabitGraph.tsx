@@ -41,17 +41,13 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const rawData = await fetchBuildHabitProgress(email, habitName, range === 'W' ? 'week' : range === 'M' ? 'month' : 'year')
-
-        const startDate = new Date(today);
-        if (range === 'W') {
-          startDate.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-        } else if (range === 'M') {
-          startDate.setDate(1);
-        } else {
-          startDate.setFullYear(today.getFullYear(), 0, 1);
-        }
-
+        const rawData = await fetchBuildHabitProgress(
+          email,
+          habitName,
+          range === 'W' ? 'week' : range === 'M' ? 'month' : 'year'
+        );
+  
+        // Process the raw data into newData...
         let newData: ChartData[];
         if (range === 'W' || range === 'M') {
           const dataMap = new Map();
@@ -66,7 +62,6 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
             }
             dataMap.set(x, entry.progress);
           });
-
           newData = labels[range].map(label => ({
             x: label,
             y: dataMap.has(label) ? dataMap.get(label) : 0,
@@ -78,22 +73,25 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
             const x = labels[range][monthIndex];
             dataMap.set(x, entry.avgProgress);
           });
-
           newData = labels[range].map(label => ({
             x: label,
             y: dataMap.has(label) ? dataMap.get(label) : 0,
           }));
         }
-
+  
         const hasDecimalValues = newData.some(data => data.y % 1 !== 0);
         setHasDecimals(hasDecimalValues);
         setChartData(newData);
       } catch (error) {
+        // On error, set default chart data with 0 progress for each label
+        const defaultData = labels[range].map(label => ({ x: label, y: 0 }));
+        setChartData(defaultData);
       }
     };
-
+  
     fetchData();
   }, [range, email, habitName]);
+  
 
   useEffect(() => {
     const fetchStreakData = async () => {
