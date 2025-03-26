@@ -1,0 +1,1358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1743020391867" clover="3.2.0">
+  <project timestamp="1743020391867" name="All files">
+    <metrics statements="1151" coveredstatements="869" conditionals="649" coveredconditionals="407" methods="220" coveredmethods="162" elements="2020" coveredelements="1438" complexity="0" loc="1151" ncloc="1151" packages="12" files="55" classes="55"/>
+    <package name="assets.fonts">
+      <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="SpaceMono-Regular.ttf" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\assets\fonts\SpaceMono-Regular.ttf">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="assets.images">
+      <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="account.png" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\assets\images\account.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="2" type="stmt"/>
+      </file>
+      <file name="appearance.png" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\assets\images\appearance.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="2" type="stmt"/>
+      </file>
+      <file name="arrowLeft.png" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\assets\images\arrowLeft.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="arrowRight.png" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\assets\images\arrowRight.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="notifications.png" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\assets\images\notifications.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.app">
+      <metrics statements="97" coveredstatements="84" conditionals="56" coveredconditionals="42" methods="16" coveredmethods="12"/>
+      <file name="+not-found.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\+not-found.tsx">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="9" count="3" type="stmt"/>
+      </file>
+      <file name="NotificationsHandler.js" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\NotificationsHandler.js">
+        <metrics statements="79" coveredstatements="68" conditionals="44" coveredconditionals="34" methods="11" coveredmethods="8"/>
+        <line num="8" count="3" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="17" count="3" type="stmt"/>
+        <line num="18" count="4" type="stmt"/>
+        <line num="19" count="4" type="stmt"/>
+        <line num="20" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="21" count="4" type="stmt"/>
+        <line num="22" count="4" type="stmt"/>
+        <line num="23" count="4" type="stmt"/>
+        <line num="24" count="4" type="stmt"/>
+        <line num="28" count="8" type="stmt"/>
+        <line num="30" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="32" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="36" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="38" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="39" count="1" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="52" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="53" count="2" type="stmt"/>
+        <line num="54" count="2" type="stmt"/>
+        <line num="56" count="3" type="stmt"/>
+        <line num="57" count="3" type="stmt"/>
+        <line num="58" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="59" count="2" type="stmt"/>
+        <line num="60" count="2" type="stmt"/>
+        <line num="62" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="63" count="1" type="stmt"/>
+        <line num="64" count="1" type="stmt"/>
+        <line num="66" count="2" type="stmt"/>
+        <line num="67" count="2" type="stmt"/>
+        <line num="78" count="8" type="stmt"/>
+        <line num="81" count="8" type="stmt"/>
+        <line num="87" count="7" type="stmt"/>
+        <line num="88" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="89" count="6" type="cond" truecount="4" falsecount="0"/>
+        <line num="90" count="1" type="stmt"/>
+        <line num="91" count="1" type="stmt"/>
+        <line num="94" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="95" count="1" type="stmt"/>
+        <line num="98" count="1" type="stmt"/>
+        <line num="99" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="100" count="2" type="stmt"/>
+        <line num="101" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="102" count="1" type="stmt"/>
+        <line num="105" count="0" type="stmt"/>
+        <line num="107" count="1" type="stmt"/>
+        <line num="108" count="1" type="stmt"/>
+        <line num="111" count="2" type="stmt"/>
+        <line num="112" count="2" type="stmt"/>
+        <line num="115" count="1" type="stmt"/>
+        <line num="118" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="119" count="0" type="stmt"/>
+        <line num="120" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="121" count="0" type="stmt"/>
+        <line num="123" count="0" type="stmt"/>
+        <line num="129" count="1" type="stmt"/>
+        <line num="130" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="131" count="1" type="stmt"/>
+        <line num="139" count="3" type="stmt"/>
+        <line num="140" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="141" count="2" type="stmt"/>
+        <line num="146" count="3" type="stmt"/>
+        <line num="148" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="149" count="0" type="stmt"/>
+        <line num="150" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="151" count="0" type="stmt"/>
+        <line num="153" count="0" type="stmt"/>
+        <line num="159" count="2" type="stmt"/>
+        <line num="160" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="161" count="2" type="stmt"/>
+        <line num="168" count="0" type="stmt"/>
+        <line num="169" count="0" type="stmt"/>
+      </file>
+      <file name="_layout.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\_layout.tsx">
+        <metrics statements="10" coveredstatements="8" conditionals="8" coveredconditionals="4" methods="3" coveredmethods="2"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="15" count="2" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="20" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="25" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="29" count="1" type="stmt"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+      </file>
+      <file name="index.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\index.tsx">
+        <metrics statements="7" coveredstatements="7" conditionals="4" coveredconditionals="4" methods="1" coveredmethods="1"/>
+        <line num="8" count="3" type="stmt"/>
+        <line num="9" count="3" type="stmt"/>
+        <line num="11" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="19" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.app.(auth)">
+      <metrics statements="28" coveredstatements="28" conditionals="8" coveredconditionals="8" methods="5" coveredmethods="5"/>
+      <file name="_layout.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\(auth)\_layout.tsx">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="4" count="1" type="stmt"/>
+      </file>
+      <file name="login.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\(auth)\login.tsx">
+        <metrics statements="14" coveredstatements="14" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
+        <line num="13" count="14" type="stmt"/>
+        <line num="14" count="14" type="stmt"/>
+        <line num="15" count="14" type="stmt"/>
+        <line num="17" count="14" type="stmt"/>
+        <line num="18" count="14" type="stmt"/>
+        <line num="20" count="14" type="stmt"/>
+        <line num="21" count="3" type="stmt"/>
+        <line num="22" count="3" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="26" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="29" count="1" type="stmt"/>
+        <line num="34" count="14" type="stmt"/>
+      </file>
+      <file name="signup.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\(auth)\signup.tsx">
+        <metrics statements="13" coveredstatements="13" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
+        <line num="12" count="15" type="stmt"/>
+        <line num="13" count="15" type="stmt"/>
+        <line num="14" count="15" type="stmt"/>
+        <line num="15" count="15" type="stmt"/>
+        <line num="17" count="15" type="stmt"/>
+        <line num="19" count="15" type="stmt"/>
+        <line num="20" count="3" type="stmt"/>
+        <line num="21" count="3" type="stmt"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="24" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="32" count="15" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.app.(protected)">
+      <metrics statements="46" coveredstatements="46" conditionals="19" coveredconditionals="19" methods="6" coveredmethods="6"/>
+      <file name="account.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\(protected)\account.tsx">
+        <metrics statements="46" coveredstatements="46" conditionals="19" coveredconditionals="19" methods="6" coveredmethods="6"/>
+        <line num="12" count="70" type="stmt"/>
+        <line num="13" count="70" type="stmt"/>
+        <line num="14" count="70" type="stmt"/>
+        <line num="15" count="70" type="stmt"/>
+        <line num="16" count="70" type="stmt"/>
+        <line num="17" count="70" type="stmt"/>
+        <line num="18" count="70" type="stmt"/>
+        <line num="19" count="70" type="stmt"/>
+        <line num="20" count="70" type="stmt"/>
+        <line num="22" count="70" type="stmt"/>
+        <line num="23" count="18" type="stmt"/>
+        <line num="24" count="18" type="stmt"/>
+        <line num="25" count="18" type="stmt"/>
+        <line num="26" count="16" type="stmt"/>
+        <line num="28" count="16" type="cond" truecount="2" falsecount="0"/>
+        <line num="29" count="10" type="stmt"/>
+        <line num="31" count="16" type="cond" truecount="2" falsecount="0"/>
+        <line num="32" count="8" type="stmt"/>
+        <line num="33" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="35" count="2" type="stmt"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="39" count="2" type="stmt"/>
+        <line num="43" count="18" type="stmt"/>
+        <line num="46" count="70" type="stmt"/>
+        <line num="47" count="10" type="cond" truecount="5" falsecount="0"/>
+        <line num="48" count="2" type="stmt"/>
+        <line num="49" count="2" type="stmt"/>
+        <line num="52" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="53" count="2" type="stmt"/>
+        <line num="54" count="2" type="stmt"/>
+        <line num="57" count="6" type="stmt"/>
+        <line num="58" count="6" type="stmt"/>
+        <line num="60" count="2" type="stmt"/>
+        <line num="61" count="2" type="stmt"/>
+        <line num="63" count="2" type="stmt"/>
+        <line num="64" count="2" type="stmt"/>
+        <line num="65" count="2" type="stmt"/>
+        <line num="66" count="2" type="stmt"/>
+        <line num="67" count="2" type="stmt"/>
+        <line num="69" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="70" count="2" type="stmt"/>
+        <line num="72" count="2" type="stmt"/>
+        <line num="77" count="70" type="stmt"/>
+        <line num="102" count="12" type="stmt"/>
+        <line num="143" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.app.(protected).(tabs)">
+      <metrics statements="351" coveredstatements="270" conditionals="159" coveredconditionals="113" methods="49" coveredmethods="40"/>
+      <file name="_layout.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\(protected)\(tabs)\_layout.tsx">
+        <metrics statements="6" coveredstatements="6" conditionals="8" coveredconditionals="8" methods="5" coveredmethods="5"/>
+        <line num="11" count="5" type="stmt"/>
+        <line num="13" count="5" type="stmt"/>
+        <line num="36" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="43" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="50" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="57" count="5" type="cond" truecount="2" falsecount="0"/>
+      </file>
+      <file name="calendar.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\(protected)\(tabs)\calendar.tsx">
+        <metrics statements="110" coveredstatements="103" conditionals="40" coveredconditionals="35" methods="17" coveredmethods="16"/>
+        <line num="16" count="36" type="stmt"/>
+        <line num="17" count="36" type="stmt"/>
+        <line num="18" count="35" type="stmt"/>
+        <line num="19" count="35" type="stmt"/>
+        <line num="20" count="35" type="stmt"/>
+        <line num="21" count="35" type="stmt"/>
+        <line num="22" count="35" type="stmt"/>
+        <line num="23" count="35" type="stmt"/>
+        <line num="24" count="35" type="stmt"/>
+        <line num="25" count="35" type="stmt"/>
+        <line num="26" count="35" type="stmt"/>
+        <line num="27" count="35" type="stmt"/>
+        <line num="30" count="35" type="stmt"/>
+        <line num="32" count="6" type="stmt"/>
+        <line num="33" count="5" type="stmt"/>
+        <line num="36" count="6" type="stmt"/>
+        <line num="40" count="35" type="stmt"/>
+        <line num="41" count="6" type="stmt"/>
+        <line num="42" count="6" type="stmt"/>
+        <line num="43" count="6" type="stmt"/>
+        <line num="44" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="45" count="5" type="stmt"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="54" count="6" type="stmt"/>
+        <line num="58" count="35" type="stmt"/>
+        <line num="59" count="16" type="cond" truecount="4" falsecount="0"/>
+        <line num="60" count="5" type="stmt"/>
+        <line num="61" count="5" type="stmt"/>
+        <line num="62" count="5" type="stmt"/>
+        <line num="65" count="5" type="stmt"/>
+        <line num="66" count="5" type="stmt"/>
+        <line num="67" count="5" type="stmt"/>
+        <line num="70" count="5" type="stmt"/>
+        <line num="71" count="5" type="stmt"/>
+        <line num="72" count="5" type="stmt"/>
+        <line num="75" count="5" type="stmt"/>
+        <line num="76" count="5" type="stmt"/>
+        <line num="78" count="5" type="stmt"/>
+        <line num="79" count="203" type="stmt"/>
+        <line num="80" count="203" type="stmt"/>
+        <line num="83" count="5" type="stmt"/>
+        <line num="87" count="35" type="stmt"/>
+        <line num="88" count="5" type="stmt"/>
+        <line num="92" count="35" type="stmt"/>
+        <line num="95" count="6" type="stmt"/>
+        <line num="96" count="6" type="stmt"/>
+        <line num="101" count="35" type="stmt"/>
+        <line num="102" count="22" type="stmt"/>
+        <line num="103" count="22" type="cond" truecount="4" falsecount="0"/>
+        <line num="105" count="4" type="stmt"/>
+        <line num="106" count="4" type="stmt"/>
+        <line num="107" count="4" type="stmt"/>
+        <line num="108" count="4" type="stmt"/>
+        <line num="109" count="4" type="stmt"/>
+        <line num="112" count="4" type="stmt"/>
+        <line num="113" count="120" type="stmt"/>
+        <line num="114" count="119" type="stmt"/>
+        <line num="117" count="119" type="stmt"/>
+        <line num="118" count="35" type="cond" truecount="3" falsecount="1"/>
+        <line num="119" count="35" type="stmt"/>
+        <line num="120" count="35" type="stmt"/>
+        <line num="124" count="0" type="stmt"/>
+        <line num="129" count="119" type="cond" truecount="2" falsecount="0"/>
+        <line num="134" count="119" type="cond" truecount="2" falsecount="0"/>
+        <line num="135" count="35" type="stmt"/>
+        <line num="136" count="35" type="stmt"/>
+        <line num="140" count="119" type="stmt"/>
+        <line num="150" count="3" type="stmt"/>
+        <line num="153" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="156" count="3" type="stmt"/>
+        <line num="159" count="3" type="stmt"/>
+        <line num="161" count="3" type="stmt"/>
+        <line num="163" count="1" type="stmt"/>
+        <line num="164" count="1" type="stmt"/>
+        <line num="168" count="22" type="stmt"/>
+        <line num="172" count="35" type="stmt"/>
+        <line num="173" count="3" type="stmt"/>
+        <line num="174" count="3" type="stmt"/>
+        <line num="175" count="3" type="stmt"/>
+        <line num="176" count="3" type="stmt"/>
+        <line num="179" count="3" type="stmt"/>
+        <line num="180" count="117" type="stmt"/>
+        <line num="181" count="79" type="stmt"/>
+        <line num="183" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="185" count="3" type="stmt"/>
+        <line num="186" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="187" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="190" count="3" type="stmt"/>
+        <line num="192" count="82" type="cond" truecount="4" falsecount="0"/>
+        <line num="194" count="80" type="stmt"/>
+        <line num="197" count="80" type="cond" truecount="2" falsecount="0"/>
+        <line num="198" count="18" type="cond" truecount="1" falsecount="1"/>
+        <line num="199" count="18" type="stmt"/>
+        <line num="202" count="18" type="stmt"/>
+        <line num="205" count="62" type="stmt"/>
+        <line num="207" count="62" type="stmt"/>
+        <line num="209" count="62" type="stmt"/>
+        <line num="214" count="3" type="stmt"/>
+        <line num="218" count="3" type="stmt"/>
+        <line num="219" count="3" type="stmt"/>
+        <line num="222" count="35" type="stmt"/>
+        <line num="223" count="0" type="stmt"/>
+        <line num="224" count="0" type="stmt"/>
+        <line num="225" count="0" type="stmt"/>
+        <line num="226" count="0" type="stmt"/>
+        <line num="227" count="0" type="stmt"/>
+        <line num="230" count="35" type="cond" truecount="2" falsecount="0"/>
+        <line num="231" count="13" type="stmt"/>
+        <line num="238" count="22" type="stmt"/>
+      </file>
+      <file name="habits.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\(protected)\(tabs)\habits.tsx">
+        <metrics statements="147" coveredstatements="134" conditionals="81" coveredconditionals="68" methods="14" coveredmethods="13"/>
+        <line num="25" count="109" type="stmt"/>
+        <line num="26" count="109" type="stmt"/>
+        <line num="31" count="109" type="stmt"/>
+        <line num="32" count="109" type="stmt"/>
+        <line num="33" count="109" type="stmt"/>
+        <line num="34" count="109" type="stmt"/>
+        <line num="35" count="109" type="stmt"/>
+        <line num="36" count="109" type="stmt"/>
+        <line num="39" count="109" type="stmt"/>
+        <line num="40" count="109" type="stmt"/>
+        <line num="41" count="109" type="stmt"/>
+        <line num="44" count="109" type="stmt"/>
+        <line num="45" count="109" type="stmt"/>
+        <line num="46" count="109" type="stmt"/>
+        <line num="47" count="109" type="stmt"/>
+        <line num="49" count="109" type="stmt"/>
+        <line num="51" count="109" type="stmt"/>
+        <line num="53" count="109" type="stmt"/>
+        <line num="55" count="109" type="stmt"/>
+        <line num="57" count="10" type="stmt"/>
+        <line num="58" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="59" count="4" type="stmt"/>
+        <line num="61" count="2" type="stmt"/>
+        <line num="66" count="10" type="cond" truecount="4" falsecount="0"/>
+        <line num="67" count="1" type="stmt"/>
+        <line num="68" count="1" type="stmt"/>
+        <line num="72" count="9" type="cond" truecount="4" falsecount="0"/>
+        <line num="73" count="1" type="stmt"/>
+        <line num="74" count="1" type="stmt"/>
+        <line num="78" count="8" type="cond" truecount="5" falsecount="0"/>
+        <line num="79" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="80" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="83" count="0" type="stmt"/>
+        <line num="84" count="0" type="stmt"/>
+        <line num="89" count="8" type="stmt"/>
+        <line num="90" count="8" type="cond" truecount="4" falsecount="0"/>
+        <line num="91" count="6" type="stmt"/>
+        <line num="95" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="96" count="7" type="cond" truecount="4" falsecount="0"/>
+        <line num="97" count="1" type="stmt"/>
+        <line num="98" count="1" type="stmt"/>
+        <line num="100" count="6" type="cond" truecount="1" falsecount="1"/>
+        <line num="101" count="0" type="stmt"/>
+        <line num="102" count="0" type="stmt"/>
+        <line num="107" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="108" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="109" count="1" type="stmt"/>
+        <line num="110" count="1" type="stmt"/>
+        <line num="115" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="116" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="117" count="0" type="stmt"/>
+        <line num="118" count="0" type="stmt"/>
+        <line num="120" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="121" count="0" type="stmt"/>
+        <line num="122" count="0" type="stmt"/>
+        <line num="124" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="125" count="0" type="stmt"/>
+        <line num="126" count="0" type="stmt"/>
+        <line num="128" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="129" count="0" type="stmt"/>
+        <line num="130" count="0" type="stmt"/>
+        <line num="135" count="6" type="stmt"/>
+        <line num="148" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="149" count="2" type="stmt"/>
+        <line num="150" count="2" type="stmt"/>
+        <line num="151" count="1" type="stmt"/>
+        <line num="153" count="1" type="stmt"/>
+        <line num="154" count="1" type="stmt"/>
+        <line num="156" count="2" type="stmt"/>
+        <line num="159" count="4" type="stmt"/>
+        <line num="160" count="4" type="stmt"/>
+        <line num="161" count="3" type="stmt"/>
+        <line num="163" count="1" type="stmt"/>
+        <line num="164" count="1" type="stmt"/>
+        <line num="166" count="4" type="stmt"/>
+        <line num="171" count="6" type="stmt"/>
+        <line num="172" count="6" type="stmt"/>
+        <line num="173" count="6" type="stmt"/>
+        <line num="174" count="6" type="stmt"/>
+        <line num="175" count="6" type="stmt"/>
+        <line num="176" count="6" type="stmt"/>
+        <line num="177" count="6" type="stmt"/>
+        <line num="178" count="6" type="stmt"/>
+        <line num="179" count="6" type="stmt"/>
+        <line num="180" count="6" type="stmt"/>
+        <line num="181" count="6" type="stmt"/>
+        <line num="186" count="109" type="stmt"/>
+        <line num="188" count="109" type="stmt"/>
+        <line num="189" count="26" type="cond" truecount="1" falsecount="1"/>
+        <line num="191" count="26" type="stmt"/>
+        <line num="192" count="26" type="stmt"/>
+        <line num="193" count="26" type="stmt"/>
+        <line num="194" count="26" type="stmt"/>
+        <line num="195" count="24" type="stmt"/>
+        <line num="197" count="2" type="stmt"/>
+        <line num="199" count="26" type="stmt"/>
+        <line num="203" count="109" type="stmt"/>
+        <line num="204" count="23" type="stmt"/>
+        <line num="205" count="23" type="stmt"/>
+        <line num="206" count="23" type="stmt"/>
+        <line num="207" count="21" type="cond" truecount="1" falsecount="1"/>
+        <line num="208" count="21" type="stmt"/>
+        <line num="211" count="2" type="stmt"/>
+        <line num="215" count="23" type="stmt"/>
+        <line num="218" count="109" type="stmt"/>
+        <line num="219" count="45" type="cond" truecount="2" falsecount="0"/>
+        <line num="220" count="22" type="stmt"/>
+        <line num="225" count="109" type="stmt"/>
+        <line num="227" count="6" type="stmt"/>
+        <line num="230" count="6" type="stmt"/>
+        <line num="231" count="6" type="stmt"/>
+        <line num="232" count="6" type="stmt"/>
+        <line num="233" count="6" type="stmt"/>
+        <line num="234" count="6" type="stmt"/>
+        <line num="236" count="6" type="stmt"/>
+        <line num="237" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="238" count="4" type="stmt"/>
+        <line num="239" count="3" type="stmt"/>
+        <line num="240" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="241" count="2" type="stmt"/>
+        <line num="243" count="2" type="stmt"/>
+        <line num="244" count="1" type="stmt"/>
+        <line num="247" count="2" type="stmt"/>
+        <line num="250" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="251" count="6" type="stmt"/>
+        <line num="253" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="254" count="1" type="stmt"/>
+        <line num="257" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="258" count="1" type="stmt"/>
+        <line num="261" count="6" type="stmt"/>
+        <line num="262" count="6" type="stmt"/>
+        <line num="265" count="109" type="stmt"/>
+        <line num="266" count="0" type="stmt"/>
+        <line num="269" count="109" type="stmt"/>
+        <line num="292" count="19" type="stmt"/>
+        <line num="313" count="9" type="stmt"/>
+        <line num="314" count="9" type="stmt"/>
+        <line num="315" count="9" type="stmt"/>
+        <line num="316" count="9" type="stmt"/>
+        <line num="317" count="9" type="stmt"/>
+        <line num="318" count="9" type="stmt"/>
+        <line num="319" count="9" type="stmt"/>
+        <line num="320" count="9" type="stmt"/>
+        <line num="321" count="9" type="stmt"/>
+        <line num="322" count="9" type="stmt"/>
+        <line num="325" count="9" type="stmt"/>
+        <line num="326" count="9" type="stmt"/>
+      </file>
+      <file name="settings.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\app\(protected)\(tabs)\settings.tsx">
+        <metrics statements="88" coveredstatements="27" conditionals="30" coveredconditionals="2" methods="13" coveredmethods="6"/>
+        <line num="20" count="16" type="stmt"/>
+        <line num="21" count="16" type="stmt"/>
+        <line num="23" count="15" type="stmt"/>
+        <line num="25" count="3" type="stmt"/>
+        <line num="26" count="3" type="stmt"/>
+        <line num="28" count="3" type="stmt"/>
+        <line num="31" count="15" type="stmt"/>
+        <line num="32" count="3" type="stmt"/>
+        <line num="34" count="3" type="stmt"/>
+        <line num="35" count="3" type="stmt"/>
+        <line num="36" count="3" type="stmt"/>
+        <line num="38" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="39" count="2" type="stmt"/>
+        <line num="40" count="2" type="stmt"/>
+        <line num="42" count="1" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="48" count="1" type="stmt"/>
+        <line num="52" count="15" type="stmt"/>
+        <line num="58" count="15" type="stmt"/>
+        <line num="59" count="0" type="stmt"/>
+        <line num="61" count="0" type="stmt"/>
+        <line num="62" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="63" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="66" count="0" type="stmt"/>
+        <line num="68" count="0" type="stmt"/>
+        <line num="69" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="70" count="0" type="stmt"/>
+        <line num="72" count="0" type="stmt"/>
+        <line num="73" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="75" count="0" type="stmt"/>
+        <line num="80" count="0" type="stmt"/>
+        <line num="82" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="83" count="0" type="stmt"/>
+        <line num="84" count="0" type="stmt"/>
+        <line num="85" count="0" type="stmt"/>
+        <line num="86" count="0" type="stmt"/>
+        <line num="87" count="0" type="stmt"/>
+        <line num="88" count="0" type="stmt"/>
+        <line num="89" count="0" type="stmt"/>
+        <line num="90" count="0" type="stmt"/>
+        <line num="91" count="0" type="stmt"/>
+        <line num="92" count="0" type="stmt"/>
+        <line num="96" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="97" count="0" type="stmt"/>
+        <line num="99" count="0" type="stmt"/>
+        <line num="104" count="15" type="stmt"/>
+        <line num="105" count="0" type="stmt"/>
+        <line num="106" count="0" type="stmt"/>
+        <line num="107" count="0" type="stmt"/>
+        <line num="109" count="0" type="stmt"/>
+        <line num="113" count="15" type="stmt"/>
+        <line num="114" count="0" type="stmt"/>
+        <line num="115" count="0" type="stmt"/>
+        <line num="116" count="0" type="stmt"/>
+        <line num="117" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="118" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="119" count="0" type="stmt"/>
+        <line num="121" count="0" type="stmt"/>
+        <line num="123" count="0" type="stmt"/>
+        <line num="125" count="0" type="stmt"/>
+        <line num="126" count="0" type="stmt"/>
+        <line num="127" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="128" count="0" type="stmt"/>
+        <line num="130" count="0" type="stmt"/>
+        <line num="133" count="0" type="stmt"/>
+        <line num="135" count="0" type="stmt"/>
+        <line num="136" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="137" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="139" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="144" count="15" type="stmt"/>
+        <line num="145" count="0" type="stmt"/>
+        <line num="146" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="147" count="0" type="stmt"/>
+        <line num="148" count="0" type="stmt"/>
+        <line num="151" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="152" count="0" type="stmt"/>
+        <line num="153" count="0" type="stmt"/>
+        <line num="155" count="0" type="stmt"/>
+        <line num="158" count="0" type="stmt"/>
+        <line num="162" count="0" type="stmt"/>
+        <line num="167" count="0" type="stmt"/>
+        <line num="168" count="0" type="stmt"/>
+        <line num="177" count="15" type="stmt"/>
+        <line num="178" count="15" type="stmt"/>
+        <line num="187" count="15" type="stmt"/>
+        <line num="201" count="26" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.components">
+      <metrics statements="451" coveredstatements="306" conditionals="345" coveredconditionals="188" methods="106" coveredmethods="71"/>
+      <file name="AuthContext.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\AuthContext.tsx">
+        <metrics statements="22" coveredstatements="21" conditionals="2" coveredconditionals="1" methods="4" coveredmethods="4"/>
+        <line num="11" count="3" type="stmt"/>
+        <line num="13" count="3" type="stmt"/>
+        <line num="14" count="20" type="stmt"/>
+        <line num="15" count="20" type="stmt"/>
+        <line num="17" count="20" type="stmt"/>
+        <line num="18" count="11" type="stmt"/>
+        <line num="19" count="11" type="stmt"/>
+        <line num="20" count="10" type="stmt"/>
+        <line num="21" count="10" type="stmt"/>
+        <line num="22" count="10" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="28" count="11" type="stmt"/>
+        <line num="32" count="20" type="stmt"/>
+        <line num="33" count="10" type="stmt"/>
+        <line num="36" count="20" type="stmt"/>
+        <line num="43" count="3" type="stmt"/>
+        <line num="44" count="20" type="stmt"/>
+        <line num="45" count="20" type="cond" truecount="1" falsecount="1"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="48" count="20" type="stmt"/>
+      </file>
+      <file name="BuildHabitGraph.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\BuildHabitGraph.tsx">
+        <metrics statements="73" coveredstatements="37" conditionals="38" coveredconditionals="9" methods="18" coveredmethods="9"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="24" count="3" type="stmt"/>
+        <line num="25" count="3" type="stmt"/>
+        <line num="26" count="3" type="stmt"/>
+        <line num="27" count="3" type="stmt"/>
+        <line num="28" count="3" type="stmt"/>
+        <line num="29" count="3" type="stmt"/>
+        <line num="30" count="3" type="stmt"/>
+        <line num="31" count="3" type="stmt"/>
+        <line num="32" count="3" type="stmt"/>
+        <line num="33" count="3" type="stmt"/>
+        <line num="35" count="3" type="stmt"/>
+        <line num="37" count="93" type="stmt"/>
+        <line num="41" count="3" type="stmt"/>
+        <line num="42" count="3" type="stmt"/>
+        <line num="43" count="3" type="stmt"/>
+        <line num="44" count="3" type="cond" truecount="1" falsecount="3"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="47" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="48" count="0" type="stmt"/>
+        <line num="49" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="56" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="59" count="0" type="stmt"/>
+        <line num="61" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="62" count="0" type="stmt"/>
+        <line num="63" count="0" type="stmt"/>
+        <line num="65" count="0" type="stmt"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="70" count="0" type="stmt"/>
+        <line num="75" count="0" type="stmt"/>
+        <line num="76" count="0" type="stmt"/>
+        <line num="77" count="0" type="stmt"/>
+        <line num="78" count="0" type="stmt"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="82" count="0" type="stmt"/>
+        <line num="88" count="0" type="stmt"/>
+        <line num="89" count="0" type="stmt"/>
+        <line num="90" count="0" type="stmt"/>
+        <line num="95" count="3" type="stmt"/>
+        <line num="98" count="3" type="stmt"/>
+        <line num="99" count="3" type="stmt"/>
+        <line num="100" count="3" type="stmt"/>
+        <line num="101" count="3" type="stmt"/>
+        <line num="103" count="0" type="stmt"/>
+        <line num="104" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="109" count="3" type="stmt"/>
+        <line num="112" count="3" type="stmt"/>
+        <line num="113" count="3" type="stmt"/>
+        <line num="114" count="3" type="stmt"/>
+        <line num="115" count="3" type="stmt"/>
+        <line num="116" count="0" type="stmt"/>
+        <line num="118" count="0" type="stmt"/>
+        <line num="119" count="0" type="stmt"/>
+        <line num="121" count="0" type="stmt"/>
+        <line num="122" count="0" type="stmt"/>
+        <line num="127" count="3" type="stmt"/>
+        <line num="130" count="3" type="stmt"/>
+        <line num="131" count="3" type="stmt"/>
+        <line num="132" count="3" type="stmt"/>
+        <line num="133" count="3" type="stmt"/>
+        <line num="135" count="3" type="stmt"/>
+        <line num="136" count="3" type="stmt"/>
+        <line num="138" count="3" type="stmt"/>
+        <line num="145" count="3" type="stmt"/>
+        <line num="150" count="9" type="stmt"/>
+        <line num="158" count="0" type="stmt"/>
+        <line num="175" count="0" type="stmt"/>
+        <line num="179" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="184" count="0" type="cond" truecount="0" falsecount="2"/>
+      </file>
+      <file name="CircleProgress.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\CircleProgress.tsx">
+        <metrics statements="6" coveredstatements="6" conditionals="1" coveredconditionals="1" methods="1" coveredmethods="1"/>
+        <line num="15" count="3" type="stmt"/>
+        <line num="21" count="3" type="stmt"/>
+        <line num="22" count="3" type="stmt"/>
+        <line num="23" count="3" type="stmt"/>
+        <line num="24" count="3" type="stmt"/>
+        <line num="26" count="3" type="stmt"/>
+      </file>
+      <file name="HabitPanel.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\HabitPanel.tsx">
+        <metrics statements="127" coveredstatements="74" conditionals="131" coveredconditionals="60" methods="15" coveredmethods="9"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="34" count="15" type="stmt"/>
+        <line num="36" count="15" type="stmt"/>
+        <line num="38" count="15" type="stmt"/>
+        <line num="40" count="15" type="stmt"/>
+        <line num="42" count="15" type="stmt"/>
+        <line num="44" count="15" type="stmt"/>
+        <line num="46" count="15" type="cond" truecount="2" falsecount="0"/>
+        <line num="51" count="15" type="stmt"/>
+        <line num="52" count="15" type="stmt"/>
+        <line num="55" count="15" type="cond" truecount="2" falsecount="0"/>
+        <line num="56" count="15" type="cond" truecount="2" falsecount="0"/>
+        <line num="57" count="6" type="stmt"/>
+        <line num="61" count="15" type="cond" truecount="2" falsecount="0"/>
+        <line num="64" count="15" type="cond" truecount="4" falsecount="0"/>
+        <line num="69" count="15" type="stmt"/>
+        <line num="70" count="10" type="stmt"/>
+        <line num="71" count="10" type="stmt"/>
+        <line num="73" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="74" count="8" type="stmt"/>
+        <line num="75" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="78" count="7" type="cond" truecount="6" falsecount="0"/>
+        <line num="80" count="1" type="stmt"/>
+        <line num="81" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="82" count="1" type="stmt"/>
+        <line num="85" count="1" type="stmt"/>
+        <line num="86" count="1" type="cond" truecount="2" falsecount="2"/>
+        <line num="87" count="1" type="stmt"/>
+        <line num="93" count="1" type="stmt"/>
+        <line num="97" count="10" type="stmt"/>
+        <line num="100" count="15" type="stmt"/>
+        <line num="101" count="10" type="stmt"/>
+        <line num="102" count="3" type="stmt"/>
+        <line num="103" count="3" type="stmt"/>
+        <line num="109" count="3" type="cond" truecount="2" falsecount="2"/>
+        <line num="112" count="3" type="stmt"/>
+        <line num="114" count="3" type="cond" truecount="3" falsecount="0"/>
+        <line num="116" count="3" type="cond" truecount="3" falsecount="1"/>
+        <line num="117" count="0" type="stmt"/>
+        <line num="119" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="122" count="0" type="stmt"/>
+        <line num="126" count="10" type="stmt"/>
+        <line num="131" count="15" type="stmt"/>
+        <line num="132" count="1" type="stmt"/>
+        <line num="133" count="1" type="stmt"/>
+        <line num="135" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="137" count="1" type="stmt"/>
+        <line num="138" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="141" count="1" type="stmt"/>
+        <line num="142" count="1" type="stmt"/>
+        <line num="143" count="1" type="stmt"/>
+        <line num="145" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="147" count="0" type="stmt"/>
+        <line num="148" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="150" count="0" type="stmt"/>
+        <line num="151" count="0" type="stmt"/>
+        <line num="154" count="0" type="stmt"/>
+        <line num="155" count="0" type="stmt"/>
+        <line num="156" count="0" type="stmt"/>
+        <line num="157" count="0" type="stmt"/>
+        <line num="159" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="160" count="0" type="stmt"/>
+        <line num="166" count="0" type="stmt"/>
+        <line num="167" count="0" type="stmt"/>
+        <line num="168" count="0" type="stmt"/>
+        <line num="170" count="0" type="stmt"/>
+        <line num="171" count="0" type="stmt"/>
+        <line num="175" count="15" type="stmt"/>
+        <line num="176" count="0" type="stmt"/>
+        <line num="178" count="0" type="cond" truecount="0" falsecount="3"/>
+        <line num="182" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="186" count="0" type="stmt"/>
+        <line num="187" count="0" type="stmt"/>
+        <line num="190" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="191" count="0" type="stmt"/>
+        <line num="192" count="0" type="stmt"/>
+        <line num="195" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="196" count="0" type="stmt"/>
+        <line num="199" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="200" count="0" type="stmt"/>
+        <line num="203" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="208" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="209" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="211" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="214" count="0" type="stmt"/>
+        <line num="215" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="216" count="0" type="stmt"/>
+        <line num="217" count="0" type="stmt"/>
+        <line num="219" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="222" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="227" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="231" count="0" type="stmt"/>
+        <line num="235" count="15" type="stmt"/>
+        <line num="236" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="237" count="1" type="stmt"/>
+        <line num="238" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="239" count="1" type="stmt"/>
+        <line num="240" count="1" type="stmt"/>
+        <line num="241" count="1" type="stmt"/>
+        <line num="242" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="244" count="0" type="stmt"/>
+        <line num="245" count="0" type="stmt"/>
+        <line num="248" count="1" type="stmt"/>
+        <line num="259" count="0" type="stmt"/>
+        <line num="260" count="0" type="stmt"/>
+        <line num="261" count="0" type="stmt"/>
+        <line num="262" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="264" count="0" type="stmt"/>
+        <line num="265" count="0" type="stmt"/>
+        <line num="275" count="15" type="stmt"/>
+        <line num="277" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="279" count="2" type="stmt"/>
+        <line num="280" count="2" type="stmt"/>
+        <line num="281" count="1" type="stmt"/>
+        <line num="284" count="1" type="cond" truecount="2" falsecount="2"/>
+        <line num="288" count="1" type="stmt"/>
+        <line num="289" count="1" type="stmt"/>
+        <line num="291" count="1" type="stmt"/>
+        <line num="293" count="1" type="cond" truecount="3" falsecount="0"/>
+        <line num="296" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="300" count="1" type="stmt"/>
+        <line num="301" count="1" type="stmt"/>
+        <line num="305" count="15" type="stmt"/>
+        <line num="306" count="0" type="stmt"/>
+        <line num="309" count="15" type="stmt"/>
+        <line num="329" count="0" type="stmt"/>
+        <line num="359" count="0" type="stmt"/>
+      </file>
+      <file name="HabitTypeSlider.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\HabitTypeSlider.tsx">
+        <metrics statements="5" coveredstatements="5" conditionals="5" coveredconditionals="5" methods="3" coveredmethods="3"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="19" count="3" type="stmt"/>
+        <line num="20" count="3" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+      </file>
+      <file name="HapticTab.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\HapticTab.tsx">
+        <metrics statements="4" coveredstatements="4" conditionals="2" coveredconditionals="1" methods="2" coveredmethods="2"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="10" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="14" count="2" type="stmt"/>
+      </file>
+      <file name="MonthlyCalendar.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\MonthlyCalendar.tsx">
+        <metrics statements="34" coveredstatements="32" conditionals="10" coveredconditionals="10" methods="7" coveredmethods="5"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="21" count="7" type="stmt"/>
+        <line num="22" count="7" type="stmt"/>
+        <line num="23" count="7" type="stmt"/>
+        <line num="26" count="7" type="stmt"/>
+        <line num="27" count="2" type="stmt"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="30" count="2" type="stmt"/>
+        <line num="31" count="2" type="stmt"/>
+        <line num="32" count="2" type="stmt"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="35" count="2" type="stmt"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="39" count="2" type="stmt"/>
+        <line num="40" count="84" type="stmt"/>
+        <line num="41" count="84" type="stmt"/>
+        <line num="44" count="2" type="stmt"/>
+        <line num="46" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="51" count="7" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="56" count="0" type="stmt"/>
+        <line num="59" count="2" type="stmt"/>
+        <line num="60" count="2" type="stmt"/>
+        <line num="69" count="294" type="cond" truecount="2" falsecount="0"/>
+        <line num="70" count="294" type="stmt"/>
+        <line num="71" count="294" type="stmt"/>
+        <line num="72" count="294" type="stmt"/>
+        <line num="74" count="294" type="stmt"/>
+        <line num="75" count="294" type="stmt"/>
+        <line num="77" count="294" type="stmt"/>
+        <line num="79" count="1" type="stmt"/>
+      </file>
+      <file name="NewHabitModal.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\NewHabitModal.tsx">
+        <metrics statements="27" coveredstatements="25" conditionals="29" coveredconditionals="27" methods="12" coveredmethods="10"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="55" count="1" type="stmt"/>
+        <line num="57" count="1" type="stmt"/>
+        <line num="84" count="61" type="cond" truecount="3" falsecount="1"/>
+        <line num="86" count="15" type="stmt"/>
+        <line num="87" count="2" type="stmt"/>
+        <line num="88" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="89" count="1" type="stmt"/>
+        <line num="91" count="1" type="stmt"/>
+        <line num="95" count="15" type="stmt"/>
+        <line num="97" count="15" type="stmt"/>
+        <line num="98" count="12" type="cond" truecount="4" falsecount="0"/>
+        <line num="100" count="10" type="stmt"/>
+        <line num="101" count="10" type="stmt"/>
+        <line num="102" count="10" type="stmt"/>
+        <line num="103" count="10" type="stmt"/>
+        <line num="104" count="10" type="stmt"/>
+        <line num="105" count="10" type="stmt"/>
+        <line num="106" count="10" type="stmt"/>
+        <line num="110" count="15" type="stmt"/>
+        <line num="115" count="0" type="stmt"/>
+        <line num="165" count="105" type="stmt"/>
+        <line num="175" count="0" type="stmt"/>
+        <line num="220" count="2" type="stmt"/>
+        <line num="243" count="21" type="stmt"/>
+        <line num="245" count="2" type="stmt"/>
+        <line num="286" count="1" type="stmt"/>
+      </file>
+      <file name="ProgressEntry.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\ProgressEntry.tsx">
+        <metrics statements="38" coveredstatements="18" conditionals="60" coveredconditionals="31" methods="9" coveredmethods="3"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="33" count="15" type="stmt"/>
+        <line num="34" count="15" type="stmt"/>
+        <line num="35" count="15" type="stmt"/>
+        <line num="39" count="15" type="stmt"/>
+        <line num="40" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="41" count="12" type="cond" truecount="1" falsecount="1"/>
+        <line num="44" count="15" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="50" count="15" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="56" count="15" type="stmt"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="59" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="60" count="0" type="stmt"/>
+        <line num="64" count="15" type="stmt"/>
+        <line num="65" count="0" type="stmt"/>
+        <line num="66" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="69" count="0" type="stmt"/>
+        <line num="71" count="0" type="stmt"/>
+        <line num="75" count="15" type="stmt"/>
+        <line num="76" count="10" type="cond" truecount="3" falsecount="0"/>
+        <line num="79" count="10" type="cond" truecount="3" falsecount="2"/>
+        <line num="81" count="0" type="stmt"/>
+        <line num="84" count="10" type="cond" truecount="1" falsecount="1"/>
+        <line num="89" count="15" type="cond" truecount="3" falsecount="0"/>
+        <line num="93" count="15" type="cond" truecount="2" falsecount="0"/>
+        <line num="95" count="15" type="stmt"/>
+        <line num="156" count="0" type="stmt"/>
+        <line num="157" count="0" type="stmt"/>
+        <line num="169" count="0" type="stmt"/>
+        <line num="170" count="0" type="stmt"/>
+      </file>
+      <file name="QuitHabitGraph.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\QuitHabitGraph.tsx">
+        <metrics statements="56" coveredstatements="35" conditionals="30" coveredconditionals="13" methods="13" coveredmethods="8"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="24" count="2" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="26" count="2" type="stmt"/>
+        <line num="27" count="2" type="stmt"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="30" count="2" type="stmt"/>
+        <line num="32" count="2" type="stmt"/>
+        <line num="34" count="62" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="39" count="2" type="stmt"/>
+        <line num="40" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="43" count="0" type="stmt"/>
+        <line num="44" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="52" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="56" count="0" type="stmt"/>
+        <line num="59" count="0" type="stmt"/>
+        <line num="60" count="0" type="stmt"/>
+        <line num="61" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="63" count="2" type="stmt"/>
+        <line num="67" count="2" type="stmt"/>
+        <line num="70" count="2" type="stmt"/>
+        <line num="71" count="2" type="stmt"/>
+        <line num="72" count="2" type="stmt"/>
+        <line num="73" count="2" type="stmt"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="76" count="0" type="stmt"/>
+        <line num="77" count="0" type="stmt"/>
+        <line num="82" count="2" type="stmt"/>
+        <line num="85" count="2" type="stmt"/>
+        <line num="86" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="87" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="88" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="89" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="90" count="2" type="stmt"/>
+        <line num="93" count="2" type="stmt"/>
+        <line num="94" count="2" type="stmt"/>
+        <line num="95" count="2" type="stmt"/>
+        <line num="96" count="2" type="stmt"/>
+        <line num="98" count="2" type="stmt"/>
+        <line num="100" count="2" type="stmt"/>
+        <line num="107" count="2" type="stmt"/>
+        <line num="112" count="4" type="stmt"/>
+        <line num="120" count="0" type="stmt"/>
+        <line num="137" count="0" type="stmt"/>
+        <line num="141" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="146" count="0" type="stmt"/>
+      </file>
+      <file name="StatsBox.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\StatsBox.tsx">
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="24" count="2" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="27" count="2" type="stmt"/>
+      </file>
+      <file name="StatsBoxes.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\StatsBoxes.tsx">
+        <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
+        <line num="18" count="2" type="stmt"/>
+        <line num="19" count="5" type="stmt"/>
+        <line num="20" count="5" type="stmt"/>
+        <line num="27" count="5" type="stmt"/>
+        <line num="30" count="20" type="stmt"/>
+      </file>
+      <file name="ThemedText.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\ThemedText.tsx">
+        <metrics statements="2" coveredstatements="2" conditionals="11" coveredconditionals="11" methods="1" coveredmethods="1"/>
+        <line num="19" count="578" type="stmt"/>
+        <line num="21" count="578" type="stmt"/>
+      </file>
+      <file name="WeeklyCalendar.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\WeeklyCalendar.tsx">
+        <metrics statements="48" coveredstatements="38" conditionals="26" coveredconditionals="19" methods="18" coveredmethods="13"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="21" count="5" type="stmt"/>
+        <line num="22" count="5" type="stmt"/>
+        <line num="23" count="5" type="stmt"/>
+        <line num="24" count="5" type="stmt"/>
+        <line num="25" count="5" type="stmt"/>
+        <line num="27" count="5" type="stmt"/>
+        <line num="28" count="5" type="stmt"/>
+        <line num="30" count="5" type="stmt"/>
+        <line num="31" count="5" type="stmt"/>
+        <line num="32" count="5" type="stmt"/>
+        <line num="33" count="5" type="stmt"/>
+        <line num="36" count="5" type="stmt"/>
+        <line num="37" count="4" type="stmt"/>
+        <line num="39" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="41" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="49" count="5" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="56" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="61" count="5" type="stmt"/>
+        <line num="62" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="64" count="1" type="stmt"/>
+        <line num="65" count="1" type="stmt"/>
+        <line num="67" count="1" type="stmt"/>
+        <line num="68" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="70" count="1" type="stmt"/>
+        <line num="73" count="5" type="stmt"/>
+        <line num="78" count="0" type="stmt"/>
+        <line num="84" count="21" type="cond" truecount="3" falsecount="0"/>
+        <line num="87" count="21" type="stmt"/>
+        <line num="89" count="21" type="stmt"/>
+        <line num="93" count="1" type="stmt"/>
+        <line num="106" count="0" type="stmt"/>
+        <line num="115" count="2000" type="stmt"/>
+        <line num="116" count="30" type="stmt"/>
+        <line num="121" count="9" type="stmt"/>
+        <line num="127" count="1" type="stmt"/>
+        <line num="129" count="20" type="stmt"/>
+        <line num="132" count="140" type="cond" truecount="3" falsecount="0"/>
+        <line num="135" count="140" type="stmt"/>
+        <line num="137" count="140" type="stmt"/>
+        <line num="141" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.components.styles">
+      <metrics statements="21" coveredstatements="21" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <file name="AccountPageStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\AccountPageStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="2" type="stmt"/>
+      </file>
+      <file name="AuthStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\AuthStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="3" type="stmt"/>
+      </file>
+      <file name="BuildHabitGraphStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\BuildHabitGraphStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="1" type="stmt"/>
+      </file>
+      <file name="CalendarPageStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\CalendarPageStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="3" type="stmt"/>
+      </file>
+      <file name="CircleProgressStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\CircleProgressStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="3" type="stmt"/>
+      </file>
+      <file name="Colors.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\Colors.ts">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="19" type="stmt"/>
+        <line num="2" count="19" type="stmt"/>
+        <line num="4" count="19" type="stmt"/>
+      </file>
+      <file name="HabitModalStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\HabitModalStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="3" type="stmt"/>
+      </file>
+      <file name="HabitPageStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\HabitPageStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="1" type="stmt"/>
+      </file>
+      <file name="HabitPanelStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\HabitPanelStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="1" type="stmt"/>
+      </file>
+      <file name="NotFoundPageStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\NotFoundPageStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="1" type="stmt"/>
+      </file>
+      <file name="ProgressEntryStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\ProgressEntryStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="4" count="1" type="stmt"/>
+      </file>
+      <file name="QuitHabitGraphStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\QuitHabitGraphStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="1" type="stmt"/>
+      </file>
+      <file name="SettingsPageStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\SettingsPageStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="3" type="stmt"/>
+      </file>
+      <file name="SharedStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\SharedStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="5" count="5" type="stmt"/>
+      </file>
+      <file name="StatsBoxesStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\StatsBoxesStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="2" type="stmt"/>
+      </file>
+      <file name="ThemedTextStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\ThemedTextStyles.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="13" type="stmt"/>
+      </file>
+      <file name="WeekCalendarStyles.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\styles\WeekCalendarStyles.ts">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="5" type="stmt"/>
+        <line num="6" count="5" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.components.ui">
+      <metrics statements="6" coveredstatements="6" conditionals="4" coveredconditionals="4" methods="3" coveredmethods="3"/>
+      <file name="IconSymbol.ios.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\ui\IconSymbol.ios.tsx">
+        <metrics statements="1" coveredstatements="1" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+        <line num="17" count="4" type="stmt"/>
+      </file>
+      <file name="TabBarBackground.ios.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\components\ui\TabBarBackground.ios.tsx">
+        <metrics statements="5" coveredstatements="5" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+        <line num="9" count="2" type="stmt"/>
+        <line num="11" count="2" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.hooks">
+      <metrics statements="15" coveredstatements="13" conditionals="8" coveredconditionals="5" methods="6" coveredmethods="5"/>
+      <file name="useColorScheme.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\hooks\useColorScheme.ts">
+        <metrics statements="12" coveredstatements="10" conditionals="6" coveredconditionals="3" methods="5" coveredmethods="4"/>
+        <line num="6" count="573" type="cond" truecount="1" falsecount="1"/>
+        <line num="8" count="573" type="stmt"/>
+        <line num="9" count="320" type="stmt"/>
+        <line num="10" count="320" type="stmt"/>
+        <line num="11" count="320" type="cond" truecount="1" falsecount="1"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="14" count="320" type="cond" truecount="1" falsecount="1"/>
+        <line num="18" count="320" type="stmt"/>
+        <line num="20" count="320" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="24" count="320" type="stmt"/>
+        <line num="27" count="573" type="stmt"/>
+      </file>
+      <file name="useThemeColor.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\hooks\useThemeColor.ts">
+        <metrics statements="3" coveredstatements="3" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+        <line num="15" count="579" type="stmt"/>
+        <line num="16" count="579" type="stmt"/>
+        <line num="18" count="579" type="cond" truecount="2" falsecount="0"/>
+      </file>
+    </package>
+    <package name="src.lib">
+      <metrics statements="120" coveredstatements="79" conditionals="49" coveredconditionals="27" methods="26" coveredmethods="17"/>
+      <file name="client.ts" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\lib\client.ts">
+        <metrics statements="120" coveredstatements="79" conditionals="49" coveredconditionals="27" methods="26" coveredmethods="17"/>
+        <line num="4" count="5" type="stmt"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="30" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="46" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
+        <line num="52" count="1" type="stmt"/>
+        <line num="57" count="1" type="stmt"/>
+        <line num="63" count="1" type="stmt"/>
+        <line num="65" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="66" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="69" count="1" type="stmt"/>
+        <line num="70" count="1" type="stmt"/>
+        <line num="72" count="1" type="stmt"/>
+        <line num="77" count="2" type="stmt"/>
+        <line num="83" count="2" type="stmt"/>
+        <line num="85" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="86" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="89" count="1" type="stmt"/>
+        <line num="90" count="1" type="stmt"/>
+        <line num="92" count="1" type="stmt"/>
+        <line num="97" count="5" type="stmt"/>
+        <line num="98" count="5" type="stmt"/>
+        <line num="99" count="5" type="stmt"/>
+        <line num="101" count="5" type="cond" truecount="4" falsecount="0"/>
+        <line num="102" count="1" type="stmt"/>
+        <line num="104" count="4" type="stmt"/>
+        <line num="107" count="0" type="stmt"/>
+        <line num="108" count="0" type="stmt"/>
+        <line num="114" count="1" type="stmt"/>
+        <line num="115" count="1" type="stmt"/>
+        <line num="116" count="1" type="stmt"/>
+        <line num="118" count="0" type="stmt"/>
+        <line num="133" count="1" type="stmt"/>
+        <line num="134" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="135" count="0" type="stmt"/>
+        <line num="138" count="1" type="stmt"/>
+        <line num="139" count="1" type="stmt"/>
+        <line num="144" count="2" type="stmt"/>
+        <line num="149" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="150" count="1" type="stmt"/>
+        <line num="152" count="1" type="stmt"/>
+        <line num="157" count="2" type="stmt"/>
+        <line num="163" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="164" count="1" type="stmt"/>
+        <line num="166" count="1" type="stmt"/>
+        <line num="171" count="1" type="stmt"/>
+        <line num="177" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="178" count="0" type="stmt"/>
+        <line num="180" count="1" type="stmt"/>
+        <line num="185" count="2" type="stmt"/>
+        <line num="190" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="191" count="1" type="stmt"/>
+        <line num="193" count="1" type="stmt"/>
+        <line num="198" count="1" type="stmt"/>
+        <line num="201" count="1" type="stmt"/>
+        <line num="203" count="1" type="stmt"/>
+        <line num="204" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="205" count="0" type="stmt"/>
+        <line num="207" count="1" type="stmt"/>
+        <line num="212" count="0" type="stmt"/>
+        <line num="213" count="0" type="stmt"/>
+        <line num="214" count="0" type="stmt"/>
+        <line num="215" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="216" count="0" type="stmt"/>
+        <line num="218" count="0" type="stmt"/>
+        <line num="223" count="2" type="stmt"/>
+        <line num="224" count="2" type="stmt"/>
+        <line num="232" count="2" type="stmt"/>
+        <line num="234" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="235" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="238" count="1" type="stmt"/>
+        <line num="240" count="1" type="stmt"/>
+        <line num="241" count="1" type="stmt"/>
+        <line num="247" count="0" type="stmt"/>
+        <line num="248" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="249" count="0" type="stmt"/>
+        <line num="251" count="0" type="stmt"/>
+        <line num="256" count="0" type="stmt"/>
+        <line num="257" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="258" count="0" type="stmt"/>
+        <line num="260" count="0" type="stmt"/>
+        <line num="265" count="0" type="stmt"/>
+        <line num="270" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="271" count="0" type="stmt"/>
+        <line num="273" count="0" type="stmt"/>
+        <line num="278" count="0" type="stmt"/>
+        <line num="279" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="280" count="0" type="stmt"/>
+        <line num="282" count="0" type="stmt"/>
+        <line num="287" count="13" type="stmt"/>
+        <line num="288" count="13" type="stmt"/>
+        <line num="289" count="13" type="cond" truecount="1" falsecount="1"/>
+        <line num="290" count="8" type="stmt"/>
+        <line num="291" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="293" count="0" type="stmt"/>
+        <line num="295" count="13" type="stmt"/>
+        <line num="296" count="13" type="stmt"/>
+        <line num="301" count="5" type="stmt"/>
+        <line num="302" count="0" type="stmt"/>
+        <line num="303" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="304" count="0" type="stmt"/>
+        <line num="305" count="0" type="stmt"/>
+        <line num="307" count="0" type="stmt"/>
+        <line num="312" count="3" type="stmt"/>
+        <line num="317" count="5" type="stmt"/>
+        <line num="322" count="5" type="stmt"/>
+        <line num="323" count="0" type="stmt"/>
+        <line num="328" count="0" type="stmt"/>
+        <line num="329" count="0" type="stmt"/>
+        <line num="334" count="0" type="stmt"/>
+        <line num="335" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.utils">
+      <metrics statements="10" coveredstatements="10" conditionals="1" coveredconditionals="1" methods="2" coveredmethods="2"/>
+      <file name="dateUtils.tsx" path="D:\KCL\Y2\SEG\KCLMGP-HabitTracker-1\client\src\utils\dateUtils.tsx">
+        <metrics statements="10" coveredstatements="10" conditionals="1" coveredconditionals="1" methods="2" coveredmethods="2"/>
+        <line num="1" count="1" type="cond" truecount="1" falsecount="0"/>
+        <line num="2" count="3" type="stmt"/>
+        <line num="3" count="3" type="stmt"/>
+        <line num="5" count="3" type="stmt"/>
+        <line num="6" count="3" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
+        <line num="9" count="3" type="stmt"/>
+        <line num="10" count="21" type="stmt"/>
+        <line num="11" count="21" type="stmt"/>
+        <line num="13" count="21" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
