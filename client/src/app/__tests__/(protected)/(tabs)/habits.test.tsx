@@ -419,7 +419,7 @@ describe('HomeScreen', () => {
             await modal.props.onAddHabit();
         });
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Error adding habit:', expect.any(Error));
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error adding/updating habit:', expect.any(Error));
 
         await waitFor(() => {
             expect(getByTestId('new-habit-modal').props.modalVisible).toBe(false);
@@ -468,7 +468,7 @@ describe('HomeScreen', () => {
             await modal.props.onAddHabit();
         });
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Error updating habit:', expect.any(Error));
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error adding/updating habit:', expect.any(Error));
 
         await waitFor(() => {
             expect(getByTestId('new-habit-modal').props.modalVisible).toBe(false);
@@ -749,5 +749,196 @@ describe('Validation error tests', () => {
         );
         expect(modal.props.modalVisible).toBe(true);
     });
+});
 
+// --------------------------------------------------
+// ADDITIONAL TESTS FOR UNCOVERED LINES
+// (edit mode name changed => lines 83-84, negative interval => 101-102,
+// goal validations => 117-118, 121-122, 125-126, 129-130, and final catch => line 260)
+// --------------------------------------------------
+
+describe('Additional coverage tests for uncovered lines', () => {
+    beforeEach(() => {
+        (window.alert as jest.Mock).mockClear();
+        jest.clearAllMocks();
+        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('test@example.com');
+        (getHabitsForDate as jest.Mock).mockResolvedValue([]);
+    });
+
+    // 1) lines 83-84: edit mode + changed name => duplicates existing habit
+    test('edit mode changed name duplicates existing habit', async () => {
+        const existingHabit = {
+            user_email: 'test@example.com',
+            habitName: 'Duplicate Habit',
+            scheduleOption: 'interval',
+        };
+        // user has a habit named 'Duplicate Habit'
+        (getHabitsForDate as jest.Mock).mockResolvedValue([existingHabit]);
+
+        const { getByTestId } = render(<HomeScreen />);
+        await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
+
+        // Open modal in edit mode
+        const modal = getByTestId('new-habit-modal');
+
+        // simulate setting up an existing habit with a different name => 'Old Habit'
+        act(() => {
+            modal.props.setIsEditMode(true);
+            modal.props.setCurrentEditHabit({ ...existingHabit, habitName: 'Old Habit' });
+            // Then user changes name to 'Duplicate Habit' => triggers line 83-84
+            modal.props.setHabitName('Duplicate Habit');
+            modal.props.setScheduleOption('interval');
+            modal.props.setIntervalDays('5');
+        });
+
+        await act(async () => {
+            await modal.props.onAddHabit();
+        });
+
+        expect(window.alert).toHaveBeenCalledWith(
+            'A habit with this name already exists for this user.'
+        );
+        // ensure the modal stays open
+        expect(modal.props.modalVisible).toBe(true);
+    });
+
+    // 2) lines 101-102: negative interval
+    test('shows alert if intervalDays is negative', async () => {
+        const { getByTestId } = render(<HomeScreen />);
+
+        await act(async () => {
+            fireEvent.press(getByTestId('icon-symbol'));
+        });
+
+        const modal = getByTestId('new-habit-modal');
+        act(() => {
+            modal.props.setHabitName('Neg Interval');
+            modal.props.setScheduleOption('interval');
+            modal.props.setIntervalDays('-3');
+        });
+
+        await act(async () => {
+            await modal.props.onAddHabit();
+        });
+
+        expect(window.alert).toHaveBeenCalledWith('Interval days cannot be negative.');
+        expect(modal.props.modalVisible).toBe(true);
+    });
+
+    // 3) lines 117-118 => if goalValue is empty => showAlert('Please enter a valid goal value.')
+    test('shows alert if goal is enabled but no goalValue provided', async () => {
+        const { getByTestId } = render(<HomeScreen />);
+
+        await act(async () => {
+            fireEvent.press(getByTestId('icon-symbol'));
+        });
+
+        const modal = getByTestId('new-habit-modal');
+        act(() => {
+            modal.props.setHabitName('Some Habit');
+            modal.props.setIsGoalEnabled(true);
+            modal.props.setGoalValue(''); // empty
+        });
+
+        await act(async () => {
+            await modal.props.onAddHabit();
+        });
+
+        expect(window.alert).toHaveBeenCalledWith('Please enter a valid goal value.');
+        expect(modal.props.modalVisible).toBe(true);
+    });
+
+    // 4) lines 121-122 => if isNaN(goalValue) => showAlert('Goal value must be a number.')
+    test('shows alert if goal value is not a number', async () => {
+        const { getByTestId } = render(<HomeScreen />);
+
+        await act(async () => {
+            fireEvent.press(getByTestId('icon-symbol'));
+        });
+
+        const modal = getByTestId('new-habit-modal');
+        act(() => {
+            modal.props.setHabitName('Some Goal Habit');
+            modal.props.setIsGoalEnabled(true);
+            modal.props.setGoalValue('abc'); // not a number
+        });
+
+        await act(async () => {
+            await modal.props.onAddHabit();
+        });
+
+        expect(window.alert).toHaveBeenCalledWith('Goal value must be a number.');
+        expect(modal.props.modalVisible).toBe(true);
+    });
+
+    // 5) lines 125-126 => if parseFloat(goalValue) < 0 => showAlert('Goal value cannot be negative.')
+    test('shows alert if goal value is negative', async () => {
+        const { getByTestId } = render(<HomeScreen />);
+
+        await act(async () => {
+            fireEvent.press(getByTestId('icon-symbol'));
+        });
+
+        const modal = getByTestId('new-habit-modal');
+        act(() => {
+            modal.props.setHabitName('Some Goal Habit');
+            modal.props.setIsGoalEnabled(true);
+            modal.props.setGoalValue('-10');
+        });
+
+        await act(async () => {
+            await modal.props.onAddHabit();
+        });
+
+        expect(window.alert).toHaveBeenCalledWith('Goal value cannot be negative.');
+        expect(modal.props.modalVisible).toBe(true);
+    });
+
+    // 6) lines 129-130 => if no goalUnit => showAlert('Please enter a unit for your goal.')
+    test('shows alert if goal unit is not provided', async () => {
+        const { getByTestId } = render(<HomeScreen />);
+
+        await act(async () => {
+            fireEvent.press(getByTestId('icon-symbol'));
+        });
+
+        const modal = getByTestId('new-habit-modal');
+        act(() => {
+            modal.props.setHabitName('Goal Unit Habit');
+            modal.props.setIsGoalEnabled(true);
+            modal.props.setGoalValue('5');
+            modal.props.setGoalUnit('');
+        });
+
+        await act(async () => {
+            await modal.props.onAddHabit();
+        });
+
+        expect(window.alert).toHaveBeenCalledWith('Please enter a unit for your goal.');
+        expect(modal.props.modalVisible).toBe(true);
+    });
+
+    // 7) line 260 => final catch block => handleAddHabit => throws => console.error => return
+    test('final catch block => triggers line 260 return after error', async () => {
+        (addHabit as jest.Mock).mockRejectedValueOnce(new Error('Server error in addHabit')); // or updateHabit
+
+        const { getByTestId } = render(<HomeScreen />);
+        await act(async () => {
+            fireEvent.press(getByTestId('icon-symbol'));
+        });
+        const modal = getByTestId('new-habit-modal');
+
+        act(() => {
+            modal.props.setHabitName('Catch Error');
+            modal.props.setIntervalDays('5');
+        });
+
+        await act(async () => {
+            await modal.props.onAddHabit();
+        });
+
+        expect(window.alert).toHaveBeenCalledWith('Error saving habit'); // line 259 => showAlert
+        // This verifies line 260 => return after catch block.
+        expect(modal.props.modalVisible).toBe(false);
+    });
 });

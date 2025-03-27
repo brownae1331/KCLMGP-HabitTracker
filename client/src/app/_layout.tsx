@@ -1,46 +1,52 @@
-import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import * as splashMocks from './partialMockSplashScreen'; 
-// ^ your partial mock file
-import * as SplashScreen from 'expo-splash-screen'; 
-// ^ real code, instrumented for coverage
-import RootLayout from '../_layout';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import React, { useEffect } from 'react';
+import 'react-native-reanimated';
+import { ThemeProvider, useTheme } from '../components/ThemeContext';
+import { AuthProvider } from '../components/AuthContext';
 
-// PARTIALLY MOCK expo-font
-jest.mock('expo-font', () => ({
-  useFonts: jest.fn(),
-}));
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
 
-// We do NOT mock expo-splash-screen in the usual way
-// because we want coverage on real code. 
-// Instead, we rely on our partialMockSplashScreen.
-
-describe('RootLayout Component', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
+export default function RootLayout() {
+  const [loaded] = useFonts({
+    SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  it('renders null when fonts are NOT loaded', () => {
-    // Simulate fonts not loaded yet
-    (useFonts as jest.Mock).mockReturnValue([false]);
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
 
-    const { toJSON } = render(<RootLayout />);
-    // Because loaded = false, we expect it to return null
-    expect(toJSON()).toBeNull();
-  });
+  if (!loaded) {
+    return null;
+  }
 
-  it('calls (and covers) SplashScreen.hideAsync when fonts are loaded', async () => {
-    // Let the real code run for coverage
-    (useFonts as jest.Mock).mockReturnValue([true]);
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
 
-    // Render the component
-    render(<RootLayout />);
+function AppContent() {
+  const { theme, refreshKey } = useTheme();
 
-    // Wait for the effect to run.
-    await waitFor(() => {
-      // Check that the real hideAsync was called
-      expect(splashMocks.hideAsyncSpy).toHaveBeenCalled();
-    });
-  });
-});
+  return (
+    <NavigationThemeProvider key={refreshKey} value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack key={refreshKey}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(protected)" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+    </NavigationThemeProvider>
+  );
+}
