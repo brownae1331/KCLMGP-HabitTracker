@@ -344,7 +344,7 @@ export async function seed() {
         // We'll insert habit_instances for the future (no progress).
         for (const d of futureDates) {
           await connection.query(
-            `INSERT INTO habit_instances (user_email, habitName, dueDate)
+            `INSERT INGNORE INTO habit_instances (user_email, habitName, dueDate)
              VALUES (?, ?, ?)`,
             [h.user_email, h.habitName, formatDate(d)]
           );
