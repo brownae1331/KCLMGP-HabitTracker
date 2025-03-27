@@ -1,6 +1,6 @@
-Habit Tracker App
+# Habit Tracker App
 
-Authors: Andrew Brown, Joshua Francis, Nour Hadhoud, Ziming (Ming) Liu, Doris Nezaj, Hugo Potier De La Morandiere, Fasih-Ur Rahman, Scarlett Smith, Ivan Tachev
+## Authors: Andrew Brown, Joshua Francis, Nour Hadhoud, Ziming (Ming) Liu, Doris Nezaj, Hugo Potier De La Morandiere, Fasih-Ur Rahman, Scarlett Smith, Ivan Tachev
 
 
 # Welcome to your Expo app 👋
@@ -55,3 +55,4 @@ npm run reset-project
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
 
+This project is supported by AI
