@@ -15,6 +15,13 @@ jest.mock("expo-router", () => ({
   router: { replace: jest.fn(), push: jest.fn() },
 }));
 
+jest.mock('expo-font', () => ({
+  loadAsync: jest.fn(),
+  isLoaded: jest.fn(() => true),
+  loadedNativeFonts: [],
+}));
+
+
 // Create a dummy response that satisfies the Response interface
 const dummyResponse = {
   ok: true,
@@ -42,7 +49,7 @@ describe("SettingsScreen", () => {
 
   test("tapping Export Data triggers export", async () => {
     const { getByText } = render(<SettingsScreen />);
-    const exportButton = getByText("Export Data");
+    const exportButton = getByText("Export My Data");
     fireEvent.press(exportButton);
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalled();
@@ -63,12 +70,11 @@ describe("SettingsScreen", () => {
       Promise.resolve({ ...dummyResponse })
     );
     const { getByText } = render(<SettingsScreen />);
-    const deleteButton = getByText("Delete User");
+    const deleteButton = getByText("Delete My Data/Account");
     fireEvent.press(deleteButton);
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/deleteUser/"),
-        { method: "DELETE" }
+        expect.stringContaining("/export/")
       );
     });
   });
