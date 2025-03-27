@@ -196,7 +196,7 @@ function getDailyOutcome(habit: {
   }
 }
 
-async function seed() {
+export async function seed() {
   const pool = mysql.createPool(DB_CONFIG);
   try {
     const connection = await pool.getConnection();
