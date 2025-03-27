@@ -159,6 +159,7 @@ export default function HomeScreen() {
     } catch (error) {
       console.error('Error adding/updating habit:', error);
       showAlert("Error saving habit");
+      setModalVisible(false);
       return;
     }
 

@@ -419,7 +419,7 @@ describe('HomeScreen', () => {
             await modal.props.onAddHabit();
         });
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Error adding habit:', expect.any(Error));
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error adding/updating habit:', expect.any(Error));
 
         await waitFor(() => {
             expect(getByTestId('new-habit-modal').props.modalVisible).toBe(false);
@@ -468,7 +468,7 @@ describe('HomeScreen', () => {
             await modal.props.onAddHabit();
         });
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Error updating habit:', expect.any(Error));
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error adding/updating habit:', expect.any(Error));
 
         await waitFor(() => {
             expect(getByTestId('new-habit-modal').props.modalVisible).toBe(false);
