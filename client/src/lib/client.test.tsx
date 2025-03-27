@@ -480,7 +480,7 @@ describe('Client API Additional Tests', () => {
         it('should return the longest streak data', async () => {
             const mockData = { longestStreak: 5 };
             setupFetchMock(mockData, true, 200);
-            const result = await client.fetchLongestStreak('test@example.com', 'Exercise', 'week');
+            const result = await client.fetchLongestStreak('test@example.com', 'Exercise');
             expect(global.fetch).toHaveBeenCalledWith(
                 `${BASE_URL}/stats/test@example.com/Exercise/longest-streak`,
                 expect.anything()
@@ -491,7 +491,7 @@ describe('Client API Additional Tests', () => {
         it('should throw an error if fetch fails', async () => {
             setupFetchMock({ error: 'some error' }, false, 500);
             await expect(
-                client.fetchLongestStreak('test@example.com', 'Exercise', 'week')
+                client.fetchLongestStreak('test@example.com', 'Exercise')
             ).rejects.toThrowError();
         });
     });
