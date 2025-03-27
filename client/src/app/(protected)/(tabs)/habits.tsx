@@ -144,7 +144,7 @@ export default function HomeScreen() {
       goalValue: isGoalEnabled ? parseFloat(goalValue) : null,
       goalUnit: isGoalEnabled ? goalUnit : null,
     };
-  
+
     try {
       // In edit mode: call updateHabit
       // Otherwise: call addHabit
@@ -153,7 +153,7 @@ export default function HomeScreen() {
       } else {
         await addHabit(newHabit);
       }
-  
+
       // Refresh the habit list
       await fetchHabits();
     } catch (error) {
@@ -175,8 +175,6 @@ export default function HomeScreen() {
     setGoalUnit('');
     setModalVisible(false);
   };
-
-
 
   const [dbHabits, setDbHabits] = useState<any[]>([]);
 

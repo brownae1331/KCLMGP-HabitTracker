@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ActivityIndicator, StyleSheet, View, SafeAreaView, ScrollView } from 'react-native';
+import { ActivityIndicator, View, SafeAreaView, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { ThemedText } from '../../../components/ThemedText';
 import { Colors } from '../../../components/styles/Colors';
@@ -19,10 +19,11 @@ type Habit = {
 };
 
 export default function StatsScreen() {
-  const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
+  const [selectedHabit, setSelectedHabit] = useState<string>("");
   const [habits, setHabits] = useState<Habit[]>([]);
   const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -45,21 +46,30 @@ export default function StatsScreen() {
 
       const fetchHabitsData = async () => {
         try {
+          setRefreshing(true);
           const data = await fetchHabits(email);
           setHabits(data);
+
+          // Reset selection if the selected habit no longer exists
+          if (selectedHabit && !data.some(habit => habit.habitName === selectedHabit)) {
+            setSelectedHabit("");
+          }
         } catch (error) {
+          console.error('Error fetching habits:', error);
           setHabits([]);
+        } finally {
+          setRefreshing(false);
         }
       };
 
       fetchHabitsData();
-    }, [email])
+    }, [email, selectedHabit])
   );
 
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={Colors[theme].tint} />
       </SafeAreaView>
     );
   }
@@ -81,20 +91,22 @@ export default function StatsScreen() {
           </View>
         ) : (
           <>
-            <View style={[StatsPageStyles.pickerContainer, { 
-              backgroundColor: Colors[theme].graphBackground, 
-              borderColor: Colors[theme].pickerBackground }]}>
+            <View style={[StatsPageStyles.pickerContainer, {
+              backgroundColor: Colors[theme].graphBackground,
+              borderColor: Colors[theme].pickerBackground
+            }]}>
               <Picker
                 selectedValue={selectedHabit}
                 onValueChange={(itemValue) => setSelectedHabit(itemValue)}
-                style={[StatsPageStyles.picker, { 
-                  backgroundColor: theme === 'dark' ? Colors.dark.background2 : '#FAFAFA', 
+                style={[StatsPageStyles.picker, {
+                  backgroundColor: theme === 'dark' ? Colors.dark.background2 : '#FAFAFA',
                   color: Colors[theme].text,
-                  borderColor: Colors[theme].graphBackground, }]}
+                  borderColor: Colors[theme].graphBackground,
+                }]}
               >
                 <Picker.Item
                   label="Select a habit..."
-                  value={null}
+                  value=""
                   color={Colors[theme].backgroundText}
                 />
                 {habits.map((habit) => (
@@ -108,13 +120,18 @@ export default function StatsScreen() {
               </Picker>
             </View>
 
-            {selectedHabit && selectedHabitData && email ? (
+            {refreshing ? (
+              <View style={StatsPageStyles.loadingContainer}>
+                <ActivityIndicator size="large" color={Colors[theme].tint} />
+                <ThemedText style={StatsPageStyles.loadingText}>Loading stats...</ThemedText>
+              </View>
+            ) : selectedHabit && selectedHabitData && email ? (
               <View style={StatsPageStyles.graphContainer}>
-                  {(selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
-                    <BuildHabitGraph email={email} habitName={selectedHabit} />
-                  ) : (
-                    <QuitHabitGraph email={email} habitName={selectedHabit} />
-                  )}
+                {(selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
+                  <BuildHabitGraph email={email} habitName={selectedHabit} />
+                ) : (
+                  <QuitHabitGraph email={email} habitName={selectedHabit} />
+                )}
               </View>
             ) : (
               <View style={StatsPageStyles.messageContainer}>
