@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchBuildHabitProgress } from './client';
 import * as client from './client';
 
 const BASE_URL = 'http://localhost:3000';
@@ -451,7 +452,7 @@ describe('Client API Additional Tests', () => {
         beforeAll(() => {
             jest.spyOn(client, 'fetchBuildHabitProgress').mockImplementation(async () => {
                 return [{ date: '2023-01-01', progress: 70 }];
-              });              
+              });
         });
 
         it('should return progress data for a habit in a given range', async () => {
@@ -587,7 +588,6 @@ describe('New Client API Functions Tests', () => {
             expect.any(Object)
         );
     });
-    
 });
 
 describe('Additional API Functions: Habit Interval, Habit Days, and Habit Streak', () => {
@@ -706,6 +706,33 @@ describe('exportUserData', () => {
         );
         await expect(client.exportUserData(mockEmail)).rejects.toThrow('Export failed');
     });
+});
+
+// This final block ensures coverage for the exact line in `fetchBuildHabitProgress`
+// by calling the real function, returning a success
+
+describe('fetchBuildHabitProgress coverage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    global.fetch = jest.fn();
+  });
+
+  it('calls fetchBuildHabitProgress successfully and returns data', async () => {
+    // Mock fetch to return a successful response
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ([{ date: '2025-03-15', progress: 75 }]),
+    });
+
+    const result = await fetchBuildHabitProgress('test@example.com', 'Reading', 'week');
+
+    expect(result).toEqual([{ date: '2025-03-15', progress: 75 }]);
+    // Also confirm fetch was called with the correct URL
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:3000/stats/test@example.com/Reading?range=week',
+      expect.any(Object),
+    );
+  });
 });
 
 describe('Additional Branch Coverage Tests', () => {

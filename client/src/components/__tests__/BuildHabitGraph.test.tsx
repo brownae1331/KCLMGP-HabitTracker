@@ -14,8 +14,6 @@ jest.mock('@react-navigation/native', () => ({
   useFocusEffect: (cb: any) => cb(),
 }));
 
-
-
 // Mock victory-native components to simplify rendering.
 jest.mock('victory-native', () => {
   const React = require('react');
@@ -23,7 +21,9 @@ jest.mock('victory-native', () => {
   return {
     VictoryBar: (props: any) => <View testID="VictoryBar" {...props} />,
     VictoryChart: ({ children, ...props }: any) => (
-      <View testID="VictoryChart" {...props}>{children}</View>
+      <View testID="VictoryChart" {...props}>
+        {children}
+      </View>
     ),
     VictoryAxis: (props: any) => <View testID="VictoryAxis" {...props} />,
     VictoryTheme: { material: {} },
@@ -192,6 +192,9 @@ describe('BuildHabitGraph', () => {
     const axes = getAllByTestId('VictoryAxis');
     const depAxis = axes.find(a => a.props.dependentAxis);
     expect(depAxis).toBeDefined();
+    if (!depAxis) {
+      throw new Error('Dependent axis not found');
+    }
     const formatted = depAxis.props.tickFormat(3.5);
     expect(formatted).toBe('3.5');
   });
@@ -252,6 +255,127 @@ describe('BuildHabitGraph', () => {
       expect(getByText('longestStreak: 0')).toBeTruthy();
       expect(getByText('completionRate: 0')).toBeTruthy();
       expect(getByText('fourthStat: 0')).toBeTruthy();
+    });
+  });
+
+  test('correctly maps monthly progress using getDate and populates y from dataMap', async () => {
+    (fetchBuildHabitProgress as jest.Mock).mockResolvedValueOnce([
+      { progressDate: '2025-03-09T00:00:00Z', progress: 7 }, // Should map to x = '9'
+    ]);
+    (fetchStreak as jest.Mock).mockResolvedValueOnce([{ streak: 1 }]);
+    (fetchLongestStreak as jest.Mock).mockResolvedValueOnce(2);
+    (fetchCompletionRate as jest.Mock).mockResolvedValueOnce(40);
+    (fetchAverageProgress as jest.Mock).mockResolvedValueOnce(5);
+  
+    const { getByText, getByTestId } = render(
+      <BuildHabitGraph email="x@test.com" habitName="habit" />
+    );
+  
+    fireEvent.press(getByText('M')); // Switch to month view
+  
+    await waitFor(() => {
+      const bar = getByTestId('VictoryBar');
+      const data = bar.props.data;
+      const day9 = data.find((d: any) => d.x === '9');
+      expect(day9).toBeDefined();
+      expect(day9.y).toBe(7); // Confirms dataMap.get('9') worked
+    });
+  });
+
+  test('correctly maps yearly data and sets dataMap using avgProgress', async () => {
+    (fetchBuildHabitProgress as jest.Mock).mockResolvedValueOnce([
+      { month: 4, avgProgress: 9.5 }, // April (index 3)
+      { month: 11, avgProgress: 12.2 }, // November (index 10)
+    ]);
+    (fetchStreak as jest.Mock).mockResolvedValueOnce([{ streak: 0 }]);
+    (fetchLongestStreak as jest.Mock).mockResolvedValueOnce(3);
+    (fetchCompletionRate as jest.Mock).mockResolvedValueOnce(55);
+    (fetchAverageProgress as jest.Mock).mockResolvedValueOnce(8);
+  
+    const { getByText, getByTestId } = render(
+      <BuildHabitGraph email="x@test.com" habitName="habit" />
+    );
+  
+    fireEvent.press(getByText('Y')); // Switch to year view
+  
+    await waitFor(() => {
+      const bar = getByTestId('VictoryBar');
+      const data = bar.props.data;
+  
+      const april = data.find((d: any) => d.x === 'Apr');
+      expect(april).toBeDefined();
+      expect(april.y).toBe(9.5); // dataMap.get('Apr')
+  
+      const nov = data.find((d: any) => d.x === 'Nov');
+      expect(nov).toBeDefined();
+      expect(nov.y).toBe(12.2); // dataMap.get('Nov')
+    });
+  });  
+
+  test('maps monthly data by using date.getDate().toString()', async () => {
+    // Mock monthly data to hit the line where we convert the date to a string.
+    (fetchBuildHabitProgress as jest.Mock).mockResolvedValueOnce([
+      { progressDate: '2025-03-09T00:00:00Z', progress: 7 }, // 9th of March
+    ]);
+    // Provide mock data for streak & stats
+    (fetchStreak as jest.Mock).mockResolvedValueOnce([{ streak: 1 }]);
+    (fetchLongestStreak as jest.Mock).mockResolvedValueOnce(5);
+    (fetchCompletionRate as jest.Mock).mockResolvedValueOnce(60);
+    (fetchAverageProgress as jest.Mock).mockResolvedValueOnce(4.5);
+  
+    const { getByText, getByTestId } = render(
+      <BuildHabitGraph email="mytest@example.com" habitName="TestHabit" />
+    );
+  
+    // Switch to monthly view
+    fireEvent.press(getByText('M'));
+  
+    // Wait for data to render
+    await waitFor(() => {
+      // Grab the VictoryBar data
+      const bar = getByTestId('VictoryBar');
+      const data = bar.props.data;
+  
+      // The 9th should have 7 as its value
+      const ninthDay = data.find((d: any) => d.x === '9');
+      expect(ninthDay).toBeDefined();
+      expect(ninthDay.y).toBe(7);
+    });
+  });
+
+  test('maps yearly data using month-based entries and avgProgress', async () => {
+    // Mock yearly data with month and avgProgress
+    (fetchBuildHabitProgress as jest.Mock).mockResolvedValueOnce([
+      { month: 4, avgProgress: 8 }, // April (index 3)
+      { month: 12, avgProgress: 15 }, // December (index 11)
+    ]);
+    // Provide mock data for streak & stats
+    (fetchStreak as jest.Mock).mockResolvedValueOnce([{ streak: 2 }]);
+    (fetchLongestStreak as jest.Mock).mockResolvedValueOnce(6);
+    (fetchCompletionRate as jest.Mock).mockResolvedValueOnce(80);
+    (fetchAverageProgress as jest.Mock).mockResolvedValueOnce(7.5);
+  
+    const { getByText, getByTestId } = render(
+      <BuildHabitGraph email="mytest@example.com" habitName="TestHabit" />
+    );
+  
+    // Switch to yearly view
+    fireEvent.press(getByText('Y'));
+  
+    // Wait for data to render
+    await waitFor(() => {
+      const bar = getByTestId('VictoryBar');
+      const data = bar.props.data;
+  
+      // Check April
+      const apr = data.find((d: any) => d.x === 'Apr');
+      expect(apr).toBeDefined();
+      expect(apr.y).toBe(8);
+  
+      // Check December
+      const dec = data.find((d: any) => d.x === 'Dec');
+      expect(dec).toBeDefined();
+      expect(dec.y).toBe(15);
     });
   });
 

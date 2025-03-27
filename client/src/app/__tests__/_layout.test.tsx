@@ -51,3 +51,43 @@ describe('RootLayout Component', () => {
     });
   });
 });
+
+jest.mock('expo-splash-screen', () => ({
+  hideAsync: jest.fn(),
+  preventAutoHideAsync: jest.fn(),
+}));
+
+jest.mock('expo-font', () => ({
+  useFonts: jest.fn(),
+}));
+
+// Mock ThemeContext so that our component can render
+jest.mock('../components/ThemeContext', () => ({
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useTheme: () => ({ theme: 'light', refreshKey: '1' }),
+}));
+
+// Mock AuthContext
+jest.mock('../components/AuthContext', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+describe('RootLayout', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('renders null when fonts are not loaded', () => {
+    (useFonts as jest.Mock).mockReturnValue([false]);
+    const { toJSON } = render(<RootLayout />);
+    expect(toJSON()).toBeNull();
+  });
+
+  it('calls SplashScreen.hideAsync when fonts are loaded', async () => {
+    (useFonts as jest.Mock).mockReturnValue([true]);
+    render(<RootLayout />);
+    await waitFor(() => {
+      expect(SplashScreen.hideAsync).toHaveBeenCalled();
+    });
+  });
+});
