@@ -1,58 +1,46 @@
-# Habit Tracker App
+Habit Tracker App
+Authors: Andrew Brown, Joshua Francis, Nour Hadhoud, Ziming (Ming) Liu, Doris Nezaj, Hugo Potier De La Morandiere, Fasih-Ur Rahman, Scarlett Smith, Ivan Tachev
+Welcome to your Expo app 👋
+This is an Expo project created with create-expo-app.
 
-## Authors: Andrew Brown, Joshua Francis, Nour Hadhoud, Ziming (Ming) Liu, Doris Nezaj, Hugo Potier De La Morandiere, Fasih-Ur Rahman, Scarlett Smith, Ivan Tachev
-
-
-# Welcome to your Expo app 👋
-
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## Get started
-
+Get started
 MacOS install (brew)
-1. brew install mysql
-2. brew services start mysql
-3. mysql --version
-4. mysql -u root -p
-5. CREATE DATABASE habitdb;
-6. EXIT;
-7. cd server
-8. npm install  # Install dependencies
-9. npm start    # Start the server
-10. cd ../client # New terminal
-11. npm install  # Install dependencies
-12. expo/npm start   # Start the React Native app
 
-
+brew install mysql
+brew services start mysql
+mysql --version
+mysql -u root -p
+CREATE DATABASE habitdb;
+EXIT;
+cd server
+npm install # Install dependencies
+npm start # Start the server
+cd ../client # New terminal
+npm install # Install dependencies
+expo/npm start # Start the React Native app
 Windows install
-1.   mysql -u root -p # Sign in prompt, mysql must be installed prior
-2.   CREATE DATABASE habitdb;
-3.   cd server
-4.   npm install # If u dont have dependencies
-5.   npm start # Terminal output: Server listening on port 3000 Connected to MySQL database habitdb
-6.   Start a new terminal
-7.   cd ../client
-8.   npm install
-9.   expo/npm start
 
+mysql -u root -p # Sign in prompt, mysql must be installed prior
+CREATE DATABASE habitdb;
+cd server
+npm install # If u dont have dependencies
+npm start # Terminal output: Server listening on port 3000 Connected to MySQL database habitdb
+Start a new terminal
+cd ../client
+npm install
+expo/npm start
 In the output, you'll find options to open the app in a
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+development build
+Android emulator
+iOS simulator
+Expo Go, a limited sandbox for trying out app development with Expo
+You can start developing by editing the files inside the app directory. This project uses file-based routing.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
+Get a fresh project
 When you're ready, run:
 
-```bash
 npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
+This command will move the starter code to the app-example directory and create a blank app directory where you can start developing.
 
 This project is supported by AI
