@@ -119,15 +119,6 @@ export async function logout() {
   }
 }
 
-//Fetch habits for a given username.
-// export async function getHabits(username: string): Promise<Habit[]> {
-//   const response = await fetch(`${BASE_URL}/habits/${username}`);
-//   if (!response.ok) {
-//     throw new Error('Error fetching habits');
-//   }
-//   return response.json();
-// }
-
 // Fetch habits for a particular user on a particular date
 export async function getHabitsForDate(email: string, date: string): Promise<Habit[]> {
   const response = await fetch(`${BASE_URL}/habits/${email}/${date}`);
@@ -153,9 +144,9 @@ export async function addHabit(habitData: Habit) {
 }
 
 // Delete a habit
-export async function deleteHabit(user_email: string, habitName: string) {
+export async function deleteHabit(email: string, habitName: string) {
   const response = await fetch(
-    `${BASE_URL}/habits/${user_email}/${encodeURIComponent(habitName)}`,
+    `${BASE_URL}/habits/${email}/${encodeURIComponent(habitName)}`,
     {
       method: 'DELETE',
     }
@@ -167,9 +158,9 @@ export async function deleteHabit(user_email: string, habitName: string) {
 }
 
 // Delete a specific user by email (primary key)
-export async function deleteUser(user_email: string) {
+export async function deleteUser(email: string) {
   const response = await fetch(
-    `${BASE_URL}/users/${user_email}`,
+    `${BASE_URL}/users/${email}`,
     {
       method: 'DELETE',
     }
@@ -182,7 +173,7 @@ export async function deleteUser(user_email: string) {
 
 // Update a habit's progress
 export async function updateHabitProgress(email: string, habitName: string, progress: number) {
-  const response = await fetch(`${BASE_URL}/habit-progress`, {
+  const response = await fetch(`${BASE_URL}/progress`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, habitName, progress }),
@@ -200,7 +191,7 @@ export async function getHabitProgressByDate(email: string, date: string) {
   // Ensure date is in MySQL-compatible format (YYYY-MM-DD)
   const formattedDate = new Date(date).toISOString().split('T')[0];
 
-  const response = await fetch(`${BASE_URL}/habit-progress-by-date/${encodedEmail}/${formattedDate}`);
+  const response = await fetch(`${BASE_URL}/progress/${encodedEmail}/${formattedDate}`);
   if (!response.ok) {
     throw new Error('Error fetching habit progress');
   }
@@ -211,7 +202,7 @@ export async function getHabitProgressByDate(email: string, date: string) {
 export async function getHabitProgressByDateAndHabit(email: string, habitName: string, date: string) {
   const encodedEmail = encodeURIComponent(email);
   const formattedDate = new Date(date).toISOString().split('T')[0];
-  const response = await fetch(`${BASE_URL}/habit-progress-by-date/${encodedEmail}/${habitName}/${formattedDate}`);
+  const response = await fetch(`${BASE_URL}/progress/${encodedEmail}/${habitName}/${formattedDate}`);
   if (!response.ok) {
     throw new Error('Error fetching habit progress');
   }
@@ -244,7 +235,7 @@ export async function updatePassword(username: string, oldPassword: string, newP
 
 // Get interval days for a habit
 export async function getHabitInterval(email: string, habitName: string) {
-  const response = await fetch(`${BASE_URL}/habit-interval/${email}/${habitName}`);
+  const response = await fetch(`${BASE_URL}/habits/interval/${email}/${habitName}`);
   if (!response.ok) {
     throw new Error('Error fetching habit interval');
   }
@@ -253,7 +244,7 @@ export async function getHabitInterval(email: string, habitName: string) {
 
 // Get habit days for a habit
 export async function getHabitDays(email: string, habitName: string) {
-  const response = await fetch(`${BASE_URL}/habit-days/${email}/${habitName}`);
+  const response = await fetch(`${BASE_URL}/habits/days/${email}/${habitName}`);
   if (!response.ok) {
     throw new Error('Error fetching habit days');
   }
@@ -275,7 +266,7 @@ export async function updateHabit(mockEmail: string, habitData: Habit) {
 
 // Get habit streak
 export async function getHabitStreak(email: string, habitName: string, date: string) {
-  const response = await fetch(`${BASE_URL}/habit-streak-by-date/${email}/${habitName}/${date}`);
+  const response = await fetch(`${BASE_URL}/progress/streak/${email}/${habitName}/${date}`);
   if (!response.ok) {
     throw new Error('Error fetching habit streak');
   }
@@ -309,12 +300,12 @@ export const fetchHabits = async (email: string): Promise<any[]> => {
 
 // fetch progress data for a build habit
 export async function fetchBuildHabitProgress(email: string, habitName: string, range: 'week' | 'month' | 'year') {
-  return apiRequest<any[]>(`${BASE_URL}/stats/${email}/${habitName}/progress?range=${range}`);
+  return apiRequest<any[]>(`${BASE_URL}/stats/${email}/${habitName}?range=${range}`);
 }
 
 // fetch streak data
 export async function fetchStreak(email: string, habitName: string, range: 'week' | 'month') {
-  return apiRequest<any[]>(`${BASE_URL}/stats/${email}/${habitName}/streak?range=${range}`);
+  return apiRequest<any[]>(`${BASE_URL}/stats/streak/${email}/${habitName}?range=${range}`);
 }
 
 // fetch longest streak
@@ -325,20 +316,17 @@ export async function fetchLongestStreak(email: string, habitName: string, p0: s
 
 // fetch completion rate
 export async function fetchCompletionRate(email: string, habitName: string): Promise<number> {
-  const data = await apiRequest<{ completionRate: number }>(`${BASE_URL}/stats/${email}/${habitName}/completion-rate`);
+  const data = await apiRequest<{ completionRate: number }>(`${BASE_URL}/stats/completion-rate/${email}/${habitName}`);
   return data.completionRate;
 }
 
 // fetch average progress
 export async function fetchAverageProgress(email: string, habitName: string): Promise<number> {
-  const data = await apiRequest<{ averageProgress: number }>(`${BASE_URL}/stats/${email}/${habitName}/average-progress`);
+  const data = await apiRequest<{ averageProgress: number }>(`${BASE_URL}/stats/average-progress/${email}/${habitName}`);
   return data.averageProgress;
 }
 
-export function fetchHabitProgress(arg0: string, arg1: string, arg2: string): any {
-  throw new Error('Function not implemented.');
+// export user data
+export async function exportUserData(email: string) {
+  return apiRequest<any>(`${BASE_URL}/users/export/${email}`);
 }
-export function apiRequest(apiRequest: any) {
-  throw new Error('Function not implemented.');
-}
-
