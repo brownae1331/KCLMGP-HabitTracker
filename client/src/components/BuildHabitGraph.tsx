@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, TouchableOpacity, Text, useWindowDimensions } from 'react-native';
 import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme } from 'victory-native';
-import { useWindowDimensions } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from './ThemeContext';
 import { Colors } from './styles/Colors';
 import { BuildHabitGraphStyles } from './styles/BuildHabitGraphStyles';
@@ -38,94 +38,97 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
     Y: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const rawData = await fetchBuildHabitProgress(email, habitName, range === 'W' ? 'week' : range === 'M' ? 'month' : 'year')
+  const fetchChartData = async () => {
+    try {
+      const rawData = await fetchBuildHabitProgress(email, habitName, range === 'W' ? 'week' : range === 'M' ? 'month' : 'year');
 
-        const startDate = new Date(today);
-        if (range === 'W') {
-          startDate.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-        } else if (range === 'M') {
-          startDate.setDate(1);
-        } else {
-          startDate.setFullYear(today.getFullYear(), 0, 1);
-        }
-
-        let newData: ChartData[];
-        if (range === 'W' || range === 'M') {
-          const dataMap = new Map();
-          rawData.forEach((entry: { progressDate: string; progress: number }) => {
-            const date = new Date(entry.progressDate);
-            let x;
-            if (range === 'W') {
-              const dayIndex = (date.getDay() + 6) % 7;
-              x = labels[range][dayIndex];
-            } else {
-              x = date.getDate().toString();
-            }
-            dataMap.set(x, entry.progress);
-          });
-
-          newData = labels[range].map(label => ({
-            x: label,
-            y: dataMap.has(label) ? dataMap.get(label) : 0,
-          }));
-        } else {
-          const dataMap = new Map();
-          rawData.forEach((entry: { month: number; avgProgress: number }) => {
-            const monthIndex = entry.month - 1;
-            const x = labels[range][monthIndex];
-            dataMap.set(x, entry.avgProgress);
-          });
-
-          newData = labels[range].map(label => ({
-            x: label,
-            y: dataMap.has(label) ? dataMap.get(label) : 0,
-          }));
-        }
-
-        const hasDecimalValues = newData.some(data => data.y % 1 !== 0);
-        setHasDecimals(hasDecimalValues);
-        setChartData(newData);
-      } catch (error) {
+      const startDate = new Date(today);
+      if (range === 'W') {
+        startDate.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+      } else if (range === 'M') {
+        startDate.setDate(1);
+      } else {
+        startDate.setFullYear(today.getFullYear(), 0, 1);
       }
-    };
 
-    fetchData();
-  }, [range, email, habitName]);
+      let newData: ChartData[];
+      if (range === 'W' || range === 'M') {
+        const dataMap = new Map();
+        rawData.forEach((entry: { progressDate: string; progress: number }) => {
+          const date = new Date(entry.progressDate);
+          let x;
+          if (range === 'W') {
+            const dayIndex = (date.getDay() + 6) % 7;
+            x = labels[range][dayIndex];
+          } else {
+            x = date.getDate().toString();
+          }
+          dataMap.set(x, entry.progress);
+        });
 
-  useEffect(() => {
-    const fetchStreakData = async () => {
-      try {
-        const rawData = await fetchStreak(email, habitName, 'week')
+        newData = labels[range].map(label => ({
+          x: label,
+          y: dataMap.has(label) ? dataMap.get(label) : 0,
+        }));
+      } else {
+        const dataMap = new Map();
+        rawData.forEach((entry: { month: number; avgProgress: number }) => {
+          const monthIndex = entry.month - 1;
+          const x = labels[range][monthIndex];
+          dataMap.set(x, entry.avgProgress);
+        });
 
-        const mostRecentEntry = rawData[rawData.length - 1];
-        setCurrentStreak(mostRecentEntry ? mostRecentEntry.streak : 0);
-      } catch (error) {
+        newData = labels[range].map(label => ({
+          x: label,
+          y: dataMap.has(label) ? dataMap.get(label) : 0,
+        }));
       }
-    };
 
-    fetchStreakData();
-  }, [range, email, habitName]);
+      const hasDecimalValues = newData.some(data => data.y % 1 !== 0);
+      setHasDecimals(hasDecimalValues);
+      setChartData(newData);
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+      setChartData(labels[range].map(label => ({ x: label, y: 0 })));
+    }
+  };
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const longestStreak = await fetchLongestStreak(email, habitName);
-        setLongestStreak(longestStreak);
+  const fetchStreakData = async () => {
+    try {
+      const rawData = await fetchStreak(email, habitName, 'week');
+      const mostRecentEntry = rawData[rawData.length - 1];
+      setCurrentStreak(mostRecentEntry ? mostRecentEntry.streak : 0);
+    } catch (error) {
+      console.error('Error fetching streak data:', error);
+      setCurrentStreak(0);
+    }
+  };
 
-        const completionRate = await fetchCompletionRate(email, habitName);
-        setCompletionRate(completionRate);
+  const fetchStats = async () => {
+    try {
+      const longestStreak = await fetchLongestStreak(email, habitName);
+      setLongestStreak(longestStreak);
 
-        const averageProgress = await fetchAverageProgress(email, habitName);
-        setAverageProgress(averageProgress);
-      } catch (error) {
-      }
-    };
+      const completionRate = await fetchCompletionRate(email, habitName);
+      setCompletionRate(completionRate);
 
-    fetchStats();
-  }, [email, habitName]);
+      const averageProgress = await fetchAverageProgress(email, habitName);
+      setAverageProgress(averageProgress);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      setLongestStreak(0);
+      setCompletionRate(0);
+      setAverageProgress(0);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchChartData();
+      fetchStreakData();
+      fetchStats();
+    }, [range, email, habitName])
+  );
 
   const referenceWidth = 400;
   const baseBarWidth = { W: 15, M: 5, Y: 10 };
@@ -140,7 +143,7 @@ const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
     ticks: { stroke: Colors[theme].text, size: 5 },
     tickLabels: { fill: Colors[theme].text, fontSize: 10 },
     grid: { stroke: Colors[theme].border, strokeWidth: 0.5, strokeDasharray: '5,5' },
-  }
+  };
 
   return (
     <>
