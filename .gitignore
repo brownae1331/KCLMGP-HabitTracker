@@ -112,3 +112,4 @@ client/coverage/lcov-report/src/lib/client.ts.html
 client/coverage/lcov-report/src/lib/index.html
 client/coverage/lcov-report/src/utils/dateUtils.tsx.html
 client/coverage/lcov-report/src/utils/index.html
+client/coverage/lcov-report/src/app/(protected)/(tabs)/stats.tsx.html
