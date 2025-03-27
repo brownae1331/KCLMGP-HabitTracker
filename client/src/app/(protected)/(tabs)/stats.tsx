@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ActivityIndicator, StyleSheet, View, SafeAreaView, ScrollView } from 'react-native';
+import { ActivityIndicator, View, SafeAreaView, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { ThemedText } from '../../../components/ThemedText';
 import { Colors } from '../../../components/styles/Colors';
@@ -18,6 +18,7 @@ type Habit = {
   goalValue: number | null;
 };
 
+// Stats screen component - displays user habit statistics with selectable graphs based on habit type
 export default function StatsScreen() {
   const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -25,6 +26,7 @@ export default function StatsScreen() {
   const [loading, setLoading] = useState<boolean>(true);
   const { theme } = useTheme();
 
+  // Fetch user's email from AsyncStorage
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -39,23 +41,32 @@ export default function StatsScreen() {
     fetchUserData();
   }, []);
 
+  // Fetch habits from the backend each time the user accesses the screen
   useFocusEffect(
     useCallback(() => {
       if (!email) return;
-
+  
       const fetchHabitsData = async () => {
         try {
           const data = await fetchHabits(email);
           setHabits(data);
+          return data;
         } catch (error) {
+          console.error('Error fetching habits:', error);
           setHabits([]);
+          return [];
         }
       };
-
-      fetchHabitsData();
-    }, [email])
+  
+      fetchHabitsData().then((fetchedData) => {
+        if (selectedHabit && !fetchedData.some(habit => habit.habitName === selectedHabit)) {
+          setSelectedHabit(null);
+        }
+      });
+    }, [email, selectedHabit])
   );
 
+  // Show loading indicator while retrieving stored email
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -64,6 +75,7 @@ export default function StatsScreen() {
     );
   }
 
+  // Find the full habit object for the selected habit
   const selectedHabitData = habits.find(h => h.habitName === selectedHabit);
 
   return (
