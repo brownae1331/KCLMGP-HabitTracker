@@ -175,6 +175,6 @@ describe('GET /progress/streak/:email/:habitName/:date', () => {
         const res = await request(app).get('/progress/streak/test@example.com/TestHabit/2023-01-01');
 
         expect(res.statusCode).toBe(500);
-        expect(res.body).toHaveProperty('error', 'Error fetching streak data');
+        expect(res.body).toHaveProperty('error', 'Error fetching habit streak data');
     });
 });
