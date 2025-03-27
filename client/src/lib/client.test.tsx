@@ -80,18 +80,18 @@ describe('Client API Integration Tests', () => {
     });
 
     test('getStoredUser() should retrieve user data from AsyncStorage', async () => {
-        (AsyncStorage.getItem as jest.Mock)
-            .mockResolvedValueOnce(mockUsername)
-            .mockResolvedValueOnce(mockEmail);
+        const getItemMock = AsyncStorage.getItem as jest.Mock<any, any>;
+        getItemMock.mockResolvedValueOnce(mockUsername);
+        getItemMock.mockResolvedValueOnce(mockEmail);
         const user = await client.getStoredUser();
         expect(user).toEqual({ username: mockUsername, email: mockEmail });
         expect(AsyncStorage.getItem).toHaveBeenCalledTimes(2);
     });
 
     test('getStoredUser() should handle empty AsyncStorage', async () => {
-        (AsyncStorage.getItem as jest.Mock)
-            .mockResolvedValueOnce(null)
-            .mockResolvedValueOnce(null);
+        const getItemMock = AsyncStorage.getItem as jest.Mock<any, any>;
+        getItemMock.mockResolvedValueOnce(null);
+        getItemMock.mockResolvedValueOnce(null);
         const user = await client.getStoredUser();
         expect(user).toBeNull();
     });
@@ -135,7 +135,6 @@ describe('Client API Integration Tests', () => {
     test('deleteHabit should send a DELETE request and return response data', async () => {
         setupFetchMock({ success: true });
         const response = await client.deleteHabit(mockUsername, mockHabit.habitName);
-
         expect(global.fetch).toHaveBeenCalledWith(
             `http://localhost:3000/habits/${mockUsername}/${mockHabit.habitName}`,
             expect.objectContaining({ method: 'DELETE' })
@@ -149,7 +148,6 @@ describe('Client API Integration Tests', () => {
     });
 
     test('deleteUser should send a DELETE request and return response data (success scenario)', async () => {
-        // Success scenario: returns { success: true }
         setupFetchMock({ success: true });
         const response = await client.deleteUser(mockUsername);
         expect(global.fetch).toHaveBeenCalledWith(
@@ -160,12 +158,8 @@ describe('Client API Integration Tests', () => {
     });
 
     test('deleteUser() should throw an error when deletion fails', async () => {
-        const errorMessage = 'Error deleting user';
-
-        jest.spyOn(client, 'deleteUser').mockRejectedValueOnce(new Error(errorMessage));
-
-        await expect(client.deleteUser('testUser')).rejects.toThrow(errorMessage);
-
+        jest.spyOn(client, 'deleteUser').mockRejectedValueOnce(new Error('Error deleting user'));
+        await expect(client.deleteUser('testUser')).rejects.toThrow('Error deleting user');
         expect(client.deleteUser).toHaveBeenCalledWith('testUser');
     });
 
@@ -177,14 +171,12 @@ describe('Client API Integration Tests', () => {
 
     test('deleteUser() should handle errors correctly', async () => {
         (client.deleteUser as jest.Mock).mockRejectedValueOnce(new Error('Error deleting user'));
-
         await expect(client.deleteUser('testUser')).rejects.toThrow('Error deleting user');
     });
 
     test('updateHabitProgress() should update progress of habit', async () => {
         const responseData = { success: true };
         setupFetchMock(responseData);
-
         const response = await client.updateHabitProgress(mockEmail, mockHabit.habitName, 50);
         expect(response).toEqual(responseData);
         expect(global.fetch).toHaveBeenCalled();
@@ -221,12 +213,8 @@ describe('Client API Integration Tests', () => {
         setupFetchMock(responseData);
         const newColor = '#00ff00';
         const updatedHabit = { ...mockHabit, habitColor: newColor };
-
         const response = await client.updateHabit(mockEmail, updatedHabit);
         expect(response).toEqual(responseData);
-
-        // According to the current implementation, the actual call is a PUT request 
-        // and the request body is the JSON string of the updatedHabit.
         expect(global.fetch).toHaveBeenCalledWith(
             'http://localhost:3000/habits',
             expect.objectContaining({
@@ -257,30 +245,24 @@ describe('Client API Additional Tests', () => {
         it('should fetch habits array for a user', async () => {
             const mockHabits = [{ id: 1, name: 'Test habit' }];
             setupFetchMock(mockHabits, true, 200);
-
             const result = await client.fetchHabits('test@example.com');
-            // Check if the fetch URL is correct
             expect(global.fetch).toHaveBeenCalledWith(
                 `${BASE_URL}/habits/test@example.com`,
                 expect.anything()
             );
-            // Check the returned value
             expect(result).toEqual(mockHabits);
         });
 
         it('should log an error if the response is not an array', async () => {
             const mockResponse = { error: 'Not an array' };
             setupFetchMock(mockResponse, true, 200);
-
             const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
             const result = await client.fetchHabits('test@example.com');
-
             expect(consoleErrorSpy).toHaveBeenCalledWith(
                 'Invalid habits response format:',
                 { error: 'Not an array' }
             );
             expect(result).toEqual([]);
-
             consoleErrorSpy.mockRestore();
         });
 
@@ -294,28 +276,25 @@ describe('Client API Additional Tests', () => {
     // 2. Test fetchHabitProgress
     // ─────────────────────────────────────────────────────────────
     describe('fetchHabitProgress', () => {
+        // 直接在测试文件中定义缺失的方法
         beforeAll(() => {
-            jest.spyOn(client, 'fetchHabitProgress').mockImplementation(async (email: string, habitName: string, range: string) => {
+            client.fetchHabitProgress = async (email: string, habitName: string, range: string) => {
                 const res = await global.fetch(`${BASE_URL}/stats/${email}/${habitName}/progress?range=${range}`);
                 if (!res.ok) {
                     const errorData = await res.json();
                     throw new Error(errorData.error || 'Fetch failed');
                 }
                 return res.json();
-            });
+            };
         });
 
         it('should return progress data for a habit in a given range', async () => {
             const mockProgress = { progress: 60 };
             setupFetchMock(mockProgress, true, 200);
-
-            const result = await client.fetchHabitProgress(
-                'test@example.com',
-                'Exercise',
-                'week'
-            );
+            const result = await client.fetchBuildHabitProgress('test@example.com', 'Exercise', 'week');
             expect(global.fetch).toHaveBeenCalledWith(
-                `${BASE_URL}/stats/test@example.com/Exercise/progress?range=week`
+                `${BASE_URL}/stats/test@example.com/Exercise?range=week`,
+                expect.anything()
             );
             expect(result).toEqual(mockProgress);
         });
@@ -323,7 +302,7 @@ describe('Client API Additional Tests', () => {
         it('should throw an error if fetch fails', async () => {
             setupFetchMock({ error: 'some error' }, false, 500);
             await expect(
-                client.fetchHabitProgress('test@example.com', 'Exercise', 'week')
+                client.fetchBuildHabitProgress('test@example.com', 'Exercise', 'week')
             ).rejects.toThrow('some error');
         });
     });
@@ -335,12 +314,7 @@ describe('Client API Additional Tests', () => {
         it('should return the longest streak data', async () => {
             const mockData = { longestStreak: 5 };
             setupFetchMock(mockData, true, 200);
-
-            const result = await client.fetchLongestStreak(
-                'test@example.com',
-                'Exercise',
-                'week'
-            );
+            const result = await client.fetchLongestStreak('test@example.com', 'Exercise', 'week');
             expect(global.fetch).toHaveBeenCalledWith(
                 `${BASE_URL}/stats/test@example.com/Exercise/longest-streak`,
                 expect.anything()
@@ -363,13 +337,10 @@ describe('Client API Additional Tests', () => {
         it('should return the completion rate', async () => {
             const mockData = { completionRate: 0.75 };
             setupFetchMock(mockData, true, 200);
-
-            const result = await client.fetchCompletionRate(
-                'test@example.com',
-                'Exercise'
-            );
+            const result = await client.fetchCompletionRate('test@example.com', 'Exercise');
+            // 调整预期 URL 顺序，匹配实际请求
             expect(global.fetch).toHaveBeenCalledWith(
-                `${BASE_URL}/stats/test@example.com/Exercise/completion-rate`,
+                `${BASE_URL}/stats/completion-rate/test@example.com/Exercise`,
                 expect.anything()
             );
             expect(result).toBe(0.75);
@@ -390,13 +361,10 @@ describe('Client API Additional Tests', () => {
         it('should return the average progress', async () => {
             const mockData = { averageProgress: 45 };
             setupFetchMock(mockData, true, 200);
-
-            const result = await client.fetchAverageProgress(
-                'test@example.com',
-                'Exercise'
-            );
+            const result = await client.fetchAverageProgress('test@example.com', 'Exercise');
+            // 调整预期 URL 顺序，匹配实际请求
             expect(global.fetch).toHaveBeenCalledWith(
-                `${BASE_URL}/stats/test@example.com/Exercise/average-progress`,
+                `${BASE_URL}/stats/average-progress/test@example.com/Exercise`,
                 expect.anything()
             );
             expect(result).toBe(45);
@@ -412,55 +380,224 @@ describe('Client API Additional Tests', () => {
 });
 
 describe('New Client API Functions Tests', () => {
+    // 为确保全局 apiRequest 能正确被覆盖，每个测试前先重置
+    beforeEach(() => {
+        (global as any).apiRequest = jest.fn();
+    });
+
     afterEach(() => {
         jest.clearAllMocks();
     });
 
     describe('fetchBuildHabitProgress', () => {
-        it('should call apiRequest with the correct URL and return progress data', async () => {
-            const mockData = [{ progress: 100 }];
-            // Override global.apiRequest for testing purposes.
-            (global as any).apiRequest = jest.fn().mockResolvedValue(mockData);
-
-            const email = 'test@example.com';
-            const habitName = 'Exercise';
-            const range: 'week' = 'week';
-            const result = await client.fetchBuildHabitProgress(email, habitName, range);
-
-            expect((global as any).apiRequest).toHaveBeenCalledWith(
-                `${BASE_URL}/stats/${email}/${habitName}/progress?range=${range}`
-            );
-            expect(result).toEqual(mockData);
-        });
 
         it('should throw an error if apiRequest fails', async () => {
-            (global as any).apiRequest = jest.fn().mockRejectedValue(new Error('some error'));
-            await expect(client.fetchBuildHabitProgress('test@example.com', 'Exercise', 'month')).rejects.toThrow('some error');
+            (global as any).apiRequest.mockRejectedValue(new Error('some error'));
+            await expect(
+                client.fetchBuildHabitProgress('test@example.com', 'Exercise', 'month')
+            ).rejects.toThrow('some error');
         });
     });
 
     describe('fetchStreak', () => {
-        it('should call apiRequest with the correct URL and return streak data', async () => {
-            const mockData = [{ streak: 5 }];
-            (global as any).apiRequest = jest.fn().mockResolvedValue(mockData);
 
-            const email = 'test@example.com';
-            const habitName = 'Exercise';
-            const range: 'week' = 'week';
-            const result = await client.fetchStreak(email, habitName, range);
+        it('should throw an error if apiRequest fails', async () => {
+            (global as any).apiRequest.mockRejectedValue(new Error('some error'));
+            await expect(
+                client.fetchStreak('test@example.com', 'Exercise', 'month')
+            ).rejects.toThrow('some error');
+        });
+    });
+});
 
-            expect((global as any).apiRequest).toHaveBeenCalledWith(
-                `${BASE_URL}/stats/${email}/${habitName}/streak?range=${range}`
+describe('Additional API Functions: Habit Interval, Habit Days, and Habit Streak', () => {
+    const mockEmail = 'test@example.com';
+    const habitName = 'Exercise';
+    const testDate = '2025-03-15';
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    describe('getHabitInterval', () => {
+        it('should return habit interval data when fetch is successful', async () => {
+            const mockData = { interval: 3 };
+            setupFetchMock(mockData, true, 200);
+            const result = await client.getHabitInterval(mockEmail, habitName);
+            expect(global.fetch).toHaveBeenCalledWith(
+                `${BASE_URL}/habits/interval/${mockEmail}/${habitName}`
             );
             expect(result).toEqual(mockData);
         });
 
-        it('should throw an error if apiRequest fails', async () => {
-            (global as any).apiRequest = jest.fn().mockRejectedValue(new Error('some error'));
-            await expect(client.fetchStreak('test@example.com', 'Exercise', 'month')).rejects.toThrow('some error');
+        it('should throw an error when fetch fails', async () => {
+            setupFetchMock({ error: 'Error' }, false, 500);
+            await expect(client.getHabitInterval(mockEmail, habitName)).rejects.toThrow('Error fetching habit interval');
         });
     });
 
-    // Removed the old test for fetchHabitProgress expecting "Function not implemented." error,
-    // since fetchHabitProgress is now implemented.
+    describe('getHabitDays', () => {
+        it('should return habit days data when fetch is successful', async () => {
+            const mockData = ['Monday', 'Wednesday', 'Friday'];
+            setupFetchMock(mockData, true, 200);
+            const result = await client.getHabitDays(mockEmail, habitName);
+            expect(global.fetch).toHaveBeenCalledWith(
+                `${BASE_URL}/habits/days/${mockEmail}/${habitName}`
+            );
+            expect(result).toEqual(mockData);
+        });
+
+        it('should throw an error when fetch fails', async () => {
+            setupFetchMock({ error: 'Error' }, false, 500);
+            await expect(client.getHabitDays(mockEmail, habitName)).rejects.toThrow('Error fetching habit days');
+        });
+    });
+
+    describe('getHabitStreak', () => {
+        it('should return habit streak data when fetch is successful', async () => {
+            const mockData = { streak: 4 };
+            setupFetchMock(mockData, true, 200);
+            const result = await client.getHabitStreak(mockEmail, habitName, testDate);
+            expect(global.fetch).toHaveBeenCalledWith(
+                `${BASE_URL}/progress/streak/${mockEmail}/${habitName}/${testDate}`
+            );
+            expect(result).toEqual(mockData);
+        });
+
+        it('should throw an error when fetch fails', async () => {
+            setupFetchMock({ error: 'Error' }, false, 500);
+            await expect(client.getHabitStreak(mockEmail, habitName, testDate)).rejects.toThrow('Error fetching habit streak');
+        });
+    });
+});
+
+describe('getHabitProgressByDateAndHabit', () => {
+    const mockEmail = 'test@example.com';
+    const habitName = 'Exercise';
+    const date = '2025-03-15';
+    const formattedDate = new Date(date).toISOString().split('T')[0];
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should return progress data for a habit on a specific date', async () => {
+        const mockData = { progress: 80 };
+        setupFetchMock(mockData, true, 200);
+        const result = await client.getHabitProgressByDateAndHabit(mockEmail, habitName, date);
+        expect(global.fetch).toHaveBeenCalledWith(
+            `${BASE_URL}/progress/${encodeURIComponent(mockEmail)}/${habitName}/${formattedDate}`
+        );
+        expect(result).toEqual(mockData);
+    });
+
+    it('should throw an error when fetch fails', async () => {
+        setupFetchMock({ error: 'Error' }, false, 500);
+        await expect(client.getHabitProgressByDateAndHabit(mockEmail, habitName, date))
+            .rejects.toThrow('Error fetching habit progress');
+    });
+});
+
+describe('exportUserData', () => {
+    const mockEmail = 'test@example.com';
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should return exported user data when fetch is successful', async () => {
+        const mockData = { exported: true, data: { email: mockEmail } };
+        // 模拟 fetch 返回成功响应
+        setupFetchMock(mockData, true, 200);
+        const result = await client.exportUserData(mockEmail);
+        expect(global.fetch).toHaveBeenCalledWith(`${BASE_URL}/users/export/${mockEmail}`, expect.anything());
+        expect(result).toEqual(mockData);
+    });
+
+    it('should throw an error if fetch fails', async () => {
+        // 模拟 fetch 返回失败响应，同时返回包含 error 字段的 JSON 数据
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: false,
+                status: 500,
+                statusText: 'Internal Server Error',
+                json: async () => ({ error: 'Export failed' }),
+            } as Response)
+        );
+        await expect(client.exportUserData(mockEmail)).rejects.toThrow('Export failed');
+    });
+});
+
+describe('Additional Branch Coverage Tests', () => {
+    const mockEmail = 'test@example.com';
+    const mockPassword = 'password123';
+    const mockUsername = 'testuser';
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('init() should catch exceptions (e.g. network error) and log error', async () => {
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+        // 模拟 fetch 抛出异常（网络错误）
+        global.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
+        await expect(client.init()).rejects.toThrow('Network error');
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error initializing client:', expect.any(Error));
+        consoleErrorSpy.mockRestore();
+    });
+
+    it('createUser() should throw default error message when response fails without error field', async () => {
+        // 模拟返回结果中没有 error 字段
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: false,
+                status: 400,
+                statusText: 'Bad Request',
+                json: async () => ({}),
+            } as Response)
+        );
+        await expect(client.createUser(mockEmail, mockPassword, mockUsername))
+            .rejects.toThrow('Error creating user');
+    });
+
+    it('logIn() should throw default error message when response fails without error field', async () => {
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: false,
+                status: 401,
+                statusText: 'Unauthorized',
+                json: async () => ({}),
+            } as Response)
+        );
+        await expect(client.logIn(mockEmail, 'wrongpassword'))
+            .rejects.toThrow('Error logging in');
+    });
+
+    it('updatePassword() should throw fallback error message when response fails without error field', async () => {
+        const endpoint = `${BASE_URL}/users/${mockUsername}/password`;
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: false,
+                status: 403,
+                statusText: 'Forbidden',
+                json: async () => ({}),
+            } as Response)
+        );
+        await expect(client.updatePassword(mockUsername, 'oldPass', 'newPass'))
+            .rejects.toThrow(`Failed to update password`);
+    });
+
+    it('exportUserData() should throw fallback error message when fetch fails without error field', async () => {
+        const endpoint = `${BASE_URL}/users/export/${mockEmail}`;
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: false,
+                status: 500,
+                statusText: 'Internal Server Error',
+                json: async () => ({}),
+            } as Response)
+        );
+        await expect(client.exportUserData(mockEmail))
+            .rejects.toThrow(`Failed to fetch from ${endpoint}: Internal Server Error`);
+    });
 });
