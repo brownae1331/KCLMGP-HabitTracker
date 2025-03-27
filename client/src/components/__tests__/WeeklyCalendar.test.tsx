@@ -314,20 +314,29 @@ describe('WeeklyCalendar component', () => {
         );
     });
 
-    it('should switch to the next week and update selectedDate when ">" arrow is pressed (web)', async () => {
+    it('should switch to the next week and update selectedDate when right arrow is pressed (web)', async () => {
         Object.defineProperty(Platform, 'OS', {
             configurable: true,
             get: () => 'web',
         });
-        const { getByText, queryByText } = render(
+        const { UNSAFE_getAllByType, getByText, queryByText } = render(
             <WeeklyCalendar selectedDate={initialSelectedDate} setSelectedDate={setSelectedDateMock} />
         );
 
         await waitFor(() => expect(setSelectedDateMock).toHaveBeenCalled());
         setSelectedDateMock.mockClear();
 
-        const nextArrow = getByText('>');
-        fireEvent.press(nextArrow);
+        const allTouchables = UNSAFE_getAllByType(TouchableOpacity);
+        const arrowButtons = allTouchables.filter(btn => {
+            const children = btn.props.children;
+            if (Array.isArray(children)) {
+                return children.some(child => child && child.type === Image);
+            }
+            return children && children.type === Image;
+        });
+        expect(arrowButtons.length).toBeGreaterThanOrEqual(2);
+        const rightArrow = arrowButtons[1];
+        fireEvent.press(rightArrow);
 
         await waitFor(() => expect(getByText('31')).toBeTruthy());
         expect(queryByText('24')).toBeNull();
@@ -338,20 +347,29 @@ describe('WeeklyCalendar component', () => {
         );
     });
 
-    it('should switch to the previous week and update selectedDate when "<" arrow is pressed (web)', async () => {
+    it('should switch to the previous week and update selectedDate when left arrow is pressed (web)', async () => {
         Object.defineProperty(Platform, 'OS', {
             configurable: true,
             get: () => 'web',
         });
-        const { getByText, queryByText } = render(
+        const { UNSAFE_getAllByType, getByText, queryByText } = render(
             <WeeklyCalendar selectedDate={initialSelectedDate} setSelectedDate={setSelectedDateMock} />
         );
 
         await waitFor(() => expect(setSelectedDateMock).toHaveBeenCalled());
         setSelectedDateMock.mockClear();
 
-        const prevArrow = getByText('<');
-        fireEvent.press(prevArrow);
+        const allTouchables = UNSAFE_getAllByType(TouchableOpacity);
+        const arrowButtons = allTouchables.filter(btn => {
+            const children = btn.props.children;
+            if (Array.isArray(children)) {
+                return children.some(child => child && child.type === Image);
+            }
+            return children && children.type === Image;
+        });
+        expect(arrowButtons.length).toBeGreaterThanOrEqual(2);
+        const leftArrow = arrowButtons[0];
+        fireEvent.press(leftArrow);
 
         await waitFor(() => expect(getByText('17')).toBeTruthy());
         expect(queryByText('24')).toBeNull();
