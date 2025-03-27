@@ -678,69 +678,6 @@ describe('fillMissedProgress', () => {
 //     });
 
 
-//     describe('GET /habits/:email/:date', () => {
-
-//         test('should fetch habits for future date (instances)', async () => {
-//             const fakeRows = [{ habitName: 'Habit1' }];
-//             mPool.query.mockResolvedValueOnce([[]]);
-//             mPool.query.mockResolvedValueOnce([fakeRows]);
-//             const res = await request(app).get('/habits/test@example.com/2050-01-01');
-//             expect(res.statusCode).toBe(200);
-//             expect(res.body).toEqual(fakeRows);
-//         });
-
-//         test('should fetch habits for past date (progress)', async () => {
-//             const fakeRows = [{ habitName: 'Habit2' }];
-//             mPool.query.mockResolvedValueOnce([[]]);
-//             mPool.query.mockResolvedValueOnce([fakeRows]);
-//             const res = await request(app).get('/habits/test@example.com/2000-01-01');
-//             expect(res.statusCode).toBe(200);
-//             expect(res.body).toEqual(fakeRows);
-//         });
-
-//         test('should return 500 on error', async () => {
-//             mPool.query.mockRejectedValueOnce(new Error('query error'));
-//             const res = await request(app).get('/habits/test@example.com/2000-01-01');
-//             expect(res.statusCode).toBe(500);
-//             expect(res.text).toBe('Server error');
-//         });
-//     });
-
-//     describe('GET /habits/:username (habit names)', () => {
-
-//         test('should return 404 if user not found', async () => {
-//             mPool.query.mockResolvedValueOnce([[]]); // user query returns empty array
-//             const res = await request(app).get('/habits/nonexistent');
-//             expect(res.statusCode).toBe(404);
-//             expect(res.body).toHaveProperty('error', 'User not found');
-//         });
-
-//         test('should return habit names', async () => {
-//             mPool.query
-//                 .mockResolvedValueOnce([[{ email: 'test@example.com' }]]) // user query
-//                 .mockResolvedValueOnce([[{ habitName: 'Habit1' }, { habitName: 'Habit2' }]]); // habits query
-//             const res = await request(app).get('/habits/testuser');
-//             expect(res.statusCode).toBe(200);
-//             expect(res.body).toEqual([{ habitName: 'Habit1' }, { habitName: 'Habit2' }]);
-//         });
-
-//         test('should return empty array if no habits found', async () => {
-//             mPool.query
-//                 .mockResolvedValueOnce([[{ email: 'test@example.com' }]])
-//                 .mockResolvedValueOnce([[]]);
-//             const res = await request(app).get('/habits/testuser');
-//             expect(res.statusCode).toBe(200);
-//             expect(res.body).toEqual([]);
-//         });
-
-//         test('should return 500 on error', async () => {
-//             mPool.query.mockRejectedValueOnce(new Error('query error'));
-//             const res = await request(app).get('/habits/testuser');
-//             expect(res.statusCode).toBe(500);
-//             expect(res.body).toHaveProperty('error', 'Error fetching habit names');
-//         });
-//     });
-
 
 //     describe('DELETE /habits/:username/:name', () => {
 //         it('should return 500 due to ReferenceError (bug in code)', async () => {
