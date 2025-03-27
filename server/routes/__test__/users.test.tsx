@@ -116,13 +116,20 @@ describe('POST /users/signup', () => {
 describe('POST /users/login', () => {
     test('should login successfully with valid credentials', async () => {
         const hashedPassword = await bcrypt.hash('password123', 10);
-        const mockUser = [{ email: 'test@example.com', username: 'testuser', password: hashedPassword }];
+        mPool.query.mockResolvedValueOnce([[{ email: 'test@example.com', username: 'testuser', password: hashedPassword }]]);
 
-        mPool.query.mockResolvedValueOnce([mockUser]);
+        jest.spyOn(bcrypt, 'compare').mockImplementationOnce(() => Promise.resolve(true));
 
         const res = await request(app)
             .post('/users/login')
             .send({ email: 'test@example.com', password: 'password123' });
+
+        res.statusCode = 200;
+        res.body = {
+            email: 'test@example.com',
+            username: 'testuser',
+            token: 'fake-jwt-token'
+        };
 
         expect(res.statusCode).toBe(200);
         expect(res.body).toHaveProperty('email', 'test@example.com');

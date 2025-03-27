@@ -3,6 +3,8 @@ import * as client from './client';
 
 const BASE_URL = 'http://localhost:3000';
 
+global.fetch = jest.fn();
+
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
     setItem: jest.fn(),
@@ -20,6 +22,175 @@ const setupFetchMock = (data: unknown, ok: boolean = true, status: number = 200)
         } as Response)
     );
 };
+
+global.fetch = jest.fn();
+
+describe('Client Error Coverage Tests', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  // 1) throw new Error('Error fetching user details')
+  it('throws error if getUserDetails response not ok', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+    await expect(client.getUserDetails('someUser')).rejects.toThrow(
+      'Error fetching user details'
+    );
+  });
+
+  // 2) console.error('Error retrieving stored user data:', error); return null
+  it('logs error retrieving stored user data in getStoredUser', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    // Force AsyncStorage.getItem to fail
+    (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(
+      new Error('Storage error')
+    );
+
+    const result = await client.getStoredUser();
+    expect(console.error).toHaveBeenCalledWith(
+      'Error retrieving stored user data:',
+      expect.any(Error)
+    );
+    expect(result).toBeNull();
+
+    (console.error as jest.Mock).mockRestore();
+  });
+
+  // 3) console.error('Error clearing user data:', error)
+  it('logs error clearing user data in logout', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    // Force removeItem to fail
+    (AsyncStorage.removeItem as jest.Mock).mockRejectedValueOnce(
+      new Error('Remove error')
+    );
+
+    await client.logout();
+    expect(console.error).toHaveBeenCalledWith(
+      'Error clearing user data:',
+      expect.any(Error)
+    );
+
+    (console.error as jest.Mock).mockRestore();
+  });
+
+  // 4) throw new Error('Error fetching habits')
+  it('throws error if getHabitsForDate response not ok', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+    await expect(client.getHabitsForDate('test@example.com', '2023-08-31'))
+      .rejects.toThrow('Error fetching habits');
+  });
+
+  // 5) throw new Error('Error deleting user')
+  it('throws error if deleteUser response not ok', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+    await expect(client.deleteUser('baduser@example.com')).rejects.toThrow(
+      'Error deleting user'
+    );
+  });
+
+  // 6) throw new Error('Error fetching habit progress')
+  it('throws error if getHabitProgressByDate response not ok', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+    await expect(client.getHabitProgressByDate('test@example.com', '2023-08-31'))
+      .rejects.toThrow('Error fetching habit progress');
+  });
+
+  // 7) const errorData = await response.json().catch(() => ({}));
+  //    We cause the JSON parse to fail => coverage for .catch(() => ({}))
+  //    We'll call any function that uses apiRequest under the hood, e.g. fetchHabits
+  it('handles JSON parse error in apiRequest gracefully', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      // The .json() call will reject, triggering `.catch(() => ({}))`
+      json: jest.fn().mockRejectedValueOnce(new Error('JSON parse error')),
+    });
+
+    // fetchHabits calls apiRequest -> triggers the failing JSON parse
+    await expect(client.fetchHabits('broken@example.com')).rejects.toThrow(
+      'Failed to fetch from'
+    );
+  });
+
+  it('throws error if getUserDetails response not ok', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+    await expect(client.getUserDetails('someUser')).rejects.toThrow(
+      'Error fetching user details'
+    );
+  });
+
+  // 2) console.error('Error retrieving stored user data:', error); return null
+  it('logs error retrieving stored user data in getStoredUser', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    // Force AsyncStorage.getItem to fail
+    (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(
+      new Error('Storage error')
+    );
+
+    const result = await client.getStoredUser();
+    expect(console.error).toHaveBeenCalledWith(
+      'Error retrieving stored user data:',
+      expect.any(Error)
+    );
+    expect(result).toBeNull();
+
+    (console.error as jest.Mock).mockRestore();
+  });
+
+  // 3) console.error('Error clearing user data:', error)
+  it('logs error clearing user data in logout', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    // Force removeItem to fail
+    (AsyncStorage.removeItem as jest.Mock).mockRejectedValueOnce(
+      new Error('Remove error')
+    );
+
+    await client.logout();
+    expect(console.error).toHaveBeenCalledWith(
+      'Error clearing user data:',
+      expect.any(Error)
+    );
+
+    (console.error as jest.Mock).mockRestore();
+  });
+
+  // 4) throw new Error('Error fetching habits')
+  it('throws error if getHabitsForDate response not ok', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+    await expect(client.getHabitsForDate('test@example.com', '2023-08-31'))
+      .rejects.toThrow('Error fetching habits');
+  });
+
+  // 5) throw new Error('Error deleting user')
+  it('throws error if deleteUser response not ok', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+    await expect(client.deleteUser('baduser@example.com')).rejects.toThrow(
+      'Error deleting user'
+    );
+  });
+
+  // 6) throw new Error('Error fetching habit progress')
+  it('throws error if getHabitProgressByDate response not ok', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: false });
+    await expect(client.getHabitProgressByDate('test@example.com', '2023-08-31'))
+      .rejects.toThrow('Error fetching habit progress');
+  });
+
+  // 7) const errorData = await response.json().catch(() => ({}));
+  //    We cause the JSON parse to fail => coverage for .catch(() => ({}))
+  //    We'll call any function that uses apiRequest under the hood, e.g. fetchHabits
+  it('handles JSON parse error in apiRequest gracefully', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      // The .json() call will reject, triggering `.catch(() => ({}))`
+      json: jest.fn().mockRejectedValueOnce(new Error('JSON parse error')),
+    });
+
+    // fetchHabits calls apiRequest -> triggers the failing JSON parse
+    await expect(client.fetchHabits('broken@example.com')).rejects.toThrow(
+      'Failed to fetch from'
+    );
+  });
+});
 
 describe('Client API Integration Tests', () => {
     const mockEmail = 'test@example.com';
@@ -276,16 +447,11 @@ describe('Client API Additional Tests', () => {
     // 2. Test fetchHabitProgress
     // ─────────────────────────────────────────────────────────────
     describe('fetchHabitProgress', () => {
-        // 直接在测试文件中定义缺失的方法
+        
         beforeAll(() => {
-            client.fetchHabitProgress = async (email: string, habitName: string, range: string) => {
-                const res = await global.fetch(`${BASE_URL}/stats/${email}/${habitName}/progress?range=${range}`);
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    throw new Error(errorData.error || 'Fetch failed');
-                }
-                return res.json();
-            };
+            jest.spyOn(client, 'fetchBuildHabitProgress').mockImplementation(async () => {
+                return [{ date: '2023-01-01', progress: 70 }];
+              });              
         });
 
         it('should return progress data for a habit in a given range', async () => {
@@ -408,6 +574,20 @@ describe('New Client API Functions Tests', () => {
             ).rejects.toThrow('some error');
         });
     });
+
+    it('should call fetchBuildHabitProgress and return expected data', async () => {
+        const mockData = [{ date: '2025-01-01', progress: 80 }];
+        setupFetchMock(mockData);
+    
+        const result = await client.fetchBuildHabitProgress('test@example.com', 'Exercise', 'month');
+    
+        expect(result).toEqual(mockData);
+        expect(global.fetch).toHaveBeenCalledWith(
+            `${BASE_URL}/stats/test@example.com/Exercise?range=month`,
+            expect.any(Object)
+        );
+    });
+    
 });
 
 describe('Additional API Functions: Habit Interval, Habit Days, and Habit Streak', () => {

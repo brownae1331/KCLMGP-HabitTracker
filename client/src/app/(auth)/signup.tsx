@@ -8,6 +8,7 @@ import { Colors } from '../../components/styles/Colors';
 import { useTheme } from '../../components/ThemeContext';
 import { AuthStyles } from '../../components/styles/AuthStyles';
 
+// Signup screen – allows new users to create an account and access the protected area of the app
 export default function SignupScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -16,6 +17,7 @@ export default function SignupScreen() {
 
     const { theme } = useTheme();
 
+    // Sends signup request and navigates user to the protected area upon success
     const handleSignup = async () => {
         try {
             await createUser(email, password, username);

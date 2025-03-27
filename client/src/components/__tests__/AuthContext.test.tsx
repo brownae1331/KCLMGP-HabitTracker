@@ -71,4 +71,17 @@ describe('AuthContext', () => {
         });
         consoleSpy.mockRestore();
     });
+
+    it('throws error if useAuth is called outside AuthProvider', () => {
+        // A test component that tries to useAuth without a provider
+        const TestComponent = () => {
+          const { isAuthenticated } = useAuth(); 
+          return <Text>{String(isAuthenticated)}</Text>;
+        };
+      
+        // Expect the render to throw the custom error
+        expect(() => render(<TestComponent />)).toThrow(
+          'useAuth must be used within an AuthProvider'
+        );
+      });
 });

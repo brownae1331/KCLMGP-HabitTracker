@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '../components/ThemedText';
 import { NotFoundPageStyles } from '../components/styles/NotFoundPageStyles';
 
+// Not Found screen, displayed when a user navigates to a non-existent route
 export default function NotFoundScreen() {
   return (
     <>

@@ -16,6 +16,7 @@ import { SharedStyles } from '../../../components/styles/SharedStyles';
 import { SettingsPageStyles} from '../../../components/styles/SettingsPageStyles';
 import { enableNotifications, disableNotifications, getNotificationStatus } from '../../NotificationsHandler';
 
+// Main Settings screen component
 export default function SettingsScreen() {
   const { theme, toggleTheme } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -28,6 +29,7 @@ export default function SettingsScreen() {
     fetchNotificationStatus();
   }, []);
 
+  // Toggles app notification settings – accessed by the Settings UI switch
   const toggleNotifications = async () => {
     console.log('Toggle function called on web!');
 
@@ -55,6 +57,7 @@ export default function SettingsScreen() {
 
   type RouteType = (typeof settingsOptions)[number]['route'];
 
+  // Exports user data based on saved email
   const handleExportData = async () => {
     try {
       const storedEmail = await AsyncStorage.getItem('email');
@@ -97,6 +100,7 @@ export default function SettingsScreen() {
     }
   };
 
+  // Signs the user out – called by the "Sign Out" button and also after deleting a user
   const handleSignOut = async () => {
     try {
       await AsyncStorage.removeItem('token');
@@ -106,6 +110,7 @@ export default function SettingsScreen() {
     }
   };
 
+  // Deletes the user account
   const DeleteUser = async () => {
     console.log('Confirm Delete pressed');
     try {
@@ -137,6 +142,7 @@ export default function SettingsScreen() {
     }
   };
 
+  // Triggers confirmation prompt and proceeds to delete user if confirmed
   const confirmUserDeletion = () => {
     console.log('Delete User pressed');
     if (Platform.OS === 'web') {
@@ -170,6 +176,7 @@ export default function SettingsScreen() {
     }
   };
 
+  // Renders individual setting option rows with icons and navigation links
   const renderItem = ({ item }: { item: { title: string; icon: any; route: RouteType } }) => (
     <TouchableOpacity style={SettingsPageStyles.settingItem} onPress={() => router.push(item.route)}>
       <View style={SettingsPageStyles.iconContainer}>
