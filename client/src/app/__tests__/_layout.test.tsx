@@ -21,6 +21,14 @@ jest.mock('expo-splash-screen', () => {
   };
 });
 
+jest.mock('expo-router', () => {
+  const React = require('react');
+  const Stack = (props: { children: any; }) => <>{props.children}</>;
+  Stack.Screen = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+  return { Stack };
+});
+
+
 // You can mock other dependencies (like ThemeContext) similarly, but
 // ensure you do a partial mock or at least let `_layout.tsx` actually run.
 
@@ -62,13 +70,13 @@ jest.mock('expo-font', () => ({
 }));
 
 // Mock ThemeContext so that our component can render
-jest.mock('../components/ThemeContext', () => ({
+jest.mock('../../components/ThemeContext', () => ({
   ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useTheme: () => ({ theme: 'light', refreshKey: '1' }),
 }));
 
 // Mock AuthContext
-jest.mock('../components/AuthContext', () => ({
+jest.mock('../../components/AuthContext', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
