@@ -18,14 +18,16 @@ type Habit = {
   goalValue: number | null;
 };
 
+// Stats screen component - displays user habit statistics with selectable graphs based on habit type
 export default function StatsScreen() {
-  const [selectedHabit, setSelectedHabit] = useState<string>("");
+  const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
   const [habits, setHabits] = useState<Habit[]>([]);
   const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const { theme } = useTheme();
 
+  // Fetch user's email from AsyncStorage
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -40,40 +42,44 @@ export default function StatsScreen() {
     fetchUserData();
   }, []);
 
+  // Fetch habits from the backend each time the user accesses the screen
   useFocusEffect(
     useCallback(() => {
       if (!email) return;
-
+  
       const fetchHabitsData = async () => {
         try {
           setRefreshing(true);
           const data = await fetchHabits(email);
           setHabits(data);
-
-          // Reset selection if the selected habit no longer exists
-          if (selectedHabit && !data.some(habit => habit.habitName === selectedHabit)) {
-            setSelectedHabit("");
-          }
+          return data;
         } catch (error) {
           console.error('Error fetching habits:', error);
           setHabits([]);
+          return [];
         } finally {
           setRefreshing(false);
         }
       };
-
-      fetchHabitsData();
+  
+      fetchHabitsData().then((fetchedData) => {
+        if (selectedHabit && !fetchedData.some(habit => habit.habitName === selectedHabit)) {
+          setSelectedHabit(null);
+        }
+      });
     }, [email, selectedHabit])
   );
 
+  // Show loading indicator while retrieving stored email
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={Colors[theme].tint} />
+        <ActivityIndicator size="large" color="#0000ff" />
       </SafeAreaView>
     );
   }
 
+  // Find the full habit object for the selected habit
   const selectedHabitData = habits.find(h => h.habitName === selectedHabit);
 
   return (
@@ -91,22 +97,20 @@ export default function StatsScreen() {
           </View>
         ) : (
           <>
-            <View style={[StatsPageStyles.pickerContainer, {
-              backgroundColor: Colors[theme].graphBackground,
-              borderColor: Colors[theme].pickerBackground
-            }]}>
+            <View style={[StatsPageStyles.pickerContainer, { 
+              backgroundColor: Colors[theme].graphBackground, 
+              borderColor: Colors[theme].pickerBackground }]}>
               <Picker
                 selectedValue={selectedHabit}
                 onValueChange={(itemValue) => setSelectedHabit(itemValue)}
-                style={[StatsPageStyles.picker, {
-                  backgroundColor: theme === 'dark' ? Colors.dark.background2 : '#FAFAFA',
+                style={[StatsPageStyles.picker, { 
+                  backgroundColor: theme === 'dark' ? Colors.dark.background2 : '#FAFAFA', 
                   color: Colors[theme].text,
-                  borderColor: Colors[theme].graphBackground,
-                }]}
+                  borderColor: Colors[theme].graphBackground, }]}
               >
                 <Picker.Item
                   label="Select a habit..."
-                  value=""
+                  value={null}
                   color={Colors[theme].backgroundText}
                 />
                 {habits.map((habit) => (
@@ -120,18 +124,13 @@ export default function StatsScreen() {
               </Picker>
             </View>
 
-            {refreshing ? (
-              <View style={StatsPageStyles.loadingContainer}>
-                <ActivityIndicator size="large" color={Colors[theme].tint} />
-                <ThemedText style={StatsPageStyles.loadingText}>Loading stats...</ThemedText>
-              </View>
-            ) : selectedHabit && selectedHabitData && email ? (
+            {selectedHabit && selectedHabitData && email ? (
               <View style={StatsPageStyles.graphContainer}>
-                {(selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
-                  <BuildHabitGraph email={email} habitName={selectedHabit} />
-                ) : (
-                  <QuitHabitGraph email={email} habitName={selectedHabit} />
-                )}
+                  {(selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
+                    <BuildHabitGraph email={email} habitName={selectedHabit} />
+                  ) : (
+                    <QuitHabitGraph email={email} habitName={selectedHabit} />
+                  )}
               </View>
             ) : (
               <View style={StatsPageStyles.messageContainer}>

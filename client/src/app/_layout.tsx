@@ -11,6 +11,7 @@ import { AuthProvider } from '../components/AuthContext';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+// Root layout component - wraps the app with theme and authentication context providers
 export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
@@ -35,6 +36,7 @@ export default function RootLayout() {
   );
 }
 
+// App content layout - sets up navigation stack and applies selected theme
 function AppContent() {
   const { theme, refreshKey } = useTheme();
 
