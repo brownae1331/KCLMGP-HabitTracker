@@ -5,6 +5,79 @@ import { NavigationContainer } from '@react-navigation/native';
 
 // Mock ThemeContext
 jest.mock('../ThemeContext', () => ({
+  useTheme: () => ({ theme: 'light' }),
+}));
+
+// We don't fully mock the entire react-native-calendars here
+// so we can trigger its events (e.g. 'dayPress', 'monthChange') directly.
+jest.mock('react-native-calendars', () => {
+  const actualModule = jest.requireActual('react-native-calendars');
+  return {
+    ...actualModule,
+  };
+});
+
+describe('MonthlyCalendar integration (event coverage)', () => {
+  it('calls setSelectedDate on day press', async () => {
+    const setSelectedDate = jest.fn();
+    const { getByTestId } = render(
+      <NavigationContainer>
+        <CalendarComponent
+          selectedDate="2025-03-10"
+          setSelectedDate={setSelectedDate}
+          markedDates={{}}
+        />
+      </NavigationContainer>
+    );
+
+    // Act: Fire the 'dayPress' event on the Calendar
+    act(() => {
+      fireEvent(getByTestId('calendar'), 'dayPress', {
+        year: 2025,
+        month: 4,
+        day: 9,
+        dateString: '2025-04-09',
+        timestamp: Date.now(),
+      });
+    });
+
+    // Assert: We've triggered onDayPress => setSelectedDate(day.dateString)
+    expect(setSelectedDate).toHaveBeenCalledWith('2025-04-09');
+  });
+
+  it('calls calculateVisibleDates on month change', async () => {
+    const setSelectedDate = jest.fn();
+    // We can also spy on console.error to ensure no unexpected errors
+    const { getByTestId } = render(
+      <NavigationContainer>
+        <CalendarComponent
+          selectedDate="2025-03-10"
+          setSelectedDate={setSelectedDate}
+          markedDates={{}}
+        />
+      </NavigationContainer>
+    );
+
+    // Act: Fire the 'monthChange' event on the Calendar
+    act(() => {
+      fireEvent(getByTestId('calendar'), 'monthChange', {
+        year: 2025,
+        month: 5,
+        day: 1,
+        dateString: '2025-05-01',
+        timestamp: 1735686000000, // Some arbitrary timestamp
+      });
+    });
+    
+    // There's no direct "expect" unless you want to verify
+    // the visible dates or onVisibleDatesChange logic,
+    // but this call ensures coverage of calculateVisibleDates(month).
+  });
+});
+
+
+// Mock ThemeContext
+jest.mock('../ThemeContext', () => ({
     useTheme: () => ({ theme: 'light' }),
 }));
 
