@@ -9,6 +9,7 @@ import { useTheme } from '../../components/ThemeContext';
 import { AuthStyles } from '../../components/styles/AuthStyles';
 import { useAuth } from '../../components/AuthContext';
 
+// Login screen - allows users to enter credentials and access the protected area of the app
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

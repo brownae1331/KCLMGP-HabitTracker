@@ -7,6 +7,7 @@ import { IconSymbol } from '../../../components/ui/IconSymbol';
 import TabBarBackground from '../../../components/ui/TabBarBackground';
 import { Colors } from '../../../components/styles/Colors';
 
+// Main layout for the bottom tab navigation, sets up screen tabs and theme-based styling
 export default function TabLayout() {
   const { theme, refreshKey } = useTheme();
 
