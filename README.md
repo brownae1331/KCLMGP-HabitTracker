@@ -1,3 +1,8 @@
+Habit Tracker App
+
+Authors: Andrew Brown, Joshua Francis, Nour Hadhoud, Ziming (Ming) Liu, Doris Nezaj, Hugo Potier De La Morandiere, Fasih-Ur Rahman, Scarlett Smith, Ivan Tachev
+
+
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
@@ -16,7 +21,7 @@ MacOS install (brew)
 9. npm start    # Start the server
 10. cd ../client # New terminal
 11. npm install  # Install dependencies
-12. expo start   # Start the React Native app
+12. expo/npm start   # Start the React Native app
 
 
 Windows install
@@ -25,10 +30,10 @@ Windows install
 3.   cd server
 4.   npm install # If u dont have dependencies
 5.   npm start # Terminal output: Server listening on port 3000 Connected to MySQL database habitdb
-6. Start a new terminal
-7. cd ../client
-8. npm install
-9. expo start
+6.   Start a new terminal
+7.   cd ../client
+8.   npm install
+9.   expo/npm start
 
 In the output, you'll find options to open the app in a
 
@@ -49,16 +54,4 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
