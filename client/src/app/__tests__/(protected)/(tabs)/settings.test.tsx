@@ -1,139 +1,212 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { Alert, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import SettingsScreen from '../../../(protected)/(tabs)/settings';
-import { Alert } from 'react-native';
-import { AuthProvider } from '../../../../components/AuthContext';
 import * as NotificationsHandler from '../../../NotificationsHandler';
 
-// Create spies for the NotificationsHandler functions
-const getStatusSpy = jest.spyOn(NotificationsHandler, 'getNotificationStatus');
-const enableSpy = jest.spyOn(NotificationsHandler, 'enableNotifications');
-const disableSpy = jest.spyOn(NotificationsHandler, 'disableNotifications');
-
-jest.mock('expo-font', () => ({
-    loadAsync: jest.fn().mockResolvedValue(null),
-    isLoaded: jest.fn().mockReturnValue(true),
+jest.mock('@expo/vector-icons', () => ({
+  Feather: (props: any) => `FeatherIcon(${props.name})`,
 }));
 
-// Mock expo-notifications to prevent warnings (the warning does not affect test results)
-jest.mock('expo-notifications', () => ({
-    setNotificationHandler: jest.fn(),
-    addPushTokenListener: jest.fn(),
-    getExpoPushTokenAsync: jest.fn(() => Promise.resolve('mock-token')),
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
 }));
 
-// Mock vector icons (for example, Feather icons)
-jest.mock('@expo/vector-icons', () => {
-    const React = require('react');
-    const { Text } = require('react-native');
-    return {
-        Feather: (props: any) => <Text>{props.name}</Text>,
-    };
-});
+global.fetch = jest.fn();
 
-describe('SettingsScreen - Notifications toggle', () => {
-    beforeEach(() => {
-        // Clear all mocks before each test to avoid interference
-        jest.clearAllMocks();
+jest.mock('../../../NotificationsHandler', () => ({
+  enableNotifications: jest.fn(),
+  disableNotifications: jest.fn(),
+  getNotificationStatus: jest.fn(() => Promise.resolve(false)),
+}));
+
+jest.mock('../../../../lib/client', () => ({
+  deleteUser: jest.fn(),
+  BASE_URL: 'http://localhost:3000',
+}));
+
+jest.mock('expo-router', () => ({
+  router: {
+    push: jest.fn(),
+    replace: jest.fn(),
+  },
+}));
+
+jest.mock('expo-file-system', () => ({
+  documentDirectory: 'mock-directory/',
+  writeAsStringAsync: jest.fn(),
+  EncodingType: {
+    UTF8: 'utf8',
+  },
+}));
+
+describe('SettingsScreen Tests', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('toggles notifications -> enabling triggers enableNotifications', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation();
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Notifications'));
+    await waitFor(() => {
+      expect(NotificationsHandler.enableNotifications).toHaveBeenCalled();
+      expect(logSpy).toHaveBeenCalledWith('Toggle function called on web!');
+      expect(logSpy).toHaveBeenCalledWith('Enabling notifications...');
     });
+    logSpy.mockRestore();
+  });
 
-    test('enables notifications when toggled on', async () => {
-        // Simulate initial state: notifications are disabled (false)
-        getStatusSpy.mockResolvedValueOnce(false);
-        enableSpy.mockResolvedValueOnce();
-
-        // Render the SettingsScreen wrapped with AuthProvider
-        const rendered = render(
-            <AuthProvider>
-                <SettingsScreen />
-            </AuthProvider>
-        );
-
-        // Wait until the "Notifications" text appears to ensure the component is rendered
-        await waitFor(() => rendered.getByText('Notifications'));
-
-        // Get all Switch components; assume the notifications Switch is the second one (index 1)
-        const switches = rendered.getAllByRole('switch');
-        const notificationsSwitch = switches[1];
-
-        // Confirm the initial state of the notifications switch is false
-        expect(notificationsSwitch.props.value).toBe(false);
-
-        // Simulate toggling the notifications switch from false to true
-        fireEvent(notificationsSwitch, 'valueChange', true);
-
-        // Wait for the enableNotifications function to be called
-        await waitFor(() => {
-            expect(enableSpy).toHaveBeenCalled();
-        });
+  it('toggles notifications -> disabling triggers disableNotifications', async () => {
+    (NotificationsHandler.getNotificationStatus as jest.Mock).mockResolvedValue(true);
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Notifications'));
+    await waitFor(() => {
+      expect(NotificationsHandler.disableNotifications).toHaveBeenCalled();
     });
+  });
 
-    test('disables notifications when toggled off', async () => {
-        // Simulate initial state: notifications are enabled (true)
-        getStatusSpy.mockResolvedValueOnce(true);
-        disableSpy.mockResolvedValueOnce();
-
-        const rendered = render(
-            <AuthProvider>
-                <SettingsScreen />
-            </AuthProvider>
-        );
-
-        // Wait until the "Notifications" text appears
-        await waitFor(() => rendered.getByText('Notifications'));
-
-        // Retrieve all Switch components and assume the notifications switch is at index 1
-        const switches = rendered.getAllByRole('switch');
-        const notificationsSwitch = switches[1];
-
-        // Wait until the switch's value is updated to true by the async useEffect
-        await waitFor(() => {
-            expect(notificationsSwitch.props.value).toBe(true);
-        });
-
-        // Simulate toggling the notifications switch from true to false
-        fireEvent(notificationsSwitch, 'valueChange', false);
-
-        // Wait for the disableNotifications function to be called
-        await waitFor(() => {
-            expect(disableSpy).toHaveBeenCalled();
-        });
+  it('toggle notifications -> error triggers alert', async () => {
+    (NotificationsHandler.getNotificationStatus as jest.Mock).mockResolvedValue(true);
+    (NotificationsHandler.disableNotifications as jest.Mock).mockRejectedValue(new Error('Network error'));
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Notifications'));
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Error', 'Failed to update notification settings.');
     });
+  });
 
-    test('displays alert when toggling notifications fails', async () => {
-        // Simulate initial state: notifications are disabled (false)
-        getStatusSpy.mockResolvedValueOnce(false);
-        // Simulate an error when enabling notifications
-        enableSpy.mockRejectedValueOnce(new Error('Test Error'));
-
-        // Spy on Alert.alert to catch the error message
-        const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => { });
-
-        const rendered = render(
-            <AuthProvider>
-                <SettingsScreen />
-            </AuthProvider>
-        );
-
-        // Wait until "Notifications" text is rendered
-        await waitFor(() => rendered.getByText('Notifications'));
-
-        // Get the notifications switch (assumed to be the second switch)
-        const switches = rendered.getAllByRole('switch');
-        const notificationsSwitch = switches[1];
-
-        // Ensure the initial value is false
-        expect(notificationsSwitch.props.value).toBe(false);
-
-        // Toggle the switch from false to true to trigger the error in enableNotifications
-        fireEvent(notificationsSwitch, 'valueChange', true);
-
-        // Wait for the Alert.alert call with the expected error message
-        await waitFor(() => {
-            expect(alertSpy).toHaveBeenCalledWith('Error', 'Failed to update notification settings.');
-        });
-
-        // Restore the original Alert.alert implementation
-        alertSpy.mockRestore();
+  it('signs out user and navigates to login', async () => {
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Sign Out'));
+    await waitFor(() => {
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('token');
     });
+  });
+
+  it('export data -> no storedEmail triggers alert', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Export My Data'));
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Error', 'No email found');
+    });
+  });
+
+  it('export data -> fetch not ok triggers error alert', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('test@example.com');
+    (fetch as jest.Mock).mockResolvedValue({ ok: false });
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Export My Data'));
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Failed to export data');
+    });
+  });
+
+  it('export data -> success on iOS saves file and shows alert', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'ios' });
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('test@example.com');
+    (fetch as jest.Mock).mockResolvedValue({ ok: true, json: () => Promise.resolve({ key: 'value' }) });
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    const FileSystem = require('expo-file-system');
+    const writeSpy = FileSystem.writeAsStringAsync;
+    (writeSpy as jest.Mock).mockResolvedValue(undefined);
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Export My Data'));
+    await waitFor(() => {
+      expect(writeSpy).toHaveBeenCalled();
+      expect(alertSpy).toHaveBeenCalledWith('Exported Data', expect.stringContaining('exportData.json'));
+    });
+  });
+
+  it('export data -> success on web triggers download', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'web' });
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('test@example.com');
+    (fetch as jest.Mock).mockResolvedValue({ ok: true, json: () => Promise.resolve({ some: 'data' }) });
+    global.URL.createObjectURL = jest.fn(() => 'blob:http://example.com/blob');
+    global.URL.revokeObjectURL = jest.fn();
+    const a = document.createElement('a');
+    a.click = jest.fn();
+    document.createElement = jest.fn(() => a);
+    const alertSpy = jest.spyOn(window, 'alert');
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Export My Data'));
+    await waitFor(() => {
+      expect(a.click).toHaveBeenCalled();
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
+      expect(global.URL.revokeObjectURL).toHaveBeenCalled();
+      expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Exported Data'));
+    });
+  });
+
+  it('delete user -> missing email triggers alert', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Delete My Data/Account'));
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Error', 'No email found');
+    });
+  });
+
+  it('delete user -> throws error shows alert', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'web' });
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('test@example.com');
+    const deleteUserMock = require('../../../../lib/client').deleteUser;
+    deleteUserMock.mockRejectedValue(new Error('Delete failed'));
+    const alertSpy = jest.spyOn(window, 'alert');
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Delete My Data/Account'));
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Delete failed');
+    });
+  });
+
+  it('delete user -> success scenario on web', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'web' });
+    jest.spyOn(global, 'confirm').mockReturnValue(true);
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('test@example.com');
+    const deleteUserMock = require('../../../../lib/client').deleteUser;
+    deleteUserMock.mockResolvedValue({ success: true });
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Delete My Data/Account'));
+    await waitFor(() => {
+      expect(deleteUserMock).toHaveBeenCalledWith('test@example.com');
+    });
+  });
+
+  it('delete user -> native cancel logs "Delete canceled"', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'android' });
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((title, msg, buttons) => {
+      const cancelButton = buttons?.find(b => b.text === 'Cancel');
+      cancelButton?.onPress?.();
+    });
+    const logSpy = jest.spyOn(console, 'log').mockImplementation();
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Delete My Data/Account'));
+    await waitFor(() => {
+      expect(logSpy).toHaveBeenCalledWith('Delete canceled');
+    });
+  });
+
+  it('delete user -> native confirm logs and deletes', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'ios' });
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((title, msg, buttons) => {
+      const deleteButton = buttons?.find(b => b.text === 'Delete');
+      deleteButton?.onPress?.();
+    });
+    const logSpy = jest.spyOn(console, 'log').mockImplementation();
+    const { getByText } = render(<SettingsScreen />);
+    fireEvent.press(getByText('Delete My Data/Account'));
+    await waitFor(() => {
+      expect(logSpy).toHaveBeenCalledWith('Delete confirmed');
+    });
+  });
 });
