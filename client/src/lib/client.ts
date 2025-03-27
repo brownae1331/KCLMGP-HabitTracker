@@ -261,7 +261,7 @@ export async function getHabitDays(email: string, habitName: string) {
 }
 
 // Update an existing habit
-export async function updateHabit(habitData: Habit) {
+export async function updateHabit(mockEmail: string, habitData: Habit) {
   const response = await fetch(`${BASE_URL}/habits`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -318,7 +318,7 @@ export async function fetchStreak(email: string, habitName: string, range: 'week
 }
 
 // fetch longest streak
-export async function fetchLongestStreak(email: string, habitName: string): Promise<number> {
+export async function fetchLongestStreak(email: string, habitName: string, p0: string): Promise<number> {
   const data = await apiRequest<{ longestStreak: number }>(`${BASE_URL}/stats/${email}/${habitName}/longest-streak`);
   return data.longestStreak;
 }
@@ -334,3 +334,11 @@ export async function fetchAverageProgress(email: string, habitName: string): Pr
   const data = await apiRequest<{ averageProgress: number }>(`${BASE_URL}/stats/${email}/${habitName}/average-progress`);
   return data.averageProgress;
 }
+
+export function fetchHabitProgress(arg0: string, arg1: string, arg2: string): any {
+  throw new Error('Function not implemented.');
+}
+export function apiRequest(apiRequest: any) {
+  throw new Error('Function not implemented.');
+}
+
