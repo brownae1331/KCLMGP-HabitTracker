@@ -17,7 +17,7 @@ const DB_CONFIG = {
 const SALT_ROUNDS = 10;
 
 // How many users to create
-const NUM_USERS = 2;
+const NUM_USERS = 10;
 
 // Each user will get random habits in this range
 const MIN_HABITS_PER_USER = 3;
@@ -344,7 +344,7 @@ export async function seed() {
         // We'll insert habit_instances for the future (no progress).
         for (const d of futureDates) {
           await connection.query(
-            `INSERT INTO habit_instances (user_email, habitName, dueDate)
+            `INSERT IGNORE INTO habit_instances (user_email, habitName, dueDate)
              VALUES (?, ?, ?)`,
             [h.user_email, h.habitName, formatDate(d)]
           );
