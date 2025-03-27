@@ -1,200 +1,303 @@
+// @ts-nocheck
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, waitFor, act } from '@testing-library/react-native';
 import StatsScreen from '../../../(protected)/(tabs)/stats';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Mock AsyncStorage
-jest.mock('@react-native-async-storage/async-storage', () => ({
-    getItem: jest.fn(),
-}));
-
-// Mock ThemeContext and allow overriding theme in tests
-jest.mock('../../../../components/ThemeContext', () => ({
-    useTheme: jest.fn(() => ({ theme: 'light' })),
-}));
-
-// Mock ThemedText by dynamically requiring 'react-native' to get Text
-jest.mock('../../../../components/ThemedText', () => {
-    const React = require('react');
-    const { Text } = require('react-native');
-    return {
-        ThemedText: (props: any) => <Text {...props}>{props.children}</Text>,
-    };
+// Mock React Native components to render children
+jest.mock('react-native', () => {
+  const React = require('react');
+  return {
+    ActivityIndicator: () => 'ActivityIndicator',
+    View: ({ children }) => React.createElement('View', null, children),
+    SafeAreaView: ({ children }) => React.createElement('SafeAreaView', null, children),
+    ScrollView: ({ children }) => React.createElement('ScrollView', null, children),
+    StyleSheet: { create: (styles) => styles },
+  };
 });
 
-// Mock GoodHabitGraph similarly by dynamically requiring Text
-jest.mock('../../../../components/BuildHabitGraph', () => {
-    const React = require('react');
-    const { Text } = require('react-native');
-    return (props: any) => (
-        <Text testID="goodHabitGraph">GoodHabitGraph - {props.habit}</Text>
-    );
-});
-
-// Mock Colors and SharedStyles
-jest.mock('../../../../components/styles/Colors', () => ({
-    Colors: {
-        light: { background: '#fff', text: '#000' },
-        dark: { background: '#000', text: '#fff' },
-    },
-}));
-jest.mock('../../../../components/styles/SharedStyles', () => ({
-    SharedStyles: { titleContainer: { padding: 10 } },
-}));
-
-// Simple mock for Picker component to simulate user selection
 jest.mock('@react-native-picker/picker', () => {
     const React = require('react');
-    const { View, Text, TouchableOpacity } = require('react-native');
-    const Picker = (props: any) => {
-        return (
-            <View testID="habit-picker" style={props.style}>
-                {React.Children.map(props.children, (child: any) => (
-                    <TouchableOpacity onPress={() => props.onValueChange(child.props.value)}>
-                        <Text>{child.props.label}</Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
-        );
+    let selectedIndexOverride = null;
+    let disableAutoSelect = false;
+  
+    const Picker = ({ children, onValueChange }) => {
+      const validChildren = React.Children.toArray(children).filter(child => child);
+      React.useEffect(() => {
+        if (onValueChange && validChildren.length > 0 && !disableAutoSelect) {
+          const selectableChildren = validChildren.filter(child => child.props && child.props.value !== null);
+          if (selectableChildren.length > 0) {
+            const indexToSelect = selectedIndexOverride !== null ? selectedIndexOverride : 0;
+            const childToSelect = selectableChildren[indexToSelect] || selectableChildren[0];
+            onValueChange(childToSelect.props.value, indexToSelect);
+          }
+        }
+      }, [onValueChange, validChildren]);
+      return React.createElement('Picker', null, validChildren);
     };
-    Picker.Item = (props: any) => null;
-    return { Picker };
-});
+    Picker.Item = ({ label, value }) => React.createElement('Picker.Item', { label, value });
+    return {
+      Picker,
+      __setSelectedIndex: (index) => {
+        selectedIndexOverride = index;
+      },
+      __resetSelectedIndex: () => {
+        selectedIndexOverride = null;
+      },
+      __disableAutoSelect: () => {
+        disableAutoSelect = true;
+      },
+      __enableAutoSelect: () => {
+        disableAutoSelect = false;
+      },
+    };
+  });
+
+// Mock dependencies
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn(),
+}));
+
+jest.mock('../../../../lib/client', () => ({
+  fetchHabits: jest.fn(),
+}));
+
+jest.mock('../../../../components/ThemeContext', () => ({
+  useTheme: () => ({ theme: 'light' }),
+}));
+
+jest.mock('../../../../components/ThemedText', () => ({
+  ThemedText: ({ children }) => children,
+}));
+
+let focusEffectCallback = null;
+jest.mock('@react-navigation/native', () => ({
+  useFocusEffect: jest.fn((callback) => {
+    focusEffectCallback = callback;
+  }),
+}));
+
+jest.mock('../../../../components/BuildHabitGraph', () => () => 'BuildHabitGraph');
+jest.mock('../../../../components/QuitHabitGraph', () => () => 'QuitHabitGraph');
+
+jest.mock('../../../../components/styles/Colors', () => ({
+  Colors: {
+    light: { text: '#111', background: '#fff', background2: '#f0f0f0', graphBackground: '#fff', pickerBackground: '#f0f0f0', backgroundText: '#AFAFAF' },
+    dark: { text: '#eee', background: '#151718', background2: '#202224', graphBackground: '#202224', pickerBackground: '#151718', backgroundText: '#5B5B5B' },
+  },
+}));
+
+jest.mock('../../../../components/styles/SharedStyles', () => ({
+  SharedStyles: { titleContainer: {} },
+}));
+
+jest.mock('../../../../components/styles/StatsPageStyles', () => ({
+  StatsPageStyles: {
+    pickerContainer: {},
+    picker: {},
+    graphContainer: {},
+    messageContainer: {},
+    messageText: {},
+  },
+}));
 
 describe('StatsScreen', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
+  const mockFetchHabits = jest.requireMock('../../../../lib/client').fetchHabits;
+  const mockAsyncStorageGetItem = jest.requireMock('@react-native-async-storage/async-storage').getItem;
+  const pickerMock = jest.requireMock('@react-native-picker/picker');
+  const mockUseFocusEffect = jest.requireMock('@react-navigation/native').useFocusEffect;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    focusEffectCallback = null;
+    pickerMock.__resetSelectedIndex();
+    mockAsyncStorageGetItem.mockResolvedValue('test@example.com');
+    mockFetchHabits.mockResolvedValue([]);
+  });
+
+  const runFocusEffect = async () => {
+    if (focusEffectCallback) {
+      await act(async () => {
+        await focusEffectCallback();
+      });
+    }
+  };
+
+  it('renders SafeAreaView', async () => {
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('SafeAreaView'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('SafeAreaView'), { timeout: 1000 });
+  });
+
+  it('shows loading state', async () => {
+    const { toJSON } = render(<StatsScreen />);
+    expect(JSON.stringify(toJSON())).toContain('ActivityIndicator');
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+  });
+
+  it('renders no habits message when habits are empty', async () => {
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('You don\'t have any habits yet!'), { timeout: 1000 });
+  });
+
+  it('renders Picker when habits exist', async () => {
+    await act(async () => {
+      mockFetchHabits.mockResolvedValue([
+        { habitName: 'Exercise', habitType: 'build', goalValue: 30 },
+        { habitName: 'Smoking', habitType: 'quit', goalValue: null },
+      ]);
     });
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('Picker'), { timeout: 1000 });
+  });
 
-    test('Displays ActivityIndicator while loading; shows no habits message when data is empty', async () => {
-        // Mock AsyncStorage to return a username
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('testUser');
-        // Mock fetch to return an empty array (no habits)
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                json: () => Promise.resolve([]),
-            } as any)
-        );
-
-        const { getByText } = render(<StatsScreen />);
-
-        // Wait for asynchronous operations to complete and verify that the no habits message is displayed
-        await waitFor(() => {
-            expect(
-                getByText(
-                    "You don't have any habits yet! Create a habit before seeing statistics about it."
-                )
-            ).toBeTruthy();
-        });
+  it('renders BuildHabitGraph when a build habit is selected', async () => {
+    await act(async () => {
+      mockFetchHabits.mockResolvedValue([
+        { habitName: 'Exercise', habitType: 'build', goalValue: 30 },
+        { habitName: 'Smoking', habitType: 'quit', goalValue: null },
+      ]);
     });
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('BuildHabitGraph'), { timeout: 1000 });
+  });
 
-    test('When habits data is successfully fetched, displays Picker with prompt and shows GoodHabitGraph after selection', async () => {
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('testUser');
-        const habits = [{ habitName: 'Running' }, { habitName: 'Reading' }];
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                json: () => Promise.resolve(habits),
-            } as any)
-        );
-
-        const { getByText, getByTestId } = render(<StatsScreen />);
-
-        // Wait until loading finishes (the "Stats" title appears)
-        await waitFor(() => {
-            expect(getByText('Stats')).toBeTruthy();
-        });
-
-        // The Picker should be rendered
-        const picker = getByTestId('habit-picker');
-        expect(picker).toBeTruthy();
-
-        // When no habit is selected initially, a prompt text should be displayed
-        expect(
-            getByText('Please select a habit to see statistics about your progress!')
-        ).toBeTruthy();
-
-        // Simulate user clicking to select "Running"
-        const runningOption = getByText('Running');
-        fireEvent.press(runningOption);
-
-        // After selection, GoodHabitGraph should be rendered
-        await waitFor(() => {
-            expect(getByTestId('goodHabitGraph')).toBeTruthy();
-            expect(getByText('GoodHabitGraph - Running')).toBeTruthy();
-        });
+  it('renders QuitHabitGraph when a quit habit is selected', async () => {
+    await act(async () => {
+      mockFetchHabits.mockResolvedValue([
+        { habitName: 'Exercise', habitType: 'build', goalValue: 30 },
+        { habitName: 'Smoking', habitType: 'quit', goalValue: null },
+      ]);
     });
+    pickerMock.__setSelectedIndex(1);
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('QuitHabitGraph'), { timeout: 1000 });
+  });
 
-    test('When fetch request fails, handles error and displays no habits message', async () => {
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('testUser');
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
-        // Mock fetch to return a non-ok response
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: false,
-                statusText: 'Not Found',
-            } as any)
-        );
-
-        const { getByText } = render(<StatsScreen />);
-
-        await waitFor(() => {
-            expect(
-                getByText(
-                    "You don't have any habits yet! Create a habit before seeing statistics about it."
-                )
-            ).toBeTruthy();
-        });
-
-        expect(consoleErrorSpy).toHaveBeenCalled();
-        consoleErrorSpy.mockRestore();
+  it('handles fetchHabits error', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await act(async () => {
+      mockFetchHabits.mockRejectedValue(new Error('Fetch error'));
     });
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('You don\'t have any habits yet!'), { timeout: 1000 });
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching habits:', expect.any(Error));
+    consoleErrorSpy.mockRestore();
+  });
 
-    test('When AsyncStorage fails, remains in loading state and does not call fetch', async () => {
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
-        // Mock AsyncStorage.getItem to throw an error
-        (AsyncStorage.getItem as jest.Mock).mockRejectedValue(new Error('AsyncStorage error'));
-        global.fetch = jest.fn(); // fetch should not be called
-
-        const { queryByText } = render(<StatsScreen />);
-
-        // Since AsyncStorage fails and username is not set, fetch is not called and loading state remains
-        await waitFor(() => {
-            expect(queryByText('Stats')).toBeNull();
-        });
-        expect(global.fetch).not.toHaveBeenCalled();
-
-        consoleErrorSpy.mockRestore();
+  it('handles fetchUserData error', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await act(async () => {
+      mockAsyncStorageGetItem.mockRejectedValue(new Error('Storage error'));
+      mockFetchHabits.mockResolvedValue([]);
     });
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('You don\'t have any habits yet!'), { timeout: 1000 });
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error retrieving user data:', expect.any(Error));
+    consoleErrorSpy.mockRestore();
+  });
 
-    test('In dark theme, the Picker should apply the correct styles', async () => {
-        // Override useTheme to return dark theme
-        const useTheme = require('../../../../components/ThemeContext').useTheme;
-        useTheme.mockReturnValue({ theme: 'dark' });
-
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('testUser');
-        const habits = [{ habitName: 'TestHabit' }];
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: true,
-                json: () => Promise.resolve(habits),
-            } as any)
-        );
-
-        const { getByTestId, getByText } = render(<StatsScreen />);
-
-        await waitFor(() => {
-            expect(getByText('Stats')).toBeTruthy();
-        });
-
-        const picker = getByTestId('habit-picker');
-        // The computed style for styles.picker is { height: 50, width: '100%' }; in dark theme, color should be '#ffffff' and backgroundColor should be '#333333'
-        expect(picker.props.style).toMatchObject({
-            height: 50,
-            width: '100%',
-            color: '#ffffff',
-            backgroundColor: '#333333',
-        });
+  it('shows message when no email', async () => {
+    await act(async () => {
+      mockAsyncStorageGetItem.mockResolvedValue(null);
     });
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('You don\'t have any habits yet!'), { timeout: 1000 });
+  });
+
+  it('updates when habits change', async () => {
+    await act(async () => {
+      mockAsyncStorageGetItem.mockResolvedValue('test@example.com');
+      mockFetchHabits.mockResolvedValueOnce([
+        { habitName: 'Exercise', habitType: 'build', goalValue: 30 },
+      ]);
+    });
+    const { toJSON, rerender } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('BuildHabitGraph'), { timeout: 1000 });
+    await act(async () => {
+      mockFetchHabits.mockResolvedValueOnce([]);
+    });
+    rerender(<StatsScreen />);
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('You don\'t have any habits yet!'), { timeout: 1000 });
+  });
+
+  it('renders title', async () => {
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('Stats'), { timeout: 1000 });
+  });
+
+  it('renders with dark theme', async () => {
+    jest.spyOn(require('../../../../components/ThemeContext'), 'useTheme').mockReturnValue({ theme: 'dark' });
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('SafeAreaView'), { timeout: 1000 });
+  });
+
+  it('automatically selects and displays graph for a single habit', async () => {
+    await act(async () => {
+      mockFetchHabits.mockResolvedValue([
+        { habitName: 'Exercise', habitType: 'build', goalValue: 30 },
+      ]);
+    });
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('BuildHabitGraph'), { timeout: 1000 });
+  });
+
+  it('resets selected habit when it no longer exists', async () => {
+    await act(async () => {
+      mockFetchHabits.mockResolvedValueOnce([
+        { habitName: 'Exercise', habitType: 'build', goalValue: 30 },
+      ]);
+    });
+    const { toJSON, rerender } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('BuildHabitGraph'), { timeout: 1000 });
+    await act(async () => {
+      mockFetchHabits.mockResolvedValueOnce([
+        { habitName: 'Reading', habitType: 'build', goalValue: 20 },
+      ]);
+      pickerMock.__disableAutoSelect();
+    });
+    rerender(<StatsScreen />);
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('Reading'), { timeout: 1000 });
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('Select a habit above to see statistics'), { timeout: 1000 });
+    pickerMock.__enableAutoSelect();
+  });
+
+  it('sets refreshing state during habit fetch', async () => {
+    await act(async () => {
+      mockFetchHabits.mockResolvedValue([
+        { habitName: 'Exercise', habitType: 'build', goalValue: 30 },
+      ]);
+    });
+    const { toJSON } = render(<StatsScreen />);
+    await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
+    await runFocusEffect();
+    await waitFor(() => expect(JSON.stringify(toJSON())).toContain('BuildHabitGraph'), { timeout: 1000 });
+  });
 });

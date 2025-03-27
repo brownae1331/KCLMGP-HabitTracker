@@ -309,8 +309,8 @@ export async function fetchStreak(email: string, habitName: string, range: 'week
 }
 
 // fetch longest streak
-export async function fetchLongestStreak(email: string, habitName: string, p0: string): Promise<number> {
-  const data = await apiRequest<{ longestStreak: number }>(`${BASE_URL}/stats/${email}/${habitName}/longest-streak`);
+export async function fetchLongestStreak(email: string, habitName: string): Promise<number> {
+  const data = await apiRequest<{ longestStreak: number }>(`${BASE_URL}/stats/longest-streak/${email}/${habitName}`);
   return data.longestStreak;
 }
 
