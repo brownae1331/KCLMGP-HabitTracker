@@ -20,7 +20,7 @@ type Habit = {
 
 // Stats screen component - displays user habit statistics with selectable graphs based on habit type
 export default function StatsScreen() {
-  const [selectedHabit, setSelectedHabit] = useState<string>("");
+  const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
   const [habits, setHabits] = useState<Habit[]>([]);
   const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -46,34 +46,35 @@ export default function StatsScreen() {
   useFocusEffect(
     useCallback(() => {
       if (!email) return;
-
+  
       const fetchHabitsData = async () => {
         try {
           setRefreshing(true);
           const data = await fetchHabits(email);
           setHabits(data);
-
-          // Reset selected habit if it no longer exists
-          if (selectedHabit && !data.some(habit => habit.habitName === selectedHabit)) {
-            setSelectedHabit("");
-          }
+          return data;
         } catch (error) {
           console.error('Error fetching habits:', error);
           setHabits([]);
+          return [];
         } finally {
           setRefreshing(false);
         }
       };
-
-      fetchHabitsData();
-    }, [email])
+  
+      fetchHabitsData().then((fetchedData) => {
+        if (selectedHabit && !fetchedData.some(habit => habit.habitName === selectedHabit)) {
+          setSelectedHabit(null);
+        }
+      });
+    }, [email, selectedHabit])
   );
 
   // Show loading indicator while retrieving stored email
   if (loading) {
     return (
-      <SafeAreaView testID="safeAreaView" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator testID="activityIndicator" size="large" color="#0000ff" />
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
       </SafeAreaView>
     );
   }
@@ -82,25 +83,24 @@ export default function StatsScreen() {
   const selectedHabitData = habits.find(h => h.habitName === selectedHabit);
 
   return (
-    <SafeAreaView testID="safeAreaView" style={{ flex: 1, backgroundColor: theme === 'dark' ? Colors.dark.background : Colors.light.background2 }}>
-      <ScrollView testID="scrollView" style={{ flex: 1 }}>
-        <View testID="titleContainer" style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
-          <ThemedText testID="titleText" type="title" style={{ color: Colors[theme].text }}>Stats</ThemedText>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme === 'dark' ? Colors.dark.background : Colors.light.background2 }}>
+      <ScrollView style={{ flex: 1 }}>
+        <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
+          <ThemedText type="title" style={{ color: Colors[theme].text }}>Stats</ThemedText>
         </View>
 
         {habits.length === 0 ? (
-          <View testID="messageContainer" style={StatsPageStyles.messageContainer}>
-            <ThemedText testID="messageText" type="subtitle" style={StatsPageStyles.messageText}>
+          <View style={StatsPageStyles.messageContainer}>
+            <ThemedText type="subtitle" style={StatsPageStyles.messageText}>
               You don't have any habits yet! Create a habit to see statistics.
             </ThemedText>
           </View>
         ) : (
           <>
-            <View testID="pickerContainer" style={[StatsPageStyles.pickerContainer, { 
+            <View style={[StatsPageStyles.pickerContainer, { 
               backgroundColor: Colors[theme].graphBackground, 
               borderColor: Colors[theme].pickerBackground }]}>
               <Picker
-                testID="picker"
                 selectedValue={selectedHabit}
                 onValueChange={(itemValue) => setSelectedHabit(itemValue)}
                 style={[StatsPageStyles.picker, { 
@@ -109,14 +109,12 @@ export default function StatsScreen() {
                   borderColor: Colors[theme].graphBackground, }]}
               >
                 <Picker.Item
-                  testID="pickerItenDefault"
                   label="Select a habit..."
                   value={null}
                   color={Colors[theme].backgroundText}
                 />
                 {habits.map((habit) => (
                   <Picker.Item
-                    testID={`pickerItem-${habit.habitName}`}
                     key={habit.habitName}
                     label={habit.habitName}
                     value={habit.habitName}
@@ -127,7 +125,7 @@ export default function StatsScreen() {
             </View>
 
             {selectedHabit && selectedHabitData && email ? (
-              <View testID="graphContainer" style={StatsPageStyles.graphContainer}>
+              <View style={StatsPageStyles.graphContainer}>
                   {(selectedHabitData.habitType === 'build' && selectedHabitData.goalValue !== null) ? (
                     <BuildHabitGraph email={email} habitName={selectedHabit} />
                   ) : (
@@ -135,8 +133,8 @@ export default function StatsScreen() {
                   )}
               </View>
             ) : (
-              <View testID="messageContainer" style={StatsPageStyles.messageContainer}>
-                <ThemedText testID="messageText" type="subtitle" style={StatsPageStyles.messageText}>
+              <View style={StatsPageStyles.messageContainer}>
+                <ThemedText type="subtitle" style={StatsPageStyles.messageText}>
                   Select a habit above to see statistics about your progress!
                 </ThemedText>
               </View>

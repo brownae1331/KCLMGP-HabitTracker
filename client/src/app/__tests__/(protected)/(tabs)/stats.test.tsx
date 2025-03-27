@@ -276,6 +276,7 @@ describe('StatsScreen', () => {
     await waitFor(() => expect(JSON.stringify(toJSON())).not.toContain('ActivityIndicator'), { timeout: 1000 });
     await runFocusEffect();
     await waitFor(() => expect(JSON.stringify(toJSON())).toContain('BuildHabitGraph'), { timeout: 1000 });
+  
     await act(async () => {
       mockFetchHabits.mockResolvedValueOnce([
         { habitName: 'Reading', habitType: 'build', goalValue: 20 },
