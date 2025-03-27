@@ -83,8 +83,8 @@ describe('NewHabitModal', () => {
 
     it('calls setter functions when inputs are changed', () => {
         const { getByPlaceholderText } = render(<NewHabitModal {...defaultProps} />);
-        fireEvent.changeText(getByPlaceholderText('Habit Name'), 'New Habit');
-        fireEvent.changeText(getByPlaceholderText('Habit Description'), 'New Description');
+        fireEvent.changeText(getByPlaceholderText('Name'), 'New Habit');
+        fireEvent.changeText(getByPlaceholderText('Description'), 'New Description');
         fireEvent.changeText(getByPlaceholderText('#ffCC00'), '#123abc');
         expect(defaultProps.setHabitName).toHaveBeenCalledWith('New Habit');
         expect(defaultProps.setHabitDescription).toHaveBeenCalledWith('New Description');
@@ -193,7 +193,7 @@ describe('NewHabitModal', () => {
         const titles = getAllByText('Edit Habit');
         expect(titles.length).toBeGreaterThanOrEqual(2);
 
-        const nameInput = getByPlaceholderText('Habit Name');
+        const nameInput = getByPlaceholderText('Name');
         expect(nameInput.props.editable).toBe(false);
 
         fireEvent.press(titles[1]);

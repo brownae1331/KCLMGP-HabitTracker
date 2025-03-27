@@ -149,7 +149,7 @@ export default function HomeScreen() {
       // In edit mode: call updateHabit
       // Otherwise: call addHabit
       if (isEditMode && currentEditHabit) {
-        await updateHabit(newHabit);
+        await updateHabit(email, newHabit);
       } else {
         await addHabit(newHabit);
       }
