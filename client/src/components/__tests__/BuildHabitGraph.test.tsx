@@ -14,8 +14,6 @@ jest.mock('@react-navigation/native', () => ({
   useFocusEffect: (cb: any) => cb(),
 }));
 
-
-
 // Mock victory-native components to simplify rendering.
 jest.mock('victory-native', () => {
   const React = require('react');
@@ -23,7 +21,9 @@ jest.mock('victory-native', () => {
   return {
     VictoryBar: (props: any) => <View testID="VictoryBar" {...props} />,
     VictoryChart: ({ children, ...props }: any) => (
-      <View testID="VictoryChart" {...props}>{children}</View>
+      <View testID="VictoryChart" {...props}>
+        {children}
+      </View>
     ),
     VictoryAxis: (props: any) => <View testID="VictoryAxis" {...props} />,
     VictoryTheme: { material: {} },
@@ -192,6 +192,9 @@ describe('BuildHabitGraph', () => {
     const axes = getAllByTestId('VictoryAxis');
     const depAxis = axes.find(a => a.props.dependentAxis);
     expect(depAxis).toBeDefined();
+    if (!depAxis) {
+      throw new Error('Dependent axis not found');
+    }
     const formatted = depAxis.props.tickFormat(3.5);
     expect(formatted).toBe('3.5');
   });

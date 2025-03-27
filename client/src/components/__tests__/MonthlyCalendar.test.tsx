@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, act, fireEvent, waitFor } from '@testing-library/react-native';
 import { CalendarComponent } from '../MonthlyCalendar';
-import { DateData } from 'react-native-calendars';
 import { NavigationContainer } from '@react-navigation/native';
 
 // Mock ThemeContext
