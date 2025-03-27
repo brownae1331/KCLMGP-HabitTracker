@@ -3,11 +3,11 @@ import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import SettingsScreen from '../../app/(protected)/(tabs)/settings';
-import * as client from '../../lib/client';
+import SettingsScreen from '../../../app/(protected)/(tabs)/settings';
+import * as client from '../../../lib/client';
 import * as FileSystem from 'expo-file-system';
 import { router } from 'expo-router';
-import * as NotificationsHandler from '../../app/NotificationsHandler';
+import * as NotificationsHandler from '../../../app/NotificationsHandler';
 
 // Mocks
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -36,7 +36,7 @@ jest.mock('expo-router', () => ({
   },
 }));
 
-jest.mock('../../NotificationsHandler', () => ({
+jest.mock('../../../app/NotificationsHandler', () => ({
   enableNotifications: jest.fn(),
   disableNotifications: jest.fn(),
   getNotificationStatus: jest.fn(() => Promise.resolve(false)),

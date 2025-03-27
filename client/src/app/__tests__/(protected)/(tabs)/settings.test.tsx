@@ -1,9 +1,30 @@
+/**
+ * @jest-environment jsdom
+ */
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SettingsScreen from '../../../(protected)/(tabs)/settings';
 import * as NotificationsHandler from '../../../NotificationsHandler';
+
+// 将 Colors 模块 mock 修改为 settings.tsx 中使用的相同路径
+jest.mock('../../../../components/styles/Colors', () => ({
+  light: { text: 'black', background: 'white' },
+  dark: { text: 'white', background: 'black' },
+}));
+
+// 确保全局 window 对象存在，并模拟 confirm 和 alert 方法（用于 web 环境下）
+if (typeof window === 'undefined') {
+  global.window = {} as unknown as Window & typeof globalThis;
+}
+if (!global.window.confirm) {
+  global.window.confirm = jest.fn();
+}
+if (!global.window.alert) {
+  global.window.alert = jest.fn();
+}
+
 
 jest.mock('@expo/vector-icons', () => ({
   Feather: (props: any) => `FeatherIcon(${props.name})`,
@@ -43,27 +64,35 @@ jest.mock('expo-file-system', () => ({
   },
 }));
 
+jest.mock('../../../../components/ThemeContext', () => ({
+  useTheme: () => ({ theme: 'light', toggleTheme: jest.fn() }),
+}));
+
+
 describe('SettingsScreen Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('toggles notifications -> enabling triggers enableNotifications', async () => {
-    const logSpy = jest.spyOn(console, 'log').mockImplementation();
-    const { getByText } = render(<SettingsScreen />);
-    fireEvent.press(getByText('Notifications'));
+    const { getAllByRole } = render(<SettingsScreen />);
+    const switchElements = getAllByRole('switch');
+    // 假设通知开关是第二个 switch
+    const notificationsSwitch = switchElements[1];
+    fireEvent(notificationsSwitch, 'valueChange', true);
     await waitFor(() => {
       expect(NotificationsHandler.enableNotifications).toHaveBeenCalled();
-      expect(logSpy).toHaveBeenCalledWith('Toggle function called on web!');
-      expect(logSpy).toHaveBeenCalledWith('Enabling notifications...');
+      expect(console.log).toHaveBeenCalledWith('Toggle function called on web!');
+      expect(console.log).toHaveBeenCalledWith('Enabling notifications...');
     });
-    logSpy.mockRestore();
   });
 
   it('toggles notifications -> disabling triggers disableNotifications', async () => {
-    (NotificationsHandler.getNotificationStatus as jest.Mock).mockResolvedValue(true);
-    const { getByText } = render(<SettingsScreen />);
-    fireEvent.press(getByText('Notifications'));
+    const { getAllByRole } = render(<SettingsScreen />);
+    const switchElements = getAllByRole('switch');
+    // 假设通知开关是第二个 switch
+    const notificationsSwitch = switchElements[1];
+    fireEvent(notificationsSwitch, 'valueChange', false);
     await waitFor(() => {
       expect(NotificationsHandler.disableNotifications).toHaveBeenCalled();
     });
@@ -73,8 +102,10 @@ describe('SettingsScreen Tests', () => {
     (NotificationsHandler.getNotificationStatus as jest.Mock).mockResolvedValue(true);
     (NotificationsHandler.disableNotifications as jest.Mock).mockRejectedValue(new Error('Network error'));
     const alertSpy = jest.spyOn(Alert, 'alert');
-    const { getByText } = render(<SettingsScreen />);
-    fireEvent.press(getByText('Notifications'));
+    const { getAllByRole } = render(<SettingsScreen />);
+    const switchElements = getAllByRole('switch');
+    const notificationsSwitch = switchElements[1];
+    fireEvent(notificationsSwitch, 'valueChange', false);
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith('Error', 'Failed to update notification settings.');
     });
@@ -171,7 +202,7 @@ describe('SettingsScreen Tests', () => {
 
   it('delete user -> success scenario on web', async () => {
     Object.defineProperty(Platform, 'OS', { value: 'web' });
-    jest.spyOn(global, 'confirm').mockReturnValue(true);
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
     (AsyncStorage.getItem as jest.Mock).mockResolvedValue('test@example.com');
     const deleteUserMock = require('../../../../lib/client').deleteUser;
     deleteUserMock.mockResolvedValue({ success: true });

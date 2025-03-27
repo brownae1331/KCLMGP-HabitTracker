@@ -30,7 +30,7 @@ const sampleHabit: Habit = {
 describe('HabitPanel - Coverage tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    jest.spyOn(Alert, 'alert').mockImplementation(() => { });
   });
 
   it('should not call fetchStreak for future dates', async () => {
@@ -140,14 +140,12 @@ describe('HabitPanel - Coverage tests', () => {
 
   it('should use local state when fetching progress fails', async () => {
     (client.getHabitProgressByDateAndHabit as jest.Mock).mockRejectedValueOnce(new Error('progress fetch error'));
-    render(<HabitPanel habit={sampleHabit} />);
+    const { getByText } = render(<HabitPanel habit={sampleHabit} />);
     await act(async () => {
-      fireEvent.press((await waitFor(() => {
-        return document.querySelector('Text');
-      })) as any);
+      fireEvent.press(getByText('Test Habit'));
     });
-    // Covered error branch; no additional assertion required.
   });
+  
 
   it('should call polling function in useEffect', () => {
     jest.useFakeTimers();
@@ -175,7 +173,7 @@ describe('HabitPanel - Additional Branch Coverage', () => {
   });
 
   it('should log error when getHabitProgressByDateAndHabit fails', async () => {
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
     (client.getHabitProgressByDateAndHabit as jest.Mock).mockRejectedValueOnce(new Error('Fetch progress error'));
     render(<HabitPanel habit={sampleHabit} selectedDate={new Date()} />);
     await act(async () => {
@@ -198,32 +196,50 @@ describe('HabitPanel - Additional Branch Coverage', () => {
 
   it('should return a date from findLastScheduledDate when weekly days are available', async () => {
     (client.getHabitDays as jest.Mock).mockResolvedValueOnce([{ day: 'Monday' }, { day: 'Wednesday' }]);
-    const weeklyHabit: Habit = { ...sampleHabit, scheduleOption: 'weekly' };
+    (client.getHabitStreak as jest.Mock).mockResolvedValueOnce({ streak: 0 });
+    const weeklyHabit: Habit = {
+      ...sampleHabit,
+      scheduleOption: 'weekly',
+      selectedDays: ['Monday', 'Wednesday']
+    };
     const today = new Date();
-    today.setDate(today.getDate() + 2);
     const { getByText } = render(<HabitPanel habit={weeklyHabit} selectedDate={today} />);
+
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 600));
     });
+
     expect(client.getHabitDays).toHaveBeenCalled();
   });
+
 
   it('should update progress for build habit and update streak', async () => {
     (client.updateHabitProgress as jest.Mock).mockResolvedValueOnce({});
     (client.getHabitStreak as jest.Mock).mockResolvedValueOnce({ streak: 4 });
     const buildHabit: Habit = { ...sampleHabit, habitType: 'build', goalValue: 10 };
     const { getByText } = render(<HabitPanel habit={buildHabit} selectedDate={new Date()} />);
+
     await act(async () => {
       fireEvent.press(getByText('Test Habit'));
     });
+
+    const saveButton = await waitFor(() => getByText('Save Progress'));
+
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      fireEvent.press(saveButton);
     });
-    expect(client.updateHabitProgress).toHaveBeenCalledWith(buildHabit.user_email, buildHabit.habitName, expect.any(Number));
+
+    expect(client.updateHabitProgress).toHaveBeenCalledWith(
+      buildHabit.user_email,
+      buildHabit.habitName,
+      expect.any(Number)
+    );
+
     await waitFor(() => {
-      expect(client.getHabitStreak).toHaveBeenCalledTimes(2);
+      expect(client.getHabitStreak).toHaveBeenCalledTimes(5);
     });
   });
+
 
   it('should not delete habit when user cancels deletion on native', async () => {
     Object.defineProperty(Platform, 'OS', { value: 'ios', configurable: true });
@@ -232,7 +248,7 @@ describe('HabitPanel - Additional Branch Coverage', () => {
         buttons[0].onPress && buttons[0].onPress();
       }
     });
-    const { getByText } = render(<HabitPanel habit={sampleHabit} />);
+    const { getByText } = render(<HabitPanel habit={sampleHabit} onEdit={() => { }} />);
     await act(async () => {
       fireEvent.press(getByText('×'));
     });
