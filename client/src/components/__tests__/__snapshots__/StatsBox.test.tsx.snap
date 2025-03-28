@@ -1,0 +1,323 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StatsBoxes Component matches snapshot 1`] = `
+<View
+  style={
+    [
+      {
+        "borderRadius": 8,
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+        "justifyContent": "space-between",
+        "marginTop": "5%",
+        "paddingBottom": "5%",
+        "paddingHorizontal": "5%",
+      },
+      {
+        "backgroundColor": "#f0f0f0",
+      },
+    ]
+  }
+>
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "borderRadius": 8,
+          "borderWidth": 1,
+          "marginBottom": "5%",
+          "padding": 15,
+          "width": "45%",
+        },
+        {
+          "backgroundColor": "#fff",
+          "borderColor": "#ddd",
+        },
+      ]
+    }
+  >
+    <Text
+      style={
+        [
+          {
+            "color": "#11181C",
+          },
+          {
+            "fontSize": 16,
+            "lineHeight": 24,
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [
+            {
+              "fontSize": 24,
+              "fontWeight": "bold",
+            },
+            {
+              "color": "#11181C",
+            },
+          ],
+        ]
+      }
+    >
+      5
+    </Text>
+    <Text
+      style={
+        [
+          {
+            "color": "#11181C",
+          },
+          {
+            "fontSize": 16,
+            "lineHeight": 24,
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [
+            {
+              "fontSize": 14,
+              "marginTop": 4,
+            },
+            {
+              "color": "#AFAFAFFF",
+            },
+          ],
+        ]
+      }
+    >
+      Current Streak
+    </Text>
+  </View>
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "borderRadius": 8,
+          "borderWidth": 1,
+          "marginBottom": "5%",
+          "padding": 15,
+          "width": "45%",
+        },
+        {
+          "backgroundColor": "#fff",
+          "borderColor": "#ddd",
+        },
+      ]
+    }
+  >
+    <Text
+      style={
+        [
+          {
+            "color": "#11181C",
+          },
+          {
+            "fontSize": 16,
+            "lineHeight": 24,
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [
+            {
+              "fontSize": 24,
+              "fontWeight": "bold",
+            },
+            {
+              "color": "#11181C",
+            },
+          ],
+        ]
+      }
+    >
+      10
+    </Text>
+    <Text
+      style={
+        [
+          {
+            "color": "#11181C",
+          },
+          {
+            "fontSize": 16,
+            "lineHeight": 24,
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [
+            {
+              "fontSize": 14,
+              "marginTop": 4,
+            },
+            {
+              "color": "#AFAFAFFF",
+            },
+          ],
+        ]
+      }
+    >
+      Longest Streak
+    </Text>
+  </View>
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "borderRadius": 8,
+          "borderWidth": 1,
+          "marginBottom": "5%",
+          "padding": 15,
+          "width": "45%",
+        },
+        {
+          "backgroundColor": "#fff",
+          "borderColor": "#ddd",
+        },
+      ]
+    }
+  >
+    <Text
+      style={
+        [
+          {
+            "color": "#11181C",
+          },
+          {
+            "fontSize": 16,
+            "lineHeight": 24,
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [
+            {
+              "fontSize": 24,
+              "fontWeight": "bold",
+            },
+            {
+              "color": "#11181C",
+            },
+          ],
+        ]
+      }
+    >
+      80%
+    </Text>
+    <Text
+      style={
+        [
+          {
+            "color": "#11181C",
+          },
+          {
+            "fontSize": 16,
+            "lineHeight": 24,
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [
+            {
+              "fontSize": 14,
+              "marginTop": 4,
+            },
+            {
+              "color": "#AFAFAFFF",
+            },
+          ],
+        ]
+      }
+    >
+      completion Rate
+    </Text>
+  </View>
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "borderRadius": 8,
+          "borderWidth": 1,
+          "marginBottom": "5%",
+          "padding": 15,
+          "width": "45%",
+        },
+        {
+          "backgroundColor": "#fff",
+          "borderColor": "#ddd",
+        },
+      ]
+    }
+  >
+    <Text
+      style={
+        [
+          {
+            "color": "#11181C",
+          },
+          {
+            "fontSize": 16,
+            "lineHeight": 24,
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [
+            {
+              "fontSize": 24,
+              "fontWeight": "bold",
+            },
+            {
+              "color": "#11181C",
+            },
+          ],
+        ]
+      }
+    >
+      Test Value
+    </Text>
+    <Text
+      style={
+        [
+          {
+            "color": "#11181C",
+          },
+          {
+            "fontSize": 16,
+            "lineHeight": 24,
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [
+            {
+              "fontSize": 14,
+              "marginTop": 4,
+            },
+            {
+              "color": "#AFAFAFFF",
+            },
+          ],
+        ]
+      }
+    >
+      Test Stat
+    </Text>
+  </View>
+</View>
+`;
