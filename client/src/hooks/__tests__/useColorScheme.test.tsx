@@ -1,77 +1,90 @@
+import React from 'react';
+import { Text } from 'react-native';
+import { render, act, waitFor } from '@testing-library/react-native';
+import { useColorScheme } from '../useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Appearance } from 'react-native';
+import { Appearance, ColorSchemeName } from 'react-native';
 
-jest.mock('react-native', () => ({
-    Appearance: {
-        getColorScheme: jest.fn(),
-        addChangeListener: jest.fn(),
-    },
-}));
+// Import type for ColorSchemeName if needed
+// import type { ColorSchemeName } from 'react-native';
 
+// Ensure AsyncStorage.getItem is a Jest mock.
 jest.mock('@react-native-async-storage/async-storage', () => ({
-    getItem: jest.fn(),
+  getItem: jest.fn(),
 }));
 
-describe('useColorScheme (Pure Node.js)', () => {
-    let useColorSchemeHook: () => Promise<string>;
+// We'll capture the callback passed to Appearance.addChangeListener.
+let capturedCallback: ((info: { colorScheme: ColorSchemeName }) => void) | undefined;
 
-    beforeEach(() => {
-        jest.clearAllMocks();
+// Spy on Appearance.addChangeListener to capture the callback.
+const originalAddChangeListener = Appearance.addChangeListener;
+jest.spyOn(Appearance, 'addChangeListener').mockImplementation((callback) => {
+  capturedCallback = callback;
+  return { remove: jest.fn() };
+});
 
-        useColorSchemeHook = async () => {
-            let theme = 'light';
-            const storedTheme = await AsyncStorage.getItem('theme');
+// A simple test component that uses the useColorScheme hook.
+const TestComponent: React.FC = () => {
+  const theme = useColorScheme();
+  return <Text testID="theme">{theme}</Text>;
+};
 
-            if (storedTheme === 'light' || storedTheme === 'dark') {
-                theme = storedTheme;
-            } else {
-                theme = Appearance.getColorScheme() || 'light';
-            }
+describe('useColorScheme (via test component)', () => {
+  beforeEach(() => {
+    capturedCallback = undefined;
+    (AsyncStorage.getItem as jest.Mock).mockReset();
+  });
 
-            return theme;
-        };
+  it('returns the saved theme from AsyncStorage if available', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('dark');
+    // Even if system returns "light", saved theme should override.
+    Appearance.getColorScheme = () => 'light';
+    const { getByTestId } = render(<TestComponent />);
+    await waitFor(() => {
+      expect(getByTestId('theme').props.children).toBe('dark');
     });
+  });
 
-    test('should default to "light" when system theme is null', async () => {
-        (Appearance.getColorScheme as jest.Mock).mockReturnValue(null);
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
-
-        const theme = await useColorSchemeHook();
-        expect(theme).toBe('light');
+  it('returns the system theme if no saved theme is found', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+    Appearance.getColorScheme = () => 'dark';
+    const { getByTestId } = render(<TestComponent />);
+    await waitFor(() => {
+      expect(getByTestId('theme').props.children).toBe('dark');
     });
+  });
 
-    test('should return system theme when available', async () => {
-        (Appearance.getColorScheme as jest.Mock).mockReturnValue('dark');
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
-
-        const theme = await useColorSchemeHook();
-        expect(theme).toBe('dark');
+  it('updates theme when Appearance sends a valid value', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+    Appearance.getColorScheme = () => 'light';
+    const { getByTestId } = render(<TestComponent />);
+    await waitFor(() => {
+      expect(getByTestId('theme').props.children).toBe('light');
     });
-
-    test('should return stored theme if available', async () => {
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('light');
-
-        const theme = await useColorSchemeHook();
-        expect(theme).toBe('light');
+    // Simulate an Appearance change event with a valid value ('dark')
+    act(() => {
+      capturedCallback && capturedCallback({ colorScheme: 'dark' });
     });
-
-    test('should ignore invalid stored themes', async () => {
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('invalid-theme');
-        (Appearance.getColorScheme as jest.Mock).mockReturnValue('dark');
-
-        const theme = await useColorSchemeHook();
-        expect(theme).toBe('dark');
+    await waitFor(() => {
+      expect(getByTestId('theme').props.children).toBe('dark');
     });
+  });
 
-    test('should correctly handle listener removal', () => {
-        const removeListener = jest.fn();
-        (Appearance.addChangeListener as jest.Mock).mockImplementation(() => ({
-            remove: removeListener,
-        }));
-
-        const subscription = Appearance.addChangeListener(() => { });
-        subscription.remove();
-
-        expect(removeListener).toHaveBeenCalled();
+  it('falls back to light when Appearance sends a null value', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+    // System initially returns 'light'
+    Appearance.getColorScheme = () => 'light';
+    const { getByTestId } = render(<TestComponent />);
+    await waitFor(() => {
+      expect(getByTestId('theme').props.children).toBe('light');
     });
+    // Now simulate an Appearance change with null.
+    act(() => {
+      capturedCallback && capturedCallback({ colorScheme: null });
+    });
+    await waitFor(() => {
+      // Because our hook falls back to 'light', we expect 'light'
+      expect(getByTestId('theme').props.children).toBe('light');
+    });
+  });
 });
