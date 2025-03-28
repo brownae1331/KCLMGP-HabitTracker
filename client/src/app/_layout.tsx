@@ -4,7 +4,6 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import 'react-native-reanimated';
 import { ThemeProvider, useTheme } from '../components/ThemeContext';
 import { AuthProvider } from '../components/AuthContext';
 
