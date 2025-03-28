@@ -97,15 +97,20 @@ jest.mock('../../../../components/ThemeContext', () => ({
 }));
 
 // ----------------------
-// Mock HabitPanel to trigger onEdit callback when pressed
+// Updated Mock for HabitPanel to include both edit and delete buttons
 // ----------------------
 jest.mock('../../../../components/HabitPanel', () => {
     const React = require('react');
-    const { Text, TouchableOpacity } = require('react-native');
+    const { Text, TouchableOpacity, View } = require('react-native');
     return (props: any) => (
-        <TouchableOpacity testID="habit-panel" onPress={() => props.onEdit(props.habit)}>
-            <Text>{props.habit.habitName}</Text>
-        </TouchableOpacity>
+        <View>
+            <TouchableOpacity testID="habit-panel-edit" onPress={() => props.onEdit(props.habit)}>
+                <Text>{props.habit.habitName}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity testID={`delete-button-${props.habit.habitName}`} onPress={props.onDelete}>
+                <Text>Delete</Text>
+            </TouchableOpacity>
+        </View>
     );
 });
 
@@ -120,7 +125,6 @@ describe('HomeScreen', () => {
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
         const { getByText } = render(<HomeScreen />);
 
-        // Flush pending state updates
         await act(async () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
         });
@@ -131,9 +135,8 @@ describe('HomeScreen', () => {
         expect(getByText('Today')).toBeTruthy();
     });
 
-
     test('renders habits when they exist', async () => {
-        const habit = { user_email: 'user@example.com', habitName: 'Test Habit' };
+        const habit = { user_email: 'user@example.com', habitName: 'Test Habit', scheduleOption: 'interval' };
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
         (getHabitsForDate as jest.Mock).mockResolvedValue([habit]);
 
@@ -182,7 +185,6 @@ describe('HomeScreen', () => {
             modal.props.setIntervalDays('5');
         });
 
-        // Call onAddHabit and wait for asynchronous updates
         await act(async () => {
             await modal.props.onAddHabit();
         });
@@ -206,7 +208,7 @@ describe('HomeScreen', () => {
     });
 
     test('handles error in fetchHabits', async () => {
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
         (getHabitsForDate as jest.Mock).mockRejectedValue(new Error('Failed to fetch'));
         render(<HomeScreen />);
@@ -220,7 +222,7 @@ describe('HomeScreen', () => {
     });
 
     test('handles error in AsyncStorage loadEmail', async () => {
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         (AsyncStorage.getItem as jest.Mock).mockRejectedValue(new Error('Failed to get email'));
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
         render(<HomeScreen />);
@@ -254,7 +256,7 @@ describe('HomeScreen', () => {
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
 
         await act(async () => {
-            const habitPanel = await findByTestId('habit-panel');
+            const habitPanel = await findByTestId('habit-panel-edit');
             fireEvent.press(habitPanel);
         });
 
@@ -268,7 +270,6 @@ describe('HomeScreen', () => {
             modal.props.setHabitName('Updated Habit');
         });
 
-        // Call onAddHabit to update the habit
         await act(async () => {
             await modal.props.onAddHabit();
         });
@@ -299,7 +300,7 @@ describe('HomeScreen', () => {
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
 
         await act(async () => {
-            const habitPanel = await findByTestId('habit-panel');
+            const habitPanel = await findByTestId('habit-panel-edit');
             fireEvent.press(habitPanel);
         });
 
@@ -328,13 +329,13 @@ describe('HomeScreen', () => {
         (getHabitsForDate as jest.Mock).mockResolvedValue([habit]);
         (getHabitInterval as jest.Mock).mockRejectedValue(new Error('Interval fetch failed'));
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
         const { getByTestId, findByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
 
         await act(async () => {
-            const habitPanel = await findByTestId('habit-panel');
+            const habitPanel = await findByTestId('habit-panel-edit');
             fireEvent.press(habitPanel);
         });
 
@@ -361,13 +362,13 @@ describe('HomeScreen', () => {
         (getHabitsForDate as jest.Mock).mockResolvedValue([habit]);
         (getHabitDays as jest.Mock).mockRejectedValue(new Error('Days fetch failed'));
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
         const { getByTestId, findByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
 
         await act(async () => {
-            const habitPanel = await findByTestId('habit-panel');
+            const habitPanel = await findByTestId('habit-panel-edit');
             fireEvent.press(habitPanel);
         });
 
@@ -387,7 +388,6 @@ describe('HomeScreen', () => {
         await act(async () => {
             const weeklyCalendar = getByTestId('weekly-calendar');
             const newDate = new Date('2020-01-01');
-            // Simulate date selection by calling setSelectedDate from the WeeklyCalendar mock
             weeklyCalendar.props.setSelectedDate({ date: newDate.getDate(), fullDate: newDate });
         });
 
@@ -399,7 +399,7 @@ describe('HomeScreen', () => {
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
         (addHabit as jest.Mock).mockRejectedValue(new Error('Add habit failed'));
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
         const { getByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
@@ -409,7 +409,6 @@ describe('HomeScreen', () => {
         });
         const modal = getByTestId('new-habit-modal');
 
-        // Simulate valid input to avoid validation errors
         act(() => {
             modal.props.setHabitName('New Habit');
             modal.props.setIntervalDays('5');
@@ -444,13 +443,13 @@ describe('HomeScreen', () => {
         (getHabitInterval as jest.Mock).mockResolvedValue({ increment: 5 });
         (updateHabit as jest.Mock).mockRejectedValue(new Error('Update failed'));
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
         const { getByTestId, findByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
 
         await act(async () => {
-            const habitPanel = await findByTestId('habit-panel');
+            const habitPanel = await findByTestId('habit-panel-edit');
             fireEvent.press(habitPanel);
         });
 
@@ -459,7 +458,6 @@ describe('HomeScreen', () => {
         });
 
         const modal = getByTestId('new-habit-modal');
-        // Change habit name to bypass uniqueness validation
         act(() => {
             modal.props.setHabitName('Updated Habit');
         });
@@ -476,9 +474,7 @@ describe('HomeScreen', () => {
         consoleErrorSpy.mockRestore();
     });
 
-    // Test fallback color: if habitColor is empty, it should default to '#FFFF00'
     test('defaults to #FFFF00 if no color is chosen', async () => {
-        // Simulate that email is already stored and no habits exist.
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
         (addHabit as jest.Mock).mockResolvedValue({});
@@ -488,30 +484,24 @@ describe('HomeScreen', () => {
             expect(AsyncStorage.getItem).toHaveBeenCalledWith('email')
         );
 
-        // Open the New Habit Modal by pressing the add button (icon-symbol).
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
 
         const modal = getByTestId('new-habit-modal');
-        // Set up the fields so that validation passes except for color.
         act(() => {
-            // Removed setEmail since it's not provided to the modal.
             modal.props.setHabitName('Colorless Habit');
-            modal.props.setHabitColor(''); // Empty color triggers fallback to '#FFFF00'
+            modal.props.setHabitColor(''); // empty color triggers fallback
             modal.props.setHabitDescription('');
             modal.props.setHabitType('build');
             modal.props.setScheduleOption('interval');
-            modal.props.setIntervalDays('5'); // Valid numeric input for intervalDays
-            // Other fields (selectedDays, goal fields) can remain at their default values.
+            modal.props.setIntervalDays('5');
         });
 
-        // Call onAddHabit and wait for asynchronous state updates.
         await act(async () => {
             await modal.props.onAddHabit();
         });
 
-        // Verify that addHabit was called with the fallback color.
         expect(addHabit).toHaveBeenCalledWith(
             expect.objectContaining({
                 email: 'user@example.com',
@@ -528,7 +518,6 @@ describe('HomeScreen', () => {
         );
     });
 
-    // Test that when isGoalEnabled is true, goal fields are handled correctly.
     test('handles goal fields when isGoalEnabled is true', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
@@ -537,7 +526,6 @@ describe('HomeScreen', () => {
         const { getByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
 
-        // Open modal.
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
@@ -562,37 +550,6 @@ describe('HomeScreen', () => {
         );
     });
 
-    // Test the error branch in fetchHabits (when getHabitsForDate rejects)
-    test('handles error in fetchHabits gracefully', async () => {
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
-        (getHabitsForDate as jest.Mock).mockRejectedValue(new Error('Fetch failed'));
-        render(<HomeScreen />);
-        await waitFor(() => {
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                'Error fetching habits for selected date:',
-                expect.any(Error)
-            );
-        });
-        consoleErrorSpy.mockRestore();
-    });
-
-    // Test the error branch in loadEmail (when AsyncStorage.getItem rejects)
-    test('handles error in loadEmail gracefully', async () => {
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
-        (AsyncStorage.getItem as jest.Mock).mockRejectedValue(new Error('Load email failed'));
-        (getHabitsForDate as jest.Mock).mockResolvedValue([]);
-        render(<HomeScreen />);
-        await waitFor(() => {
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                'Error loading email from AsyncStorage:',
-                expect.any(Error)
-            );
-        });
-        consoleErrorSpy.mockRestore();
-    });
-
-
     test('sets isGoalEnabled to true if habit has goalValue and goalUnit', async () => {
         const habit = {
             user_email: 'user@example.com',
@@ -612,22 +569,18 @@ describe('HomeScreen', () => {
         const { findByTestId, getByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
 
-        // Press on the existing habit to edit
         await act(async () => {
-            const habitPanel = await findByTestId('habit-panel');
+            const habitPanel = await findByTestId('habit-panel-edit');
             fireEvent.press(habitPanel);
         });
 
         await waitFor(() => {
-            // The modal should open
             expect(getByTestId('new-habit-modal').props.modalVisible).toBe(true);
         });
 
         const modal = getByTestId('new-habit-modal');
-        // Because habit.goalValue = 5 and goalUnit = 'minutes', isGoalEnabled should be true
         expect(modal.props.isGoalEnabled).toBe(true);
-        // The fields should be pre-filled
-        expect(modal.props.goalValue).toBe('5');     // from habit.goalValue.toString()
+        expect(modal.props.goalValue).toBe('5');
         expect(modal.props.goalUnit).toBe('minutes');
     });
 });
@@ -637,30 +590,25 @@ describe('Validation error tests', () => {
         Object.defineProperty(require('react-native').Platform, 'OS', { get: () => 'web' });
     });
 
-    // Test that an empty habit name triggers the appropriate alert and early return.
     test('shows alert when habit name is empty', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
-        (getHabitsForDate as jest.Mock).mockResolvedValue([]); // no existing habits
+        (getHabitsForDate as jest.Mock).mockResolvedValue([]);
 
         const { getByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
 
-        // Open the modal.
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
         const modal = getByTestId('new-habit-modal');
-        // Do not set habitName, so it remains empty.
         await act(async () => {
             await modal.props.onAddHabit();
         });
 
         expect(window.alert).toHaveBeenCalledWith('Habit name cannot be empty.');
-        // Modal should remain open as the habit wasn't added.
         expect(modal.props.modalVisible).toBe(true);
     });
 
-    // Test that a duplicate habit name triggers the appropriate alert.
     test('shows alert if a habit with the same name already exists', async () => {
         const existingHabit = {
             user_email: 'user@example.com',
@@ -669,20 +617,17 @@ describe('Validation error tests', () => {
         };
 
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
-        // Return an array with the existing habit
         (getHabitsForDate as jest.Mock).mockResolvedValue([existingHabit]);
 
-        const { getByTestId, findByTestId } = render(<HomeScreen />);
+        const { getByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
 
-        // Open the modal.
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
         const modal = getByTestId('new-habit-modal');
         act(() => {
             modal.props.setHabitName('Existing Habit');
-            // Set schedule option and valid intervalDays to pass validations.
             modal.props.setScheduleOption('interval');
             modal.props.setIntervalDays('5');
         });
@@ -696,7 +641,6 @@ describe('Validation error tests', () => {
         expect(modal.props.modalVisible).toBe(true);
     });
 
-    // Test that an invalid intervalDays (non-numeric) triggers the correct alert.
     test('shows alert if intervalDays is not a valid number', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
@@ -704,7 +648,6 @@ describe('Validation error tests', () => {
         const { getByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
 
-        // Open modal.
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
@@ -712,7 +655,7 @@ describe('Validation error tests', () => {
         act(() => {
             modal.props.setHabitName('Interval Habit');
             modal.props.setScheduleOption('interval');
-            modal.props.setIntervalDays('abc'); // invalid number
+            modal.props.setIntervalDays('abc');
         });
         await act(async () => {
             await modal.props.onAddHabit();
@@ -723,7 +666,6 @@ describe('Validation error tests', () => {
         expect(modal.props.modalVisible).toBe(true);
     });
 
-    // Test that an empty selectedDays array for weekly schedule triggers the alert.
     test('shows alert if no days selected for weekly schedule', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
@@ -731,7 +673,6 @@ describe('Validation error tests', () => {
         const { getByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
 
-        // Open modal.
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
@@ -739,7 +680,7 @@ describe('Validation error tests', () => {
         act(() => {
             modal.props.setHabitName('Weekly Habit');
             modal.props.setScheduleOption('weekly');
-            modal.props.setSelectedDays([]); // no days selected
+            modal.props.setSelectedDays([]);
         });
         await act(async () => {
             await modal.props.onAddHabit();
@@ -751,12 +692,6 @@ describe('Validation error tests', () => {
     });
 });
 
-// --------------------------------------------------
-// ADDITIONAL TESTS FOR UNCOVERED LINES
-// (edit mode name changed => lines 83-84, negative interval => 101-102,
-// goal validations => 117-118, 121-122, 125-126, 129-130, and final catch => line 260)
-// --------------------------------------------------
-
 describe('Additional coverage tests for uncovered lines', () => {
     beforeEach(() => {
         (window.alert as jest.Mock).mockClear();
@@ -765,7 +700,7 @@ describe('Additional coverage tests for uncovered lines', () => {
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
     });
 
-    // 1) lines 83-84: edit mode + changed name => duplicates existing habit
+    // Already covered: edit mode changed name duplicate check in edit mode.
     test('edit mode changed name duplicates existing habit', async () => {
         const existingHabit = {
             user_email: 'test@example.com',
@@ -780,7 +715,7 @@ describe('Additional coverage tests for uncovered lines', () => {
         );
 
         await act(async () => {
-            const habitPanel = await findByTestId('habit-panel');
+            const habitPanel = await findByTestId('habit-panel-edit');
             fireEvent.press(habitPanel);
         });
 
@@ -802,88 +737,72 @@ describe('Additional coverage tests for uncovered lines', () => {
         expect(modal.props.modalVisible).toBe(true);
     });
 
-
-    // 2) lines 101-102: negative interval
+    // Negative intervalDays check.
     test('shows alert if intervalDays is negative', async () => {
         const { getByTestId } = render(<HomeScreen />);
 
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
-
         const modal = getByTestId('new-habit-modal');
         act(() => {
             modal.props.setHabitName('Neg Interval');
             modal.props.setScheduleOption('interval');
             modal.props.setIntervalDays('-3');
         });
-
         await act(async () => {
             await modal.props.onAddHabit();
         });
-
         expect(window.alert).toHaveBeenCalledWith('Interval days cannot be negative.');
         expect(modal.props.modalVisible).toBe(true);
     });
 
-    // 3) lines 117-118 => if goalValue is empty => showAlert('Please enter a valid goal value.')
+    // Goal validations.
     test('shows alert if goal is enabled but no goalValue provided', async () => {
         const { getByTestId } = render(<HomeScreen />);
-
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
-
         const modal = getByTestId('new-habit-modal');
         act(() => {
             modal.props.setHabitName('Some Habit');
             modal.props.setIsGoalEnabled(true);
             modal.props.setScheduleOption('weekly');
             modal.props.setSelectedDays(['Monday']);
-            modal.props.setGoalValue(''); // empty
+            modal.props.setGoalValue('');
         });
-
         await act(async () => {
             await modal.props.onAddHabit();
         });
-
         expect(window.alert).toHaveBeenCalledWith('Please enter a valid goal value.');
         expect(modal.props.modalVisible).toBe(true);
     });
 
-    // 4) lines 121-122 => if isNaN(goalValue) => showAlert('Goal value must be a number.')
     test('shows alert if goal value is not a number', async () => {
         const { getByTestId } = render(<HomeScreen />);
-
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
-
         const modal = getByTestId('new-habit-modal');
         act(() => {
             modal.props.setHabitName('Some Goal Habit');
             modal.props.setIsGoalEnabled(true);
             modal.props.setScheduleOption('weekly');
             modal.props.setSelectedDays(['Monday']);
-            modal.props.setGoalValue('abc'); // not a number
+            modal.props.setGoalValue('abc');
         });
-
         await act(async () => {
             await modal.props.onAddHabit();
         });
-
         expect(window.alert).toHaveBeenCalledWith('Goal value must be a number.');
         expect(modal.props.modalVisible).toBe(true);
     });
 
-    // 5) lines 125-126 => if parseFloat(goalValue) < 0 => showAlert('Goal value cannot be negative.')
     test('shows alert if goal value is negative', async () => {
         const { getByTestId } = render(<HomeScreen />);
-
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
-
         const modal = getByTestId('new-habit-modal');
         act(() => {
             modal.props.setHabitName('Some Goal Habit');
@@ -892,23 +811,18 @@ describe('Additional coverage tests for uncovered lines', () => {
             modal.props.setSelectedDays(['Monday']);
             modal.props.setGoalValue('-10');
         });
-
         await act(async () => {
             await modal.props.onAddHabit();
         });
-
         expect(window.alert).toHaveBeenCalledWith('Goal value cannot be negative.');
         expect(modal.props.modalVisible).toBe(true);
     });
 
-    // 6) lines 129-130 => if no goalUnit => showAlert('Please enter a unit for your goal.')
     test('shows alert if goal unit is not provided', async () => {
         const { getByTestId } = render(<HomeScreen />);
-
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
-
         const modal = getByTestId('new-habit-modal');
         act(() => {
             modal.props.setHabitName('Goal Unit Habit');
@@ -918,36 +832,52 @@ describe('Additional coverage tests for uncovered lines', () => {
             modal.props.setGoalValue('5');
             modal.props.setGoalUnit('');
         });
-
         await act(async () => {
             await modal.props.onAddHabit();
         });
-
         expect(window.alert).toHaveBeenCalledWith('Please enter a unit for your goal.');
         expect(modal.props.modalVisible).toBe(true);
     });
 
-    // 7) line 260 => final catch block => handleAddHabit => throws => console.error => return
-    test('final catch block => triggers line 260 return after error', async () => {
-        (addHabit as jest.Mock).mockRejectedValueOnce(new Error('Server error in addHabit')); // or updateHabit
+    // Final catch block in handleAddHabit.
+    test('final catch block triggers error alert and retains modal open', async () => {
+        (addHabit as jest.Mock).mockRejectedValueOnce(new Error('Server error in addHabit'));
 
         const { getByTestId } = render(<HomeScreen />);
         await act(async () => {
             fireEvent.press(getByTestId('icon-symbol'));
         });
         const modal = getByTestId('new-habit-modal');
-
         act(() => {
             modal.props.setHabitName('Catch Error');
             modal.props.setIntervalDays('5');
         });
-
         await act(async () => {
             await modal.props.onAddHabit();
         });
-
-        expect(window.alert).toHaveBeenCalledWith('Error saving habit'); // line 259 => showAlert
-        // This verifies line 260 => return after catch block.
+        expect(window.alert).toHaveBeenCalledWith('Error saving habit');
         expect(modal.props.modalVisible).toBe(true);
+    });
+
+    // New Test 1: if no email is present, fetchHabits returns early.
+    test('does not call getHabitsForDate when email is empty', async () => {
+        (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+        render(<HomeScreen />);
+        await waitFor(() => {
+            expect(getHabitsForDate).not.toHaveBeenCalled();
+        });
+    });
+
+    // New Test 2: deletion calls fetchHabits (via getHabitsForDate) a second time.
+    test('calls fetchHabits on habit deletion', async () => {
+        const habit = { user_email: 'test@example.com', habitName: 'Habit To Delete', scheduleOption: 'interval' };
+        (AsyncStorage.getItem as jest.Mock).mockResolvedValue('test@example.com');
+        // First call returns one habit.
+        (getHabitsForDate as jest.Mock).mockResolvedValueOnce([habit]);
+        const { getByTestId } = render(<HomeScreen />);
+        await waitFor(() => expect(getHabitsForDate).toHaveBeenCalled());
+        // Simulate deletion via the delete button in the HabitPanel.
+        fireEvent.press(getByTestId(`delete-button-${habit.habitName}`));
+        await waitFor(() => expect(getHabitsForDate).toHaveBeenCalledTimes(2));
     });
 });
