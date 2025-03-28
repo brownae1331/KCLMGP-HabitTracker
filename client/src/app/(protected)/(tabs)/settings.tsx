@@ -68,17 +68,18 @@ export default function SettingsScreen() {
         return;
       }
       const exportData = await exportUserData(storedEmail);
-
-      if (Platform.OS === 'ios') {
+  
+      if (Platform.OS !== 'web') {
+        // Works for both iOS and Android
         const fileUri = FileSystem.documentDirectory + 'exportData.json';
         await FileSystem.writeAsStringAsync(
           fileUri,
           JSON.stringify(exportData, null, 2),
           { encoding: FileSystem.EncodingType.UTF8 }
         );
-        Alert.alert('Exported Data', `Data saved to ${fileUri}`);
-      }
-      else if (Platform.OS === 'web') {
+        Alert.alert('Exported Data', 'Data saved to ${fileUri}');
+      } else {
+        // Web-specific export using Blob and an anchor element
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');

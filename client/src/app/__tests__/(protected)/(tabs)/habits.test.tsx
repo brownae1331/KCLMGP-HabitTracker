@@ -265,7 +265,6 @@ describe('HomeScreen', () => {
         });
 
         const modal = getByTestId('new-habit-modal');
-        // Change habit name to avoid uniqueness validation (simulate update)
         act(() => {
             modal.props.setHabitName('Updated Habit');
         });
@@ -279,6 +278,7 @@ describe('HomeScreen', () => {
             expect(getByTestId('new-habit-modal').props.modalVisible).toBe(false);
         });
     });
+
 
     test('handles edit habit with weekly schedule correctly', async () => {
         const habit = {
