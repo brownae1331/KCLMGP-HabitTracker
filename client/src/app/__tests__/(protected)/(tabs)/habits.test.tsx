@@ -208,7 +208,7 @@ describe('HomeScreen', () => {
     });
 
     test('handles error in fetchHabits', async () => {
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
         (getHabitsForDate as jest.Mock).mockRejectedValue(new Error('Failed to fetch'));
         render(<HomeScreen />);
@@ -222,7 +222,7 @@ describe('HomeScreen', () => {
     });
 
     test('handles error in AsyncStorage loadEmail', async () => {
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
         (AsyncStorage.getItem as jest.Mock).mockRejectedValue(new Error('Failed to get email'));
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
         render(<HomeScreen />);
@@ -329,7 +329,7 @@ describe('HomeScreen', () => {
         (getHabitsForDate as jest.Mock).mockResolvedValue([habit]);
         (getHabitInterval as jest.Mock).mockRejectedValue(new Error('Interval fetch failed'));
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
 
         const { getByTestId, findByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
@@ -362,7 +362,7 @@ describe('HomeScreen', () => {
         (getHabitsForDate as jest.Mock).mockResolvedValue([habit]);
         (getHabitDays as jest.Mock).mockRejectedValue(new Error('Days fetch failed'));
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
 
         const { getByTestId, findByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
@@ -399,7 +399,7 @@ describe('HomeScreen', () => {
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
         (addHabit as jest.Mock).mockRejectedValue(new Error('Add habit failed'));
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
 
         const { getByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
@@ -443,7 +443,7 @@ describe('HomeScreen', () => {
         (getHabitInterval as jest.Mock).mockResolvedValue({ increment: 5 });
         (updateHabit as jest.Mock).mockRejectedValue(new Error('Update failed'));
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
 
         const { getByTestId, findByTestId } = render(<HomeScreen />);
         await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalledWith('email'));
