@@ -19,6 +19,22 @@ import app from "../../server";
 import request from 'supertest';
 import bcrypt from 'bcrypt';
 
+let consoleErrorSpy;
+let consoleLogSpy;
+
+beforeEach(() => {
+    mPool.query.mockReset();
+    mPool.getConnection.mockReset();
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+});
+
+afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    consoleLogSpy.mockRestore();
+    jest.restoreAllMocks();
+});
+
 describe('POST /users/signup', () => {
     beforeEach(() => {
         jest.clearAllMocks();

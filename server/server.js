@@ -56,20 +56,20 @@ export async function getHabitsForDate(email, date, type) {
 
 export const syncHabits = async (userEmail) => {
   try {
-    // catch up on all past and current due habits
-    await migrateInstances(userEmail, '<=');
-    await fillMissedProgress(userEmail);
-
-    // generate new instances for all habits
     const [habits] = await pool.query(
       `SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`,
       [userEmail]
     );
 
-    if (!Array.isArray(habits)) {
+    if (!Array.isArray(habits) || habits.length === 0) {
       throw new Error('Invalid habits data');
     }
 
+    // catch up on all past and current due habits
+    await migrateInstances(userEmail, '<=');
+    await fillMissedProgress(userEmail);
+
+    // generate new instances for all habits
     for (const habit of habits) {
       if (habit.scheduleOption === 'interval') {
         await generateIntervalInstances(userEmail, habit.habitName);

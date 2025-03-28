@@ -1,4 +1,3 @@
-// mock mysql2/promise createPool
 const mPool = {
     query: jest.fn(),
     getConnection: jest.fn().mockResolvedValue({
@@ -10,50 +9,37 @@ const mPool = {
 jest.mock('mysql2/promise', () => ({
     createPool: jest.fn(() => mPool),
 }));
+jest.mock('../db.js', () => ({
+    initDatabase: jest.fn(),
+    pool: mPool,
+}));
+jest.mock('../routes/users.js', () => jest.fn());
+jest.mock('../routes/habits.js', () => jest.fn());
+jest.mock('../routes/progress.js', () => jest.fn());
+jest.mock('../routes/stats.js', () => jest.fn());
+jest.mock('dotenv', () => ({
+    config: jest.fn(),
+}));
 
-// First mock the server module
-jest.mock('../server', () => {
-    // Create a basic Express app mock that supertest can use
-    const express = require('express');
-    const app = express();
-
-    // Define a mock handler for the root endpoint
-    app.get('/', (req, res) => {
-        res.send('Habit Tracker API is running 🚀');
-    });
-
-    return {
-        __esModule: true, // This is needed for ES modules
-        default: app, // Mock the default export (app)
-        migrateInstances: jest.fn(),
-        fillMissedProgress: jest.fn(),
-        generateIntervalInstances: jest.fn(),
-        generateDayInstances: jest.fn(),
-        getHabitsForDate: jest.fn(),
-        syncHabits: jest.fn(),
-        getLastDate: jest.fn(),
-        generateIntervalDates: jest.fn(),
-        generateWeeklyDates: jest.fn(),
-    };
-});
-
-// Then import everything (now you'll get the mocked versions)
-import app, { generateIntervalInstances, generateDayInstances, getHabitsForDate, migrateInstances, syncHabits, getLastDate, fillMissedProgress, generateIntervalDates, generateWeeklyDates } from '../server';
+import app, { generateIntervalInstances, generateDayInstances, 
+    getHabitsForDate, syncHabits, getLastDate, 
+    fillMissedProgress, generateIntervalDates, generateWeeklyDates } from '../server';
 import request from 'supertest';
 
-// Add this at the top of your file
 let consoleErrorSpy;
+let consoleLogSpy;
 
 beforeEach(() => {
     mPool.query.mockReset();
     mPool.getConnection.mockReset();
-    // Silence console.error messages during tests
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 });
 
 afterEach(() => {
-    // Restore the original console.error
     consoleErrorSpy.mockRestore();
+    consoleLogSpy.mockRestore();
+    jest.restoreAllMocks();
 });
 
 describe('GET /', () => {
@@ -69,87 +55,79 @@ describe('getHabitsForDate', () => {
         const fakeRows = [{ habitName: 'TestHabit' }];
         mPool.query.mockResolvedValueOnce([fakeRows]);
         const rows = await getHabitsForDate('test@example.com', '2023-08-10', 'progress');
-        expect(rows).toEqual(undefined);
+        expect(rows).toEqual(fakeRows);
+        expect(mPool.query).toHaveBeenCalledWith(
+            expect.stringContaining('FROM habit_progress hp'),
+            ['test@example.com', '2023-08-10']
+        );
     });
 
     test('should return rows for instances type', async () => {
         const fakeRows = [{ habitName: 'TestHabitInstance' }];
         mPool.query.mockResolvedValueOnce([fakeRows]);
         const rows = await getHabitsForDate('test@example.com', '2023-08-10', 'instances');
-        expect(rows).toEqual(undefined);
+        expect(rows).toEqual(fakeRows);
+        expect(mPool.query).toHaveBeenCalledWith(
+            expect.stringContaining('FROM habit_instances hi'),
+            ['test@example.com', '2023-08-10']
+        );
     });
+
 });
 
 describe('syncHabits', () => {
     const userEmail = 'test@example.com';
 
-    const migrateInstancesMock = migrateInstances as jest.Mock;
-    const fillMissedProgressMock = fillMissedProgress as jest.Mock;
-    const generateIntervalInstancesMock = generateIntervalInstances as jest.Mock;
-    const generateDayInstancesMock = generateDayInstances as jest.Mock;
-
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.useFakeTimers().setSystemTime(new Date('2023-01-02'));
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
     test('should synchronize habits successfully with valid habits data', async () => {
-        // Arrange: Create a habits array with one interval habit and one weekly habit.
         const habits = [
             { habitName: 'habit1', scheduleOption: 'interval' },
             { habitName: 'habit2', scheduleOption: 'weekly' },
         ];
-        // When pool.query is called, it should resolve with an array where the first element is the habits array.
-        mPool.query.mockResolvedValueOnce([[...habits]]);
 
-        // Mock the helper functions to resolve successfully
-        migrateInstancesMock.mockResolvedValueOnce(undefined);
-        fillMissedProgressMock.mockResolvedValueOnce(undefined);
-        generateIntervalInstancesMock.mockResolvedValueOnce(undefined);
-        generateDayInstancesMock.mockResolvedValueOnce(undefined);
+        mPool.query
+            .mockResolvedValueOnce([habits]) // For syncHabits: SELECT habitName, scheduleOption
+            .mockResolvedValueOnce([]) // For migrateInstances: SELECT habitName, dueDate
+            .mockResolvedValueOnce([habits]) // For fillMissedProgress: SELECT habitName, scheduleOption
+            .mockResolvedValueOnce([[{ lastDate: '2023-01-01' }]]) // For fillMissedProgress: getLastDate for habit1
+            .mockResolvedValueOnce([[{ increment: 2 }]]) // For fillMissedProgress: SELECT increment for habit1
+            .mockResolvedValueOnce([[{ lastDate: '2023-01-01' }]]) // For fillMissedProgress: getLastDate for habit2
+            .mockResolvedValueOnce([[{ day: 'Monday' }]]) // For fillMissedProgress: SELECT day for habit2
+            .mockResolvedValueOnce([[{ lastDate: '2023-01-01' }]]) // For generateIntervalInstances: getLastDate for habit1
+            .mockResolvedValueOnce([[{ scheduleOption: 'interval', increment: 2 }]]) // For generateIntervalInstances: SELECT scheduleOption, increment for habit1
+            .mockResolvedValueOnce([[{ lastDate: '2023-01-01' }]]) // For generateDayInstances: getLastDate for habit2
+            .mockResolvedValueOnce([[{ day: 'Monday' }]]); // For generateDayInstances: SELECT day for habit2
 
-        // Act
-        await syncHabits(userEmail);
+        await expect(syncHabits(userEmail)).resolves.toBeUndefined();
 
-        migrateInstancesMock(userEmail, '<=');
-        fillMissedProgressMock(userEmail);
-        await mPool.query(`SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`, [userEmail]);
-        generateIntervalInstancesMock(userEmail, 'habit1');
-        generateDayInstancesMock(userEmail, 'habit2');
-
-        // Assert
-        expect(migrateInstancesMock).toHaveBeenCalledWith(userEmail, '<=');
-        expect(fillMissedProgressMock).toHaveBeenCalledWith(userEmail);
         expect(mPool.query).toHaveBeenCalledWith(
             `SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`,
             [userEmail]
         );
-        expect(generateIntervalInstancesMock).toHaveBeenCalledWith(userEmail, 'habit1');
-        expect(generateDayInstancesMock).toHaveBeenCalledWith(userEmail, 'habit2');
     });
 
     test('should throw an error when habits data is invalid', async () => {
-        mPool.query.mockResolvedValueOnce([null]);
-
-        try {
-            syncHabits(userEmail);
-            throw new Error('Invalid habits data');
-        } catch (error) {
-            expect(error.message).toMatch('Invalid habits data');
-        }
+        mPool.query
+            .mockResolvedValueOnce([null]);
+        await expect(syncHabits(userEmail)).rejects.toThrow('Invalid habits data');
     });
 
-    test('should propagate errors thrown by migrateInstances', async () => {
-        // Arrange: Make migrateInstances throw an error
-        const error = new Error('Database error');
-        migrateInstancesMock.mockRejectedValueOnce(error);
-        mPool.query.mockResolvedValueOnce([[{ habitName: 'habit1', scheduleOption: 'interval' }]]);
+    test('should handle errors in the try-catch block', async () => {
+        mPool.query
+            .mockRejectedValueOnce(new Error('Database error')); 
 
-        try {
-            await syncHabits(userEmail);
-            throw new Error('Database error');
-        } catch (error) {
-            expect(error.message).toMatch('Database error');
-        }
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        await expect(syncHabits(userEmail)).rejects.toThrow('Database error');
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error synchronizing habits:', expect.any(Error));
+        consoleErrorSpy.mockRestore();
     });
 });
 
@@ -168,8 +146,6 @@ describe('getLastDate', () => {
         const lastDate = '2023-05-10';
         mPool.query.mockResolvedValueOnce([[{ lastDate }]]);
 
-        await mPool.query(`SELECT MAX(progressDate) as lastDate FROM habit_progress WHERE user_email = ? AND habitName = ?`, ['test@example.com', 'TestHabit']);
-
         const result = await getLastDate(
             'habit_progress',
             'test@example.com',
@@ -178,9 +154,9 @@ describe('getLastDate', () => {
             '2023-01-01'
         );
 
-        // Verify the query was called with the correct parameters
+        expect(result).toEqual(new Date(lastDate));
         expect(mPool.query).toHaveBeenCalledWith(
-            expect.stringContaining('SELECT MAX(progressDate) as lastDate FROM habit_progress WHERE user_email = ? AND habitName = ?'),
+            `SELECT MAX(progressDate) as lastDate\n     FROM habit_progress\n     WHERE user_email = ? AND habitName = ?`,
             ['test@example.com', 'TestHabit']
         );
     });
@@ -198,51 +174,37 @@ describe('getLastDate', () => {
             defaultDate
         );
 
-        const resultDate = '2023-01-01';
-
-        // Check that the result is the default date
-        expect(resultDate).toBe(defaultDate);
+        expect(result).toEqual(new Date(defaultDate));
     });
 
     test('should use different table and date column names as specified', async () => {
         mPool.query.mockResolvedValueOnce([[{ lastDate: null }]]);
 
-        await mPool.query(`SELECT MAX(dueDate) as lastDate FROM habit_instances WHERE user_email = ? AND habitName = ?`, ['test@example.com', 'TestHabit']);
-
-        await getLastDate(
+        const result = await getLastDate(
             'habit_instances',
             'test@example.com',
             'TestHabit',
             'dueDate',
             '2023-01-01'
-        );
-
-        // Verify the query used the correct table and column names
+          );
+        
+        expect(result).toEqual(new Date('2023-01-01'));
         expect(mPool.query).toHaveBeenCalledWith(
-            expect.stringContaining('SELECT MAX(dueDate) as lastDate FROM habit_instances WHERE user_email = ? AND habitName = ?'),
-            ['test@example.com', 'TestHabit']
-        );
-        expect(mPool.query).toHaveBeenCalledWith(
-            expect.stringContaining('FROM habit_instances WHERE user_email = ? AND habitName = ?'),
+            `SELECT MAX(dueDate) as lastDate\n     FROM habit_instances\n     WHERE user_email = ? AND habitName = ?`,
             ['test@example.com', 'TestHabit']
         );
     });
 
     test('should handle database errors', async () => {
-        // Mock a database error
         mPool.query.mockRejectedValueOnce(new Error('Database error'));
 
-        try {
-            await getLastDate(
-                'habit_progress',
-                'test@example.com',
-                'TestHabit',
-                'progressDate',
-                '2023-01-01'
-            );
-        } catch (error) {
-            expect(error.message).toMatch('Database error');
-        }
+        await expect(getLastDate(
+            'habit_progress',
+            'test@example.com',
+            'TestHabit',
+            'progressDate',
+            '2023-01-01'
+        )).rejects.toThrow('Database error');
     });
 });
 
@@ -252,21 +214,13 @@ describe('generateIntervalDates', () => {
         const endDate = new Date('2023-01-10');
         const increment = 3;
 
-        // Hack: Mock the return value for this specific test case
-        (generateIntervalDates as jest.Mock).mockReturnValueOnce(['2023-01-01', '2023-01-04', '2023-01-07', '2023-01-10']);
-
         const result = generateIntervalDates(startDate, endDate, increment);
 
-        // Should include 2023-01-01, 2023-01-04, 2023-01-07, 2023-01-10
         expect(result).toEqual(['2023-01-01', '2023-01-04', '2023-01-07', '2023-01-10']);
     });
 
     test('should handle single day case', () => {
         const date = new Date('2023-01-01');
-
-        // Hack: Mock return value for this test
-        (generateIntervalDates as jest.Mock).mockReturnValueOnce(['2023-01-01']);
-
         const result = generateIntervalDates(date, date, 1);
         expect(result).toEqual(['2023-01-01']);
     });
@@ -274,10 +228,6 @@ describe('generateIntervalDates', () => {
     test('should handle empty range when start date is after end date', () => {
         const startDate = new Date('2023-01-10');
         const endDate = new Date('2023-01-01');
-
-        // Hack: Mock return value for this test
-        (generateIntervalDates as jest.Mock).mockReturnValueOnce([]);
-
         const result = generateIntervalDates(startDate, endDate, 1);
         expect(result).toEqual([]);
     });
@@ -289,9 +239,6 @@ describe('generateWeeklyDates', () => {
         const endDate = new Date('2023-01-07');   // Saturday
         const selectedDays = ['Monday', 'Wednesday', 'Friday'];
 
-        // Hack: Mock return value for this test
-        (generateWeeklyDates as jest.Mock).mockReturnValueOnce(['2023-01-02', '2023-01-04', '2023-01-06']);
-
         const result = generateWeeklyDates(startDate, endDate, selectedDays);
         expect(result).toEqual(['2023-01-02', '2023-01-04', '2023-01-06']);
     });
@@ -299,10 +246,6 @@ describe('generateWeeklyDates', () => {
     test('should handle case when no days are selected', () => {
         const startDate = new Date('2023-01-01');
         const endDate = new Date('2023-01-07');
-
-        // Hack: Mock return value for this test
-        (generateWeeklyDates as jest.Mock).mockReturnValueOnce([]);
-
         const result = generateWeeklyDates(startDate, endDate, []);
         expect(result).toEqual([]);
     });
@@ -311,23 +254,15 @@ describe('generateWeeklyDates', () => {
         const startDate = new Date('2023-01-02'); // Monday
         const endDate = new Date('2023-01-03');   // Tuesday
         const selectedDays = ['Wednesday'];
-
-        // Hack: Mock return value for this test
-        (generateWeeklyDates as jest.Mock).mockReturnValueOnce([]);
-
         const result = generateWeeklyDates(startDate, endDate, selectedDays);
         expect(result).toEqual([]);
     });
 });
 
 describe('fillMissedProgress', () => {
-    const fillMissedProgressMock = fillMissedProgress as jest.Mock;
-
     beforeEach(() => {
         mPool.query.mockReset();
         jest.useFakeTimers().setSystemTime(new Date('2023-06-15'));
-        // Reset the mock implementation before each test
-        fillMissedProgressMock.mockReset();
     });
 
     afterEach(() => {
@@ -335,44 +270,17 @@ describe('fillMissedProgress', () => {
     });
 
     test('should fill missed progress for interval habits', async () => {
-        // Mock data
         const habits = [{ habitName: 'IntervalHabit', scheduleOption: 'interval' }];
         const interval = [{ increment: 2 }];
-        const lastProgressDate = new Date('2023-06-10');
+        const lastProgressDate = '2023-06-10';
 
-        // Mock implementation for this test
-        fillMissedProgressMock.mockImplementationOnce(async (email) => {
-            // Simulate the function's queries
-            mPool.query(
-                `SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`,
-                [email]
-            );
-            mPool.query(
-                `SELECT increment FROM habit_intervals WHERE user_email = ? AND habitName = ?`,
-                [email, 'IntervalHabit']
-            );
-            mPool.query(
-                `INSERT IGNORE INTO habit_progress (user_email, habitName, progressDate, completed, skipped, progress) VALUES (?, ?, ?, ?, ?, ?)`,
-                [email, 'IntervalHabit', '2023-06-12', 0, false, 0]
-            );
-            mPool.query(
-                `INSERT IGNORE INTO habit_progress (user_email, habitName, progressDate, completed, skipped, progress) VALUES (?, ?, ?, ?, ?, ?)`,
-                [email, 'IntervalHabit', '2023-06-14', 0, false, 0]
-            );
-        });
+        mPool.query
+            .mockResolvedValueOnce([habits]) // SELECT habitName, scheduleOption
+            .mockResolvedValueOnce([[{ lastDate: lastProgressDate }]]) // SELECT MAX(progressDate)
+            .mockResolvedValueOnce([interval]); // SELECT increment
 
         await fillMissedProgress('test@example.com');
 
-        // Verify queries
-        expect(mPool.query).toHaveBeenCalledWith(
-            expect.stringContaining('SELECT habitName, scheduleOption'),
-            ['test@example.com']
-        );
-        expect(mPool.query).toHaveBeenCalledWith(
-            expect.stringContaining('SELECT increment FROM habit_intervals'),
-            ['test@example.com', 'IntervalHabit']
-        );
-        // Verify INSERT queries for missed dates
         expect(mPool.query).toHaveBeenCalledWith(
             expect.stringContaining('INSERT IGNORE INTO habit_progress'),
             ['test@example.com', 'IntervalHabit', '2023-06-12', 0, false, 0]
@@ -384,39 +292,17 @@ describe('fillMissedProgress', () => {
     });
 
     test('should fill missed progress for weekly habits', async () => {
-        // Mock implementation for this test
-        fillMissedProgressMock.mockImplementationOnce(async (email) => {
-            // Simulate the function's queries
-            mPool.query(
-                `SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`,
-                [email]
-            );
-            mPool.query(
-                `SELECT day FROM habit_days WHERE user_email = ? AND habitName = ?`,
-                [email, 'WeeklyHabit']
-            );
-            mPool.query(
-                `INSERT IGNORE INTO habit_progress (user_email, habitName, progressDate, completed, skipped, progress) VALUES (?, ?, ?, ?, ?, ?)`,
-                [email, 'WeeklyHabit', '2023-06-12', 0, false, 0]
-            );
-            mPool.query(
-                `INSERT IGNORE INTO habit_progress (user_email, habitName, progressDate, completed, skipped, progress) VALUES (?, ?, ?, ?, ?, ?)`,
-                [email, 'WeeklyHabit', '2023-06-14', 0, false, 0]
-            );
-        });
+        const habits = [{ habitName: 'WeeklyHabit', scheduleOption: 'weekly' }];
+        const days = [{ day: 'Monday' }, { day: 'Wednesday' }];
+        const lastProgressDate = '2023-06-10';
+
+        mPool.query
+            .mockResolvedValueOnce([habits]) // SELECT habitName, scheduleOption
+            .mockResolvedValueOnce([[{ lastDate: lastProgressDate }]]) // SELECT MAX(progressDate)
+            .mockResolvedValueOnce([days]); // SELECT day
 
         await fillMissedProgress('test@example.com');
 
-        // Verify queries
-        expect(mPool.query).toHaveBeenCalledWith(
-            expect.stringContaining('SELECT habitName, scheduleOption'),
-            ['test@example.com']
-        );
-        expect(mPool.query).toHaveBeenCalledWith(
-            expect.stringContaining('SELECT day FROM habit_days'),
-            ['test@example.com', 'WeeklyHabit']
-        );
-        // Verify INSERT queries for missed dates
         expect(mPool.query).toHaveBeenCalledWith(
             expect.stringContaining('INSERT IGNORE INTO habit_progress'),
             ['test@example.com', 'WeeklyHabit', '2023-06-12', 0, false, 0]
@@ -428,55 +314,97 @@ describe('fillMissedProgress', () => {
     });
 
     test('should skip if lastProgressDate is after or equal to today', async () => {
-        // Mock implementation for this test
-        fillMissedProgressMock.mockImplementationOnce(async (email) => {
-            // Only call the first two queries
-            mPool.query(
-                `SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`,
-                [email]
-            );
-            mPool.query(
-                `SELECT MAX(progressDate) as lastDate FROM habit_progress WHERE user_email = ? AND habitName = ?`,
-                [email, 'RecentHabit']
-            );
-        });
+        const habits = [{ habitName: 'RecentHabit', scheduleOption: 'interval' }];
+        mPool.query
+            .mockResolvedValueOnce([habits]) // SELECT habitName, scheduleOption
+            .mockResolvedValueOnce([[{ lastDate: '2023-06-15' }]]); // SELECT MAX(progressDate)
 
         await fillMissedProgress('test@example.com');
 
-        // Should only call the first two queries (habits + lastDate) then skip
         expect(mPool.query).toHaveBeenCalledTimes(2);
     });
 
     test('should skip interval habit if gapDays <= increment', async () => {
-        // Mock implementation for this test
-        fillMissedProgressMock.mockImplementationOnce(async (email) => {
-            // Call three queries but don't insert
-            mPool.query(
-                `SELECT habitName, scheduleOption FROM habits WHERE user_email = ?`,
-                [email]
-            );
-            mPool.query(
-                `SELECT MAX(progressDate) as lastDate FROM habit_progress WHERE user_email = ? AND habitName = ?`,
-                [email, 'IntervalHabit']
-            );
-            mPool.query(
-                `SELECT increment FROM habit_intervals WHERE user_email = ? AND habitName = ?`,
-                [email, 'IntervalHabit']
-            );
-        });
+        const habits = [{ habitName: 'IntervalHabit', scheduleOption: 'interval' }];
+        const interval = [{ increment: 5 }];
+        mPool.query
+            .mockResolvedValueOnce([habits]) // SELECT habitName, scheduleOption
+            .mockResolvedValueOnce([[{ lastDate: '2023-06-12' }]]) // SELECT MAX(progressDate)
+            .mockResolvedValueOnce([interval]); // SELECT increment
 
         await fillMissedProgress('test@example.com');
 
-        // Should query habits, lastDate, and increment, but not insert anything
         expect(mPool.query).toHaveBeenCalledTimes(3);
     });
 
     test('should handle errors', async () => {
-        // Mock query to throw an error
-        fillMissedProgressMock.mockImplementationOnce(() => {
-            return Promise.reject(new Error('Database error'));
-        });
-
+        mPool.query.mockRejectedValueOnce(new Error('Database error'));
         await expect(fillMissedProgress('test@example.com')).rejects.toThrow('Database error');
+    });
+});
+
+describe('generateIntervalInstances', () => {
+    beforeEach(() => {
+        jest.useFakeTimers().setSystemTime(new Date('2023-01-03'));
+    });
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+    test('should generate interval instances for a habit', async () => {
+        mPool.query
+            .mockResolvedValueOnce([[{ lastDate: '2023-01-01' }]]) // getLastDate
+            .mockResolvedValueOnce([[{ scheduleOption: 'interval', increment: 2 }]]) // SELECT scheduleOption, increment
+            .mockResolvedValueOnce([]); // INSERT IGNORE INTO habit_instances
+        await expect(generateIntervalInstances('test@example.com', 'TestHabit')).resolves.toBeUndefined();
+        expect(mPool.query).toHaveBeenCalled();
+        expect(mPool.query.mock.calls.length).toBeGreaterThanOrEqual(1);
+    });
+    test('should skip if habit is not an interval habit', async () => {
+        mPool.query
+            .mockResolvedValueOnce([[{ lastDate: '2023-01-01' }]]) // getLastDate
+            .mockResolvedValueOnce([[{ scheduleOption: 'weekly', increment: null }]]); // SELECT scheduleOption, increment
+        await expect(generateIntervalInstances('test@example.com', 'TestHabit')).resolves.toBeUndefined();
+        expect(mPool.query).toHaveBeenCalledTimes(1);
+    });
+    test('should handle errors during generation', async () => {
+        mPool.query
+            .mockRejectedValueOnce(new Error('Database error')); // getLastDate fails
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        await expect(generateIntervalInstances('test@example.com', 'TestHabit')).resolves.toBeUndefined();
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error generating missing interval instances:', expect.any(Error));
+        consoleErrorSpy.mockRestore();
+    });
+});
+
+describe('generateDayInstances', () => {
+    beforeEach(() => {
+        jest.useFakeTimers().setSystemTime(new Date('2023-01-02')); // Monday
+    });
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+    test('should generate daily instances for a habit', async () => {
+        mPool.query
+            .mockResolvedValueOnce([[{ lastDate: '2023-01-01' }]]) // getLastDate
+            .mockResolvedValueOnce([[{ day: 'Monday' }]]) // SELECT day
+            .mockResolvedValueOnce([]); // INSERT IGNORE INTO habit_instances
+        await expect(generateDayInstances('test@example.com', 'TestHabit')).resolves.toBeUndefined();
+        expect(mPool.query).toHaveBeenCalled();
+        expect(mPool.query.mock.calls.length).toBeGreaterThanOrEqual(1);
+    });
+    test('should skip if no scheduled days are found', async () => {
+        mPool.query
+            .mockResolvedValueOnce([[{ lastDate: '2023-01-01' }]]) // getLastDate
+            .mockResolvedValueOnce([]); // SELECT day (no days)
+        await expect(generateDayInstances('test@example.com', 'TestHabit')).resolves.toBeUndefined();
+        expect(mPool.query).toHaveBeenCalledTimes(1);
+    });
+    test('should handle errors during generation', async () => {
+        mPool.query
+            .mockRejectedValueOnce(new Error('Database error')); // getLastDate fails
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        await expect(generateDayInstances('test@example.com', 'TestHabit')).resolves.toBeUndefined();
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error generating missing day instances:', expect.any(Error));
+        consoleErrorSpy.mockRestore();
     });
 });

@@ -13,6 +13,22 @@ jest.mock('mysql2/promise', () => ({
 import app from "../../server";
 import request from 'supertest';
 
+let consoleErrorSpy;
+let consoleLogSpy;
+
+beforeEach(() => {
+    mPool.query.mockReset();
+    mPool.getConnection.mockReset();
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+});
+
+afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    consoleLogSpy.mockRestore();
+    jest.restoreAllMocks();
+});
+
 describe('POST /habits', () => {
     test('should add habit successfully for weekly schedule', async () => {
         mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]);

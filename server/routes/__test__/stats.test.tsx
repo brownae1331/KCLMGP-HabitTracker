@@ -13,6 +13,22 @@ jest.mock('mysql2/promise', () => ({
 import app from "../../server";
 import request from 'supertest';
 
+let consoleErrorSpy;
+let consoleLogSpy;
+
+beforeEach(() => {
+    mPool.query.mockReset();
+    mPool.getConnection.mockReset();
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+});
+
+afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    consoleLogSpy.mockRestore();
+    jest.restoreAllMocks();
+});
+
 describe('GET /stats/longest-streak/:email/:habitName', () => {
     beforeEach(() => {
         jest.clearAllMocks();
