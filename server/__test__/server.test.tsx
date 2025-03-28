@@ -54,7 +54,7 @@ describe('getHabitsForDate', () => {
     test('should return rows for progress type', async () => {
         const fakeRows = [{ habitName: 'TestHabit' }];
         mPool.query.mockResolvedValueOnce([fakeRows]);
-        const rows = await getHabitsForDate('test@example.com', '2023-08-10', 'progress');
+        const rows = await getHabitsForDate('test@example.com', new Date('2023-08-10'), 'progress');
         expect(rows).toEqual(fakeRows);
         expect(mPool.query).toHaveBeenCalledWith(
             expect.stringContaining('FROM habit_progress hp'),
@@ -65,14 +65,13 @@ describe('getHabitsForDate', () => {
     test('should return rows for instances type', async () => {
         const fakeRows = [{ habitName: 'TestHabitInstance' }];
         mPool.query.mockResolvedValueOnce([fakeRows]);
-        const rows = await getHabitsForDate('test@example.com', '2023-08-10', 'instances');
+        const rows = await getHabitsForDate('test@example.com', new Date('2023-08-10'), 'instances');
         expect(rows).toEqual(fakeRows);
         expect(mPool.query).toHaveBeenCalledWith(
             expect.stringContaining('FROM habit_instances hi'),
             ['test@example.com', '2023-08-10']
         );
     });
-
 });
 
 describe('syncHabits', () => {

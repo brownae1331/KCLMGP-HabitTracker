@@ -32,8 +32,8 @@ app.get('/', (req, res) => {
 // Adjust the get habit query to fetch from habit_progress or habit_instances depending on the date
 export async function getHabitsForDate(email, date, type) {
   let query;
-  const queryParams = [email, date];
-
+  const formattedDate = date.toISOString().split('T')[0];
+  const queryParams = [email, formattedDate];
   if (type === 'progress') {
     query = `
       SELECT h.user_email, h.habitName, h.habitDescription, h.habitType, h.habitColor,
