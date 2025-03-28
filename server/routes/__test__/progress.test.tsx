@@ -65,6 +65,36 @@ describe('POST /progress', () => {
         expect(res.body).toHaveProperty('message', 'Progress updated');
     });
 
+    test('should update completed when goalValue is null', async () => {
+        const existingProgress = [{ goalValue: null, streak: 0 }];
+
+        mPool.query.mockResolvedValueOnce([existingProgress]);
+        mPool.query.mockResolvedValueOnce([[{ completed: true, streak: 2 }]]);
+        mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
+
+        const res = await request(app)
+            .post('/progress')
+            .send({ email: 'test@example.com', habitName: 'ExistingHabit', progress: 1 });
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty('message', 'Progress updated');
+    });
+
+    test('should update streak to 1 when most recent day isnt completed', async () => {
+        const existingProgress = [{ goalValue: null, completed: false, streak: 0 }];
+
+        mPool.query.mockResolvedValueOnce([existingProgress]);
+        mPool.query.mockResolvedValueOnce([[{ completed: false, streak: 0 }]]);
+        mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
+
+        const res = await request(app)
+            .post('/progress')
+            .send({ email: 'test@example.com', habitName: 'ExistingHabit', progress: 1 });
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty('message', 'Progress updated');
+    });
+
     test('should handle database errors', async () => {
         // Mock database error
         mPool.query.mockRejectedValueOnce(new Error('Database error'));

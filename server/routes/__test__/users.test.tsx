@@ -10,6 +10,11 @@ jest.mock('mysql2/promise', () => ({
     createPool: jest.fn(() => mPool),
 }));
 
+jest.mock('bcrypt', () => ({
+    hash: jest.fn().mockResolvedValue('hashedPassword'),
+    compare: jest.fn().mockImplementation((plain, hash) => Promise.resolve(plain === 'password123' && hash === 'hashedPassword')),
+}));
+
 import app from "../../server";
 import request from 'supertest';
 import bcrypt from 'bcrypt';
@@ -100,6 +105,24 @@ describe('POST /users/signup', () => {
         expect(res.body).toHaveProperty('error', 'Email already exists');
     });
 
+    test('should return 409 for duplicate username (not email)', async () => {
+        const duplicateError = new Error('Duplicate entry') as any;
+        duplicateError.code = 'ER_DUP_ENTRY';
+        duplicateError.sqlMessage = 'Duplicate entry for key username'; 
+        mPool.query.mockRejectedValueOnce(duplicateError);
+    
+        const res = await request(app)
+            .post('/users/signup')
+            .send({ 
+                email: 'unique@example.com', 
+                password: 'password123', 
+                username: 'existinguser' 
+            });
+    
+        expect(res.statusCode).toBe(409);
+        expect(res.body).toHaveProperty('error', 'Duplicate entry');
+    });
+
     test('should return 500 for database error', async () => {
         // Mock general database error
         mPool.query.mockRejectedValueOnce(new Error('Database error'));
@@ -114,6 +137,10 @@ describe('POST /users/signup', () => {
 });
 
 describe('POST /users/login', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+    
     test('should login successfully with valid credentials', async () => {
         const hashedPassword = await bcrypt.hash('password123', 10);
         mPool.query.mockResolvedValueOnce([[{ email: 'test@example.com', username: 'testuser', password: hashedPassword }]]);
@@ -158,15 +185,9 @@ describe('POST /users/login', () => {
     });
 
     test('should return 401 for invalid password', async () => {
-        const hashedPassword = await bcrypt.hash('correctpassword', 10);
-        const mockUser = [{ email: 'test@example.com', username: 'testuser', password: hashedPassword }];
-
-        mPool.query.mockResolvedValueOnce([mockUser]);
-
-        const res = await request(app)
-            .post('/users/login')
-            .send({ email: 'test@example.com', password: 'wrongpassword' });
-
+        const mockUser = { email: 'test@example.com', username: 'testuser', password: 'hashedPassword' };
+        mPool.query.mockResolvedValueOnce([[mockUser]]);
+        const res = await request(app).post('/users/login').send({ email: 'test@example.com', password: 'wrongpassword' });
         expect(res.statusCode).toBe(401);
         expect(res.body).toHaveProperty('error', 'Invalid email or password');
     });
@@ -257,23 +278,13 @@ describe('POST /users/update-password', () => {
     });
 
     test('should update password successfully', async () => {
-        // Mock user query result
-        mPool.query.mockResolvedValueOnce([[{ username: 'testuser', password: 'hashedOldPassword' }]]);
-        // Mock bcrypt compare to return true (password matches)
-        jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true as never);
-        // Mock bcrypt hash for new password
-        jest.spyOn(bcrypt, 'hash').mockResolvedValueOnce('hashedNewPassword' as never);
-        // Mock update query result
+        mPool.query.mockResolvedValueOnce([[{ username: 'testuser', password: 'hashedPassword' }]]);
         mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
-
-        const res = await request(app)
-            .post('/users/update-password')
-            .send({
-                username: 'testuser',
-                oldPassword: 'oldPassword',
-                newPassword: 'newPassword'
-            });
-
+        const res = await request(app).post('/users/update-password').send({
+            username: 'testuser',
+            oldPassword: 'password123',
+            newPassword: 'newPassword'
+        });
         expect(res.statusCode).toBe(200);
         expect(res.body).toHaveProperty('message', 'Password updated successfully');
     });

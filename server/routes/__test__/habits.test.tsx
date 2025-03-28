@@ -67,6 +67,30 @@ describe('POST /habits', () => {
         expect(res.body).toHaveProperty('message', 'Habit added successfully');
     });
 
+    test('should add habit successfully with no description, goal value, or goal units', async () => {
+        mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
+        mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]); // insert habit_days for first day
+        mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]); // insert habit_days for second day
+
+        mPool.query.mockResolvedValueOnce([[]]);
+        mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
+        mPool.query.mockResolvedValueOnce([[]]);
+        mPool.query.mockResolvedValueOnce([[]]);
+
+        const res = await request(app)
+            .post('/habits')
+            .send({
+                email: 'test@example.com',
+                habitName: 'HabitWeekly',
+                habitType: 'build',
+                habitColor: '#000000',
+                scheduleOption: 'weekly',
+                selectedDays: ['Monday', 'Tuesday']
+            });
+        expect(res.statusCode).toBe(201);
+        expect(res.body).toHaveProperty('message', 'Habit added successfully');
+    });
+
     test('should return 500 if error occurs during habit addition', async () => {
         mPool.query.mockRejectedValueOnce(new Error('insert error'));
         const res = await request(app)
@@ -85,6 +109,31 @@ describe('POST /habits', () => {
             });
         expect(res.statusCode).toBe(500);
         expect(res.body).toHaveProperty('error', 'Error adding habit');
+    });
+
+    test('should return 409 for duplicate habit name', async () => {
+        const duplicateError = new Error('Duplicate entry') as any;
+        duplicateError.code = 'ER_DUP_ENTRY';
+        duplicateError.sqlMessage = 'Duplicate entry for key habitName';
+        mPool.query.mockRejectedValueOnce(duplicateError);
+
+        const res = await request(app)
+            .post('/habits')
+            .send({
+                email: 'test@example.com',
+                habitName: 'HabitInterval',
+                habitDescription: 'desc',
+                habitType: 'build',
+                habitColor: '#000000',
+                scheduleOption: 'interval',
+                intervalDays: '1',
+                selectedDays: [],
+                goalValue: '10',
+                goalUnit: 'units'
+            });
+
+        expect(res.statusCode).toBe(409);
+        expect(res.body).toHaveProperty('error', 'Habit already exists for this user');
     });
 });
 
@@ -135,6 +184,29 @@ describe('PUT /habits', () => {
                 selectedDays: [],
                 goalValue: '5',
                 goalUnit: 'times'
+            });
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty('message', 'Habit updated successfully');
+    });
+
+    test('should update habit successfully with no description, goal value, or goal units', async () => {
+        // Mock successful updates
+        mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]); // Update habits table
+        mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]); // Delete from habit_days
+        mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]); // Delete from habit_intervals
+        mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]); // Insert first day
+        mPool.query.mockResolvedValueOnce([{ affectedRows: 1 }]); // Insert second day
+
+        const res = await request(app)
+            .put('/habits')
+            .send({
+                email: 'test@example.com',
+                habitName: 'HabitWeekly',
+                habitType: 'build',
+                habitColor: '#111111',
+                scheduleOption: 'weekly',
+                selectedDays: ['Monday', 'Wednesday']
             });
 
         expect(res.statusCode).toBe(200);
@@ -213,6 +285,14 @@ describe('GET /habits/:email/:date', () => {
         const res = await request(app).get('/habits/test@example.com/2000-01-01');
         expect(res.statusCode).toBe(500);
         expect(res.text).toBe('Server error');
+    });
+
+    test('should return 400 for invalid date format', async () => {
+        const email = 'test@example.com';
+        const invalidDate = 'invalid-date';
+        const res = await request(app).get(`/habits/${email}/${invalidDate}`);
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toHaveProperty('error', 'Invalid date format');
     });
 });
 
