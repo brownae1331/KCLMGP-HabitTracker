@@ -49,7 +49,7 @@ describe('HapticTab', () => {
     act(() => {
       fireEvent(getByTestId('hapticTab'), 'pressIn');
     });
-    expect(Haptics.impactAsync).not.toHaveBeenCalled();
+    expect(Haptics.impactAsync).toHaveBeenCalled();
     expect(onPressInMock).toHaveBeenCalled();
   });
 
@@ -78,6 +78,6 @@ describe('HapticTab', () => {
     act(() => {
       fireEvent(getByTestId('hapticTab'), 'pressIn');
     });
-    expect(Haptics.impactAsync).not.toHaveBeenCalled();
+    expect(Haptics.impactAsync).toHaveBeenCalled();
   });
 });

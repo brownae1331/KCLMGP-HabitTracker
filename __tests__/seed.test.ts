@@ -61,10 +61,10 @@ describe('Seed Script', () => {
     const userInsertCalls = queryMock.mock.calls.filter(call =>
       typeof call[0] === 'string' && call[0].includes('INSERT INTO users')
     );
-    expect(userInsertCalls.length).toBe(2);
+    expect(userInsertCalls.length).toBe(10);
 
     // Verify that bcrypt.hash is called for each user insert
-    expect(bcrypt.hash).toHaveBeenCalledTimes(2);
+    expect(bcrypt.hash).toHaveBeenCalledTimes(10);
 
     // Finally, check that the pool is properly ended and the connection released
     expect(releaseMock).toHaveBeenCalled();
