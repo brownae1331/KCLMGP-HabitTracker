@@ -152,7 +152,6 @@ export default function CalendarScreen() {
     const sortedDates = Object.keys(dates)
       .filter((date) => date <= today)
       .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-    if (sortedDates.length > 0) {
       const todayData = dates[today];
       const isTodayComplete = todayData && todayData.progress === 100;
       const excludeToday = todayData && !isTodayComplete;
@@ -171,7 +170,6 @@ export default function CalendarScreen() {
         }
       }
       maxStreakCount = Math.max(maxStreakCount, tempStreakCount);
-    }
     setCurrentStreak(currentStreakCount);
     setLongestStreak(maxStreakCount);
   };

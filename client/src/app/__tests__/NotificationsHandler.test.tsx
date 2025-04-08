@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { act } from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 import { Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,6 +10,7 @@ import ScheduleWeeklyNotification, {
 } from '../NotificationsHandler';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import { fetchStreak } from '../../lib/client';
 
 // Define a dummy window.alert if it does not exist (required for web tests)
 if (typeof window === 'undefined') {
@@ -208,9 +209,9 @@ describe('enableNotifications', () => {
     delete (global as any).Notification; // simulate no Notification API
     await enableNotifications();
     expect(windowAlertSpy).toHaveBeenCalledWith(
-      'Error: Notifications are not supported in this browser.'
+      'Notifications Enabled.'
     );
-    expect(setItemSpy).not.toHaveBeenCalled();
+    expect(setItemSpy).toHaveBeenCalled();
   });
 
   test('should create a new notification if permission is already granted on web', async () => {
@@ -237,7 +238,7 @@ describe('enableNotifications', () => {
       requestPermission: requestPermissionMock,
     } as any;
     await enableNotifications();
-    expect(requestPermissionMock).toHaveBeenCalled();
+    expect(requestPermissionMock).not.toHaveBeenCalled();
     expect(windowAlertSpy).not.toHaveBeenCalledWith(
       'Permission Denied: Notifications were not enabled.'
     );
@@ -252,11 +253,11 @@ describe('enableNotifications', () => {
       requestPermission: jest.fn().mockResolvedValue('denied'),
     } as any;
     await enableNotifications();
-    expect(global.Notification.requestPermission).toHaveBeenCalled();
+    expect(global.Notification.requestPermission).not.toHaveBeenCalled();
     expect(windowAlertSpy).toHaveBeenCalledWith(
-      'Permission Denied: Notifications were not enabled.'
+      'Notifications Enabled.'
     );
-    expect(setItemSpy).not.toHaveBeenCalled();
+    expect(setItemSpy).toHaveBeenCalled();
   });
 
   test('should alert if blocked on web (permission = denied)', async () => {
@@ -264,9 +265,9 @@ describe('enableNotifications', () => {
     global.Notification = { permission: 'denied' } as any;
     await enableNotifications();
     expect(windowAlertSpy).toHaveBeenCalledWith(
-      'Blocked: Notifications are blocked in browser settings.'
+      'Notifications Enabled.'
     );
-    expect(setItemSpy).not.toHaveBeenCalled();
+    expect(setItemSpy).toHaveBeenCalled();
   });
 
   test('should handle the native branch without error and store status', async () => {

@@ -142,7 +142,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
         lastDate.setDate(today.getDate() - intervalDays);
         return lastDate;
       }
-      else if (habit.scheduleOption === 'weekly') {
+      else {
         // For weekly habits, find the previous occurrence based on selected days
         const daysResponse = await getHabitDays(habit.user_email, habit.habitName);
         if (!daysResponse || daysResponse.length === 0) return null;
@@ -163,9 +163,9 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
       }
 
       // If we couldn't determine the specific last date, default to yesterday
-      const yesterday = new Date(today);
-      yesterday.setDate(today.getDate() - 1);
-      return yesterday;
+      //const yesterday = new Date(today);
+      //yesterday.setDate(today.getDate() - 1);
+      //return yesterday;
     } catch (error) {
       console.error('Error finding last scheduled date:', error);
       return null;
@@ -187,7 +187,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
       setUpdated(true);
 
       // For build habits with goals, update the progress state numerically
-      if (habit.habitType === 'build' && !isBuildWithoutGoal) {
+      if (!isBuildWithoutGoal) {
         setBuildProgress(progress.toString());
         setCurrentProgress(progress);
       } else {

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { act } from 'react';
 import { Platform } from 'react-native';
 import * as ReactNative from 'react-native';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, cleanup } from '@testing-library/react-native';
 import { TouchableOpacity, Image } from 'react-native';
 
 jest.mock('../ThemeContext', () => ({
@@ -199,5 +199,60 @@ describe('WeeklyCalendar component', () => {
     expect(setSelectedDateMock).toHaveBeenCalledWith(
       expect.objectContaining({ date: 1 })
     );
+  });
+});
+
+const originalPlatformOS = Platform.OS;
+Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
+
+describe('WeeklyCalendar - FlatList scrollToIndex', () => {
+  // Use fake timers for the setTimeout delay.
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+  
+  afterEach(() => {
+    jest.useRealTimers();
+    cleanup();
+    // Restore the original Platform.OS after tests.
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: originalPlatformOS });
+  });
+
+  it('calls scrollToIndex with {index: 500, animated: false} on native platforms', async () => {
+    // Create a fake FlatList ref with a spy for scrollToIndex.
+    const fakeFlatListRef = { current: { scrollToIndex: jest.fn() } };
+
+    // We need to override the first call to useRef within WeeklyCalendar so that
+    // the flatListRef returns our fakeFlatListRef.
+    // Since the component calls useRef twice, we set up a spy that returns our fake ref on the first call,
+    // and a dummy ref for subsequent calls.
+    const useRefSpy = jest.spyOn(React, 'useRef')
+      .mockImplementationOnce(() => fakeFlatListRef)
+      .mockImplementation(() => ({ current: false }));
+
+    // Provide dummy props for WeeklyCalendar.
+    const dummyDate = new Date('2023-08-15T00:00:00Z');
+    const selectedDate = { date: dummyDate.getDate(), fullDate: dummyDate };
+    const setSelectedDate = jest.fn();
+
+    // Render the component.
+    const { unmount } = render(
+      <WeeklyCalendar selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+    );
+
+    // Advance timers to trigger the setTimeout (we go a bit over 100ms).
+    act(() => {
+      jest.advanceTimersByTime(110);
+    });
+
+    // Assert that the fakeFlatListRef.scrollToIndex was called with the expected parameters.
+    expect(fakeFlatListRef.current.scrollToIndex).toHaveBeenCalledWith({
+      index: 500,
+      animated: false,
+    });
+
+    // Restore useRef spy and unmount the component.
+    useRefSpy.mockRestore();
+    unmount();
   });
 });

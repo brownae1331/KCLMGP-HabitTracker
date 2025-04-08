@@ -223,7 +223,7 @@ export default function HomeScreen() {
       if (habit.scheduleOption === 'interval') {
         const interval = await getHabitInterval(email, habit.habitName);
         setIntervalDays(interval.increment.toString());
-      } else if (habit.scheduleOption === 'weekly') {
+      } else {
         const daysResponse = await getHabitDays(email, habit.habitName);
         // Extract just the day names from the response objects
         const dayNames = daysResponse.map((dayObj: { day: string }) => dayObj.day);

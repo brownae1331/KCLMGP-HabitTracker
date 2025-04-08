@@ -1,6 +1,7 @@
 import React from "react";
 import { render, waitFor, act, cleanup, within } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
+import { Platform } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getHabitProgressByDate } from "../../../../lib/client";
 import CalendarScreen from "../../../(protected)/(tabs)/calendar";

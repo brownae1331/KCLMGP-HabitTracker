@@ -3,6 +3,7 @@ import { Platform, Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchStreak, fetchHabits } from '../lib/client';
 
 // Set notification handler (applies to both native and web)
 Notifications.setNotificationHandler({
@@ -42,10 +43,28 @@ export default function ScheduleWeeklyNotification() {
         }
         const nextSunday = getNextSundayAtNine();
         const delay = nextSunday.getTime() - new Date().getTime();
+
         setTimeout(() => {
-          new Notification('Weekly Summary', {
-            body: 'Your weekly summary: X habits completed, Y habits missed.',
-          });
+          (async () => {
+            const email = await AsyncStorage.getItem('email');
+            const habits = fetchHabits(email);
+            // For each habit, fetch streak data for the week.
+            const streakResults = await Promise.all(
+              habits.map(async (habit) => {
+                const rawData = await fetchStreak(email, habit, "week");
+                const mostRecentEntry = rawData && rawData.length > 0 ? rawData[rawData.length - 1] : null;
+                return { habit, streak: mostRecentEntry ? mostRecentEntry.streak : 0 };
+              })
+            );
+            // Build the notification message using the obtained streaks.
+            const message = streakResults
+              .map(result => `${result.habit}: ${result.streak}`)
+              .join(", ");
+            new Notification('Weekly Summary For Previous Week', {
+              body: `Your weekly summary: ${message}`,
+            });
+            
+          })();
         }, delay);
       } else {
         // Native: Use expo-notifications
@@ -67,66 +86,30 @@ export default function ScheduleWeeklyNotification() {
         await Notifications.scheduleNotificationAsync({
           content: {
             title: 'Weekly Summary',
-            body: 'Your weekly summary: X habits completed, Y habits missed.',
+            body: 'Open the app to see your which habits you have completed.',
             data: { info: 'weekly summary' },
           },
           trigger: nextSunday,
         });
       }
     }
-
+    
     scheduleNotification();
   }, []);
-
   return null;
 }
 
 // Enable notifications
 export async function enableNotifications() {
-
   try {
     if (Platform.OS === 'web') {
-      if (typeof window !== 'undefined' && !('Notification' in window)) {
-        window.alert('Error: Notifications are not supported in this browser.');
-        return;
-      }
-
-      if (Notification.permission === 'granted') {
-        new Notification('Notifications Enabled', {
-          body: 'You will receive weekly summary notifications.',
-        });
-        await AsyncStorage.setItem('notificationsEnabled', 'true');
-      } else if (Notification.permission !== 'denied') {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          new Notification('Notifications Enabled', {
-            body: 'You will receive weekly summary notifications.',
-          });
-          await AsyncStorage.setItem('notificationsEnabled', 'true');
-        } else {
-          window.alert('Permission Denied: Notifications were not enabled.');
-          return;
-        }
-      } else {
-        window.alert('Blocked: Notifications are blocked in browser settings.');
-        return;
-      }
-    } else {
-      await AsyncStorage.setItem('notificationsEnabled', 'true');
+      window.alert(
+        'Notifications Enabled.'
+      );
     }
-
-    //if (typeof jest === 'undefined') {
-    //  setTimeout(() => {
-    //    if (Platform.OS === 'web') {
-    //      window.alert('Success: Notifications Enabled');
-    //    } else {
-    //      Alert.alert('Success', 'Notifications Enabled');
-    //    }
-    //  }, 200);
-    //}
-
+    await AsyncStorage.setItem('notificationsEnabled', 'true');
   } catch (error) {
-    console.error('Error enabling notifications:', error);
+    console.error('Error disabling notifications:', error);
     if (typeof window !== 'undefined') {
       window.alert('Error: Failed to enable notifications.');
     }
@@ -135,26 +118,13 @@ export async function enableNotifications() {
 
 // Disable notifications
 export async function disableNotifications() {
-
   try {
     if (Platform.OS === 'web') {
       window.alert(
         'Notifications Disabled.'
       );
     }
-
     await AsyncStorage.setItem('notificationsEnabled', 'false');
-
-    //if (typeof jest === 'undefined') {
-    //  setTimeout(() => {
-    //    if (Platform.OS === 'web') {
-    //      window.alert('Success: Notifications Disabled');
-    //    } else {
-    //      Alert.alert('Success', 'Notifications Disabled');
-    //    }
-    //  }, 200);
-    //}
-
   } catch (error) {
     console.error('Error disabling notifications:', error);
     if (typeof window !== 'undefined') {
