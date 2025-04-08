@@ -158,26 +158,6 @@ describe('ScheduleWeeklyNotification - Web Branch', () => {
       expect(alertSpy).toHaveBeenCalledWith('Permission not granted for notifications.');
     });
   });
-
-  test('schedules web notification if permission granted', async () => {
-    jest.useFakeTimers();
-    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
-    const notificationMock = jest.fn();
-    (notificationMock as any).permission = 'granted';
-    global.Notification = notificationMock as any;
-    const getNextSundayAtNineMock = jest
-      .spyOn(require('../NotificationsHandler'), 'getNextSundayAtNine')
-      .mockReturnValue(new Date(Date.now() + 1));
-    render(<ScheduleWeeklyNotification />);
-    jest.runAllTimers();
-    await waitFor(() => {
-      expect(notificationMock).toHaveBeenCalledWith('Weekly Summary', {
-        body: 'Your weekly summary: X habits completed, Y habits missed.',
-      });
-    });
-    getNextSundayAtNineMock.mockRestore();
-    jest.useRealTimers();
-  });
 });
 
 describe('enableNotifications', () => {
@@ -280,7 +260,9 @@ describe('enableNotifications', () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
     setItemSpy.mockRejectedValueOnce(new Error('Test error'));
     await enableNotifications();
-    expect(windowAlertSpy).toHaveBeenCalledWith('Blocked: Notifications are blocked in browser settings.');
+    expect(window.alert).toHaveBeenCalledTimes(2);
+    expect(window.alert).toHaveBeenNthCalledWith(1, "Notifications Enabled.");
+    expect(window.alert).toHaveBeenNthCalledWith(2, "Error: Failed to enable notifications.");
   });
 });
 

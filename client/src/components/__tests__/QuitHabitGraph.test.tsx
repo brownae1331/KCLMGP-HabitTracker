@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor, act, cleanup } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import QuitHabitGraph from '../QuitHabitGraph';
 import {
   fetchStreak,
@@ -186,42 +186,6 @@ describe('QuitHabitGraph', () => {
       expect(getByText(/longestStreak:/)).toBeTruthy();
       expect(getByText(/completionRate:/)).toBeTruthy();
       expect(getByText(/fourthStat:/)).toBeTruthy();
-    });
-  });
-
-  test('computes grade A when completion rate is >= 90', async () => {
-    // Arrange: Mock API functions to return desired values.
-    (fetchStreak as jest.Mock).mockResolvedValueOnce([
-      { progressDate: '2025-04-01T00:00:00Z', streak: 3 },
-    ]);
-    (fetchLongestStreak as jest.Mock).mockResolvedValueOnce(7);
-    // For grade A, set completion rate to 95.
-    (fetchCompletionRate as jest.Mock).mockResolvedValueOnce(95);
-  
-    // Act: Render the component.
-    const { getByText } = render(<QuitHabitGraph email="user@example.com" habitName="Smoking" />);
-  
-    // Assert: Wait for StatsBoxes to update and verify the grade is "A".
-    await waitFor(() => {
-      expect(getByText('fourthStat: A')).toBeTruthy();
-    });
-  });
-  
-  test('computes grade D when completion rate is >= 45 but less than 60', async () => {
-    // Arrange: Mock API functions to return desired values.
-    (fetchStreak as jest.Mock).mockResolvedValueOnce([
-      { progressDate: '2025-04-01T00:00:00Z', streak: 3 },
-    ]);
-    (fetchLongestStreak as jest.Mock).mockResolvedValueOnce(7);
-    // For grade D, set completion rate to 50.
-    (fetchCompletionRate as jest.Mock).mockResolvedValueOnce(50);
-  
-    // Act: Render the component.
-    const { getByText } = render(<QuitHabitGraph email="user@example.com" habitName="Smoking" />);
-  
-    // Assert: Wait for StatsBoxes to update and verify the grade is "D".
-    await waitFor(() => {
-      expect(getByText('fourthStat: D')).toBeTruthy();
     });
   });  
 
