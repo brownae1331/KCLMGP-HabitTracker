@@ -159,7 +159,7 @@ describe('WeeklyCalendar component', () => {
       expect.objectContaining({ date: 17 })
     );
   });
-
+  
   it('should not update selectedDate when swiping between weeks (mobile), but update when a date is tapped', async () => {
     Object.defineProperty(Platform, 'OS', {
       configurable: true,

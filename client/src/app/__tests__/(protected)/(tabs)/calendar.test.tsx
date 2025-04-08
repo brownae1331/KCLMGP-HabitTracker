@@ -3,7 +3,7 @@ import { render, waitFor, act, cleanup, within } from "@testing-library/react-na
 import { NavigationContainer } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getHabitProgressByDate } from "../../../../lib/client";
-import CalendarScreen, { formatDate } from "../../../(protected)/(tabs)/calendar";
+import CalendarScreen from "../../../(protected)/(tabs)/calendar";
 
 // Use fake timers for the setTimeout inside CalendarScreen.
 jest.useFakeTimers();
@@ -257,5 +257,28 @@ describe("CalendarScreen", () => {
       expect(stats.longestStreak).toBeGreaterThan(0);
     });
     jest.useRealTimers();
+  });
+
+  it('logs "Error loading email from AsyncStorage:" when AsyncStorage.getItem throws an error', async () => {
+    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    const AsyncStorage = require("@react-native-async-storage/async-storage");
+    const testError = new Error("Test error");
+    (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(testError);
+    
+    render(
+      <NavigationContainer>
+        <CalendarScreen />
+      </NavigationContainer>
+    );
+    
+    act(() => {
+      jest.advanceTimersByTime(60);
+    });
+    
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Error loading email from AsyncStorage:", testError);
+    });
+    
+    consoleErrorSpy.mockRestore();
   });
 });

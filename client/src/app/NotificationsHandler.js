@@ -115,15 +115,15 @@ export async function enableNotifications() {
       await AsyncStorage.setItem('notificationsEnabled', 'true');
     }
 
-    if (typeof jest === 'undefined') {
-      setTimeout(() => {
-        if (Platform.OS === 'web') {
-          window.alert('Success: Notifications Enabled');
-        } else {
-          Alert.alert('Success', 'Notifications Enabled');
-        }
-      }, 200);
-    }
+    //if (typeof jest === 'undefined') {
+    //  setTimeout(() => {
+    //    if (Platform.OS === 'web') {
+    //      window.alert('Success: Notifications Enabled');
+    //    } else {
+    //      Alert.alert('Success', 'Notifications Enabled');
+    //    }
+    //  }, 200);
+    //}
 
   } catch (error) {
     console.error('Error enabling notifications:', error);
@@ -139,21 +139,21 @@ export async function disableNotifications() {
   try {
     if (Platform.OS === 'web') {
       window.alert(
-        'To fully disable notifications, go to your browser settings and block them manually.'
+        'Notifications Disabled.'
       );
     }
 
     await AsyncStorage.setItem('notificationsEnabled', 'false');
 
-    if (typeof jest === 'undefined') {
-      setTimeout(() => {
-        if (Platform.OS === 'web') {
-          window.alert('Success: Notifications Disabled');
-        } else {
-          Alert.alert('Success', 'Notifications Disabled');
-        }
-      }, 200);
-    }
+    //if (typeof jest === 'undefined') {
+    //  setTimeout(() => {
+    //    if (Platform.OS === 'web') {
+    //      window.alert('Success: Notifications Disabled');
+    //    } else {
+    //      Alert.alert('Success', 'Notifications Disabled');
+    //    }
+    //  }, 200);
+    //}
 
   } catch (error) {
     console.error('Error disabling notifications:', error);

@@ -6,6 +6,7 @@ import ScheduleWeeklyNotification, {
   getNextSundayAtNine,
   enableNotifications,
   disableNotifications,
+  getNotificationStatus,
 } from '../NotificationsHandler';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
@@ -307,7 +308,7 @@ describe('disableNotifications', () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
     await disableNotifications();
     expect(windowAlertSpy).toHaveBeenCalledWith(
-      'To fully disable notifications, go to your browser settings and block them manually.'
+      'Notifications Disabled.'
     );
     expect(setItemSpy).toHaveBeenCalledWith('notificationsEnabled', 'false');
   });
@@ -326,5 +327,44 @@ describe('disableNotifications', () => {
     setItemSpy.mockRejectedValueOnce(new Error('Test error'));
     await disableNotifications();
     expect(windowAlertSpy).toHaveBeenCalledWith('Error: Failed to disable notifications.');
+  });
+});
+
+describe('getNotificationStatus', () => {
+  test('returns true when notificationsEnabled is "true"', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('true');
+    const status = await getNotificationStatus();
+    expect(status).toBe(true);
+  });
+
+  test('returns false when notificationsEnabled is "false"', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('false');
+    const status = await getNotificationStatus();
+    expect(status).toBe(false);
+  });
+
+  test('returns false when notificationsEnabled is null', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+    const status = await getNotificationStatus();
+    expect(status).toBe(false);
+  });
+});
+
+describe('enableNotifications - Native Branch setItem call', () => {
+  test('calls AsyncStorage.setItem with "notificationsEnabled" and "true"', async () => {
+    // Force the platform to native (e.g., ios)
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
+
+    // Spy on AsyncStorage.setItem
+    const setItemSpy = jest.spyOn(AsyncStorage, 'setItem').mockResolvedValue(undefined);
+
+    // Call the function under test.
+    await enableNotifications();
+
+    // Assert that setItem was called with the correct key/value pair.
+    expect(setItemSpy).toHaveBeenCalledWith('notificationsEnabled', 'true');
+
+    // Cleanup: Restore the spy.
+    setItemSpy.mockRestore();
   });
 });

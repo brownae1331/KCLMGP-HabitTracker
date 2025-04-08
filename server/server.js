@@ -61,9 +61,9 @@ export const syncHabits = async (userEmail) => {
       [userEmail]
     );
 
-    if (!Array.isArray(habits) || habits.length === 0) {
-      throw new Error('Invalid habits data');
-    }
+    //if (!Array.isArray(habits) || habits.length === 0) {
+    //  throw new Error('Invalid habits data');
+    //}
 
     // catch up on all past and current due habits
     await migrateInstances(userEmail, '<=');

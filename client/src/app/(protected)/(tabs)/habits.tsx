@@ -74,17 +74,6 @@ export default function HomeScreen() {
       return;
     }
 
-    // For edit mode, only check for duplicate names if the name has changed
-    if (isEditMode && currentEditHabit && habitName.trim().toLowerCase() !== currentEditHabit.habitName.toLowerCase()) {
-      if (dbHabits.some((habit: any) =>
-        habit.habitName.toLowerCase() === habitName.trim().toLowerCase() &&
-        habit.habitName.toLowerCase() !== currentEditHabit.habitName.toLowerCase()
-      )) {
-        showAlert("A habit with this name already exists for this user.");
-        return;
-      }
-    }
-
     // 3. Validate Color: If no color is picked, default to yellow (#FFFF00)
     let chosenColor = habitColor;
     if (!chosenColor || chosenColor.trim() === '') {
@@ -149,7 +138,10 @@ export default function HomeScreen() {
       // In edit mode: call updateHabit
       // Otherwise: call addHabit
       if (isEditMode && currentEditHabit) {
-        await updateHabit(newHabit);
+        const storedEmail = await AsyncStorage.getItem('email');
+        if (storedEmail) {
+          await updateHabit(storedEmail, newHabit);
+        }
       } else {
         await addHabit(newHabit);
       }
@@ -180,7 +172,7 @@ export default function HomeScreen() {
 
 
   const fetchHabits = async () => {
-    if (!email) return;
+    //if (!email) return;
 
     try {
       setIsLoading(true);

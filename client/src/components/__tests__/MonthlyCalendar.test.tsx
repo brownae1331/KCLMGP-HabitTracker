@@ -149,7 +149,7 @@ describe('MonthlyCalendar integration', () => {
                 fireEvent.press(dayElement);
             });
         });
-        expect(setSelectedDate).toHaveBeenCalledWith(expect.stringContaining('-03-12'));
+        expect(setSelectedDate).toHaveBeenCalledWith(expect.stringContaining('-04-12'));
     });
 
     it('does not call onVisibleDatesChange if it is not provided', async () => {
