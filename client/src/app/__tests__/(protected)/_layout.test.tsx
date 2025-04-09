@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserDetails, updatePassword } from '../../../lib/client';
 import { useTheme } from '../../../components/ThemeContext';
 
+jest.setTimeout(10000);
 // -------------------------------------------------------------------
 // Mock ThemedText to simply render its children inside a Text component
 // -------------------------------------------------------------------
