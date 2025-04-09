@@ -20,7 +20,7 @@ beforeEach(() => {
     mPool.query.mockReset();
     mPool.getConnection.mockReset();
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => { });
 });
 
 afterEach(() => {
@@ -275,6 +275,37 @@ describe('PUT /habits', () => {
         expect(res.statusCode).toBe(500);
         expect(res.body).toHaveProperty('error', 'Error updating habit');
     });
+
+    test('should not remove progress if today is included in selectedDays', async () => {
+        const today = new Date();
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const todayName = dayNames[today.getDay()];
+
+        mPool.query.mockResolvedValue([{ affectedRows: 1 }]);
+
+        const res = await request(app)
+            .put('/habits')
+            .send({
+                email: 'test@example.com',
+                habitName: 'HabitWeekly',
+                habitDescription: 'updated description',
+                habitType: 'build',
+                habitColor: '#333333',
+                scheduleOption: 'weekly',
+                selectedDays: [todayName, 'Friday'],
+                goalValue: '20',
+                goalUnit: 'reps'
+            });
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty('message', 'Habit updated successfully');
+
+        const deleteQueryCalled = mPool.query.mock.calls.some(call =>
+            call[0].includes('DELETE FROM habit_progress')
+        );
+        expect(deleteQueryCalled).toBe(false);
+    });
+
 });
 
 describe('GET /habits/:email/:date', () => {

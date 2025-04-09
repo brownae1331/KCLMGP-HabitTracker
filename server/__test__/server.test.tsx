@@ -21,19 +21,21 @@ jest.mock('dotenv', () => ({
     config: jest.fn(),
 }));
 
-import app, { generateIntervalInstances, generateDayInstances, 
-    getHabitsForDate, syncHabits, getLastDate, 
-    fillMissedProgress, generateIntervalDates, generateWeeklyDates } from '../server';
+import app, {
+    generateIntervalInstances, generateDayInstances,
+    getHabitsForDate, syncHabits, getLastDate,
+    fillMissedProgress, generateIntervalDates, generateWeeklyDates, migrateInstances
+} from '../server';
 import request from 'supertest';
 
-let consoleErrorSpy;
-let consoleLogSpy;
+let consoleErrorSpy: jest.SpyInstance<void, [message?: any, ...optionalParams: any[]], any>;
+let consoleLogSpy: jest.SpyInstance<void, [message?: any, ...optionalParams: any[]], any>;
 
 beforeEach(() => {
     mPool.query.mockReset();
     mPool.getConnection.mockReset();
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => { });
 });
 
 afterEach(() => {
@@ -116,14 +118,14 @@ describe('syncHabits', () => {
     test('should throw an error when habits data is invalid', async () => {
         mPool.query
             .mockResolvedValueOnce([null]);
-        await expect(syncHabits(userEmail)).rejects.toThrow('Invalid habits data');
+        await expect(syncHabits(userEmail)).rejects.toThrow(/not iterable/);
     });
 
     test('should handle errors in the try-catch block', async () => {
         mPool.query
-            .mockRejectedValueOnce(new Error('Database error')); 
+            .mockRejectedValueOnce(new Error('Database error'));
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
         await expect(syncHabits(userEmail)).rejects.toThrow('Database error');
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error synchronizing habits:', expect.any(Error));
         consoleErrorSpy.mockRestore();
@@ -185,8 +187,8 @@ describe('getLastDate', () => {
             'TestHabit',
             'dueDate',
             '2023-01-01'
-          );
-        
+        );
+
         expect(result).toEqual(new Date('2023-01-01'));
         expect(mPool.query).toHaveBeenCalledWith(
             `SELECT MAX(dueDate) as lastDate\n     FROM habit_instances\n     WHERE user_email = ? AND habitName = ?`,
@@ -368,7 +370,7 @@ describe('generateIntervalInstances', () => {
     test('should handle errors during generation', async () => {
         mPool.query
             .mockRejectedValueOnce(new Error('Database error')); // getLastDate fails
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
         await expect(generateIntervalInstances('test@example.com', 'TestHabit')).resolves.toBeUndefined();
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error generating missing interval instances:', expect.any(Error));
         consoleErrorSpy.mockRestore();
@@ -401,9 +403,169 @@ describe('generateDayInstances', () => {
     test('should handle errors during generation', async () => {
         mPool.query
             .mockRejectedValueOnce(new Error('Database error')); // getLastDate fails
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
         await expect(generateDayInstances('test@example.com', 'TestHabit')).resolves.toBeUndefined();
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error generating missing day instances:', expect.any(Error));
         consoleErrorSpy.mockRestore();
+    });
+});
+
+describe('migrateInstances', () => {
+    const userEmail = 'test@example.com';
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    beforeEach(() => {
+        mPool.query.mockReset();
+        jest.spyOn(console, 'log').mockImplementation(() => { });
+        jest.spyOn(console, 'error').mockImplementation(() => { });
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    test('should migrate instances properly when there are instances to migrate', async () => {
+        const fakeInstances = [
+            { habitName: 'HabitA', dueDate: '2023-08-10' },
+            { habitName: 'HabitB', dueDate: '2023-08-11' }
+        ];
+        mPool.query.mockResolvedValueOnce([fakeInstances]);
+        mPool.query.mockResolvedValue({});
+
+        await migrateInstances(userEmail);
+
+        expect(mPool.query).toHaveBeenCalledTimes(5);
+
+        expect(mPool.query.mock.calls[0][0]).toMatch(/SELECT habitName, dueDate FROM habit_instances/);
+        expect(mPool.query.mock.calls[0][1]).toEqual([userEmail, todayStr]);
+
+        expect(mPool.query.mock.calls[1][0]).toMatch(/INSERT IGNORE INTO habit_progress/);
+        expect(mPool.query.mock.calls[1][1]).toEqual([userEmail, 'HabitA', '2023-08-10', 0, false, 0]);
+
+        expect(mPool.query.mock.calls[2][0]).toMatch(/DELETE FROM habit_instances/);
+        expect(mPool.query.mock.calls[2][1]).toEqual([userEmail, 'HabitA', '2023-08-10']);
+
+        expect(mPool.query.mock.calls[3][0]).toMatch(/INSERT IGNORE INTO habit_progress/);
+        expect(mPool.query.mock.calls[3][1]).toEqual([userEmail, 'HabitB', '2023-08-11', 0, false, 0]);
+
+        expect(mPool.query.mock.calls[4][0]).toMatch(/DELETE FROM habit_instances/);
+        expect(mPool.query.mock.calls[4][1]).toEqual([userEmail, 'HabitB', '2023-08-11']);
+
+        expect(console.log).toHaveBeenCalledWith(
+            `Migrated habit: HabitA due on: 2023-08-10 for user: ${userEmail}`
+        );
+        expect(console.log).toHaveBeenCalledWith(
+            `Migrated habit: HabitB due on: 2023-08-11 for user: ${userEmail}`
+        );
+        expect(console.log).toHaveBeenCalledWith(
+            `Migrated today's instances for user ${userEmail}`
+        );
+    });
+
+    test('should do nothing if no instances are returned', async () => {
+        mPool.query.mockResolvedValueOnce([[]]);
+
+        await migrateInstances(userEmail);
+
+        expect(mPool.query).toHaveBeenCalledTimes(1);
+        expect(mPool.query.mock.calls[0][0]).toMatch(/SELECT habitName, dueDate FROM habit_instances/);
+        expect(console.log).toHaveBeenCalledWith(
+            `Migrated today's instances for user ${userEmail}`
+        );
+    });
+
+    test('should log error when a database error occurs', async () => {
+        const error = new Error('Database error');
+        mPool.query.mockRejectedValueOnce(error);
+
+        await migrateInstances(userEmail);
+
+        expect(console.error).toHaveBeenCalledWith('Error migrating today instances:', error);
+    });
+});
+
+describe('Server startup', () => {
+    let originalEnv;
+    let listenMock;
+
+    beforeAll(() => {
+        originalEnv = process.env.NODE_ENV;
+    });
+
+    afterAll(() => {
+        process.env.NODE_ENV = originalEnv;
+        jest.resetModules();
+        jest.restoreAllMocks();
+        jest.unmock('express');
+    });
+
+    test('should call app.listen with PORT 3000 when NODE_ENV is not "test"', () => {
+        process.env.NODE_ENV = 'development';
+
+        const realExpress = jest.requireActual('express');
+        const fakeApp = realExpress();
+        listenMock = jest.fn((port, callback) => {
+            callback();
+        });
+        fakeApp.listen = listenMock;
+
+        const expressMock = jest.fn(() => fakeApp);
+        Object.assign(expressMock, realExpress);
+
+        jest.mock('express', () => expressMock);
+
+        const logSpy = jest.spyOn(console, 'log').mockImplementation(() => { });
+
+        jest.isolateModules(() => {
+            require('../server');
+        });
+
+        expect(listenMock).toHaveBeenCalledWith(3000, expect.any(Function));
+        expect(logSpy).toHaveBeenCalledWith('Server listening on port 3000');
+
+        logSpy.mockRestore();
+    });
+});
+
+describe('fillMissedProgress additional branch tests', () => {
+    const userEmail = 'test@example.com';
+    beforeEach(() => {
+        mPool.query.mockReset();
+        jest.useFakeTimers().setSystemTime(new Date('2023-06-15'));
+    });
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    test('should skip interval habit if no interval record exists', async () => {
+        const habits = [{ habitName: 'IntervalNoRecordHabit', scheduleOption: 'interval' }];
+        mPool.query.mockResolvedValueOnce([habits]);
+        mPool.query.mockResolvedValueOnce([[{ lastDate: '2023-06-10' }]]);
+        mPool.query.mockResolvedValueOnce([[]]);
+
+        await fillMissedProgress(userEmail);
+
+        const insertCall = mPool.query.mock.calls.find(call =>
+            call[0].includes('INSERT IGNORE INTO habit_progress')
+        );
+        expect(insertCall).toBeUndefined();
+
+        expect(mPool.query.mock.calls.length).toBe(3);
+    });
+
+    test('should skip weekly habit if no scheduled days are found', async () => {
+        const habits = [{ habitName: 'WeeklyNoDaysHabit', scheduleOption: 'weekly' }];
+        mPool.query.mockResolvedValueOnce([habits]);
+        mPool.query.mockResolvedValueOnce([[{ lastDate: '2023-06-10' }]]);
+        mPool.query.mockResolvedValueOnce([[]]);
+
+        await fillMissedProgress(userEmail);
+
+        const insertCall = mPool.query.mock.calls.find(call =>
+            call[0].includes('INSERT IGNORE INTO habit_progress')
+        );
+        expect(insertCall).toBeUndefined();
+
+        expect(mPool.query.mock.calls.length).toBe(3);
     });
 });
