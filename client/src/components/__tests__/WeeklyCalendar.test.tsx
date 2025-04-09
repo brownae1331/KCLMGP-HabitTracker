@@ -1,7 +1,7 @@
-import React, { act } from 'react';
+import React from 'react';
 import { Platform } from 'react-native';
 import * as ReactNative from 'react-native';
-import { render, fireEvent, waitFor, cleanup } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { TouchableOpacity, Image } from 'react-native';
 
 jest.mock('../ThemeContext', () => ({

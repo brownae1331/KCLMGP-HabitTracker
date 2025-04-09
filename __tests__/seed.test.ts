@@ -1,7 +1,6 @@
-// seed.test.ts
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcrypt';
-import { seed } from '../seed'; // Ensure seed.ts exports the seed function
+import { seed } from '../seed';
 
 // Set up Jest mocks for mysql and bcrypt
 jest.mock('mysql2/promise');
@@ -66,7 +65,7 @@ describe('Seed Script', () => {
     // Verify that bcrypt.hash is called for each user insert
     expect(bcrypt.hash).toHaveBeenCalledTimes(10);
 
-    // Finally, check that the pool is properly ended and the connection released
+    // Check that the pool is properly ended and the connection released
     expect(releaseMock).toHaveBeenCalled();
     expect(poolEndMock).toHaveBeenCalled();
   });

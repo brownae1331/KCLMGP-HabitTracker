@@ -4,7 +4,6 @@ import IndexRoute from '../index';
 import { Redirect } from 'expo-router';
 import { AuthProvider } from '../../components/AuthContext';
 import { useAuth } from '../../components/AuthContext';
-import { ActivityIndicator } from 'react-native';
 
 jest.mock('../../components/AuthContext', () => ({
     useAuth: jest.fn(),

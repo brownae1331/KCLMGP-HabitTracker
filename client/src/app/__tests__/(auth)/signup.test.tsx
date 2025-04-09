@@ -61,20 +61,6 @@ describe('SignupScreen functionality tests', () => {
     expect(errorMessage).toBeTruthy();
   });
 
-  // test('shows error when username, email, or password is empty', async () => {
-  //   const { getByPlaceholderText, getAllByText, findByText } = render(<SignupScreen />);
-
-  //   fireEvent.changeText(getByPlaceholderText('Username'), '');
-  //   fireEvent.changeText(getByPlaceholderText('Email'), '');
-  //   fireEvent.changeText(getByPlaceholderText('Password'), '');
-
-  //   const buttons = getAllByText('Sign Up');
-  //   fireEvent.press(buttons[1]);
-
-  //   const errorMessage = await findByText('An unknown error occurred');
-  //   expect(errorMessage).toBeTruthy();
-  // });
-
   test('shows "An unknown error occurred" when error is not an instance of Error', async () => {
     (createUser as jest.Mock).mockRejectedValueOnce('Some unknown error');
 

@@ -450,16 +450,6 @@ describe('migrateInstances', () => {
 
         expect(mPool.query.mock.calls[4][0]).toMatch(/DELETE FROM habit_instances/);
         expect(mPool.query.mock.calls[4][1]).toEqual([userEmail, 'HabitB', '2023-08-11']);
-
-        // expect(console.log).toHaveBeenCalledWith(
-        //     `Migrated habit: HabitA due on: 2023-08-10 for user: ${userEmail}`
-        // );
-        // expect(console.log).toHaveBeenCalledWith(
-        //     `Migrated habit: HabitB due on: 2023-08-11 for user: ${userEmail}`
-        // );
-        // expect(console.log).toHaveBeenCalledWith(
-        //     `Migrated today's instances for user ${userEmail}`
-        // );
     });
 
     test('should do nothing if no instances are returned', async () => {
@@ -469,9 +459,6 @@ describe('migrateInstances', () => {
 
         expect(mPool.query).toHaveBeenCalledTimes(1);
         expect(mPool.query.mock.calls[0][0]).toMatch(/SELECT habitName, dueDate FROM habit_instances/);
-        // expect(console.log).toHaveBeenCalledWith(
-        //     `Migrated today's instances for user ${userEmail}`
-        // );
     });
 
     test('should log error when a database error occurs', async () => {
@@ -521,8 +508,6 @@ describe('Server startup', () => {
         });
 
         expect(listenMock).toHaveBeenCalledWith(3000, expect.any(Function));
-        // expect(logSpy).toHaveBeenCalledWith('Server listening on port 3000');
-
         logSpy.mockRestore();
     });
 });

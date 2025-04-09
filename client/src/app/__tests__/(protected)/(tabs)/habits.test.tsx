@@ -4,17 +4,13 @@ import HomeScreen from '../../../(protected)/(tabs)/habits';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addHabit, getHabitsForDate, updateHabit, getHabitInterval, getHabitDays } from '../../../../lib/client';
 
-// ----------------------
 // Globally mock window.alert
-// ----------------------
 if (typeof window === 'undefined') {
     global.window = {} as any;
 }
 window.alert = jest.fn() as jest.Mock;
 
-// ----------------------
 // Extend the client module mock
-// ----------------------
 jest.mock('../../../../lib/client', () => ({
     addHabit: jest.fn(),
     getHabitsForDate: jest.fn(),
@@ -23,16 +19,12 @@ jest.mock('../../../../lib/client', () => ({
     getHabitDays: jest.fn(),
 }));
 
-// ----------------------
 // Mock AsyncStorage
-// ----------------------
 jest.mock('@react-native-async-storage/async-storage', () => ({
     getItem: jest.fn(),
 }));
 
-// ----------------------
 // Mock WeeklyCalendar using testID for testing purposes
-// ----------------------
 jest.mock('../../../../components/WeeklyCalendar', () => {
     return {
         WeeklyCalendar: (props: any) =>
@@ -40,9 +32,7 @@ jest.mock('../../../../components/WeeklyCalendar', () => {
     };
 });
 
-// ----------------------
 // Mock NewHabitModal and pass all props to a div for testing purposes
-// ----------------------
 jest.mock('../../../../components/NewHabitModal', () => {
     return {
         NewHabitModal: (props: any) =>
@@ -50,18 +40,14 @@ jest.mock('../../../../components/NewHabitModal', () => {
     };
 });
 
-// ----------------------
 // Mock IconSymbol
-// ----------------------
 jest.mock('../../../../components/ui/IconSymbol', () => {
     return {
         IconSymbol: (props: any) => <div testID="icon-symbol" {...props} />,
     };
 });
 
-// ----------------------
 // Mock ThemedText
-// ----------------------
 jest.mock('../../../../components/ThemedText', () => {
     const React = require('react');
     const { Text } = require('react-native');
@@ -70,9 +56,7 @@ jest.mock('../../../../components/ThemedText', () => {
     };
 });
 
-// ----------------------
 // Mock SharedStyles and Colors
-// ----------------------
 jest.mock('../../../../components/styles/SharedStyles', () => ({
     SharedStyles: { titleContainer: {}, addButtonContainer: {} },
 }));
@@ -89,16 +73,12 @@ jest.mock('../../../../components/styles/Colors', () => ({
     },
 }));
 
-// ----------------------
 // Mock ThemeContext
-// ----------------------
 jest.mock('../../../../components/ThemeContext', () => ({
     useTheme: () => ({ theme: 'light' }),
 }));
 
-// ----------------------
 // Updated Mock for HabitPanel to include both edit and delete buttons
-// ----------------------
 jest.mock('../../../../components/HabitPanel', () => {
     const React = require('react');
     const { Text, TouchableOpacity, View } = require('react-native');
@@ -859,7 +839,7 @@ describe('Additional coverage tests for uncovered lines', () => {
         expect(modal.props.modalVisible).toBe(true);
     });
 
-    // New Test 1: if no email is present, fetchHabits returns early.
+    //if no email is present, fetchHabits returns early.
     test('does not call getHabitsForDate when email is empty', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
         render(<HomeScreen />);
@@ -868,7 +848,7 @@ describe('Additional coverage tests for uncovered lines', () => {
         });
     });
 
-    // New Test 2: deletion calls fetchHabits (via getHabitsForDate) a second time.
+    //deletion calls fetchHabits (via getHabitsForDate) a second time.
     test('calls fetchHabits on habit deletion', async () => {
         const habit = { user_email: 'test@example.com', habitName: 'Habit To Delete', scheduleOption: 'interval' };
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('test@example.com');

@@ -41,7 +41,6 @@ describe('LoginScreen functionality tests', () => {
       </AuthProvider>
     );
 
-    // Simulate input
     fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
     fireEvent.changeText(getByPlaceholderText('Password'), 'password123');
 
@@ -54,26 +53,6 @@ describe('LoginScreen functionality tests', () => {
       expect(router.replace).toHaveBeenCalledWith('/(protected)/(tabs)/habits');
     });
   });
-
-  // test('shows error when email or password is empty', async () => {
-  //   const { getByPlaceholderText, getByText, findByText } = render(
-  //   <AuthProvider>
-  //     <LoginScreen />
-  //   </AuthProvider>
-  // );
-
-  //   // ensure that the email and password fields are empty
-  //   fireEvent.changeText(getByPlaceholderText('Email'), '');
-  //   fireEvent.changeText(getByPlaceholderText('Password'), '');
-
-  //   // Press the login button
-  //   fireEvent.press(getByText('Login'));
-
-  //   // Wait for the error message to appear
-  //   const errorMessage = await findByText('An unknown error occurred');
-  //   expect(errorMessage).toBeTruthy();
-  // });
-
 
   test('displays an error message on failed login', async () => {
     // Simulate a failed login

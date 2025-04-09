@@ -11,7 +11,6 @@ jest.mock('expo-font', () => ({
 
 // PARTIALLY MOCK expo-splash-screen so we keep real code coverage
 jest.mock('expo-splash-screen', () => {
-  // import the *real* module so Jest can instrument it
   const actual = jest.requireActual('expo-splash-screen');
   return {
     ...actual,
@@ -28,10 +27,6 @@ jest.mock('expo-router', () => {
   return { Stack };
 });
 
-
-// You can mock other dependencies (like ThemeContext) similarly, but
-// ensure you do a partial mock or at least let `_layout.tsx` actually run.
-
 describe('RootLayout Component', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -41,7 +36,6 @@ describe('RootLayout Component', () => {
     // Simulate fonts not loaded yet
     (useFonts as jest.Mock).mockReturnValue([false]);
     const { toJSON } = render(<RootLayout />);
-    // Because loaded = false, we expect it to return null
     expect(toJSON()).toBeNull();
   });
 
@@ -50,10 +44,6 @@ describe('RootLayout Component', () => {
     (useFonts as jest.Mock).mockReturnValue([true]);
 
     render(<RootLayout />);
-
-    // The code in `_layout.tsx`:
-    //   useEffect(() => { if (loaded) { SplashScreen.hideAsync(); } }, [loaded]);
-    // We expect hideAsync to be called once fonts load
     await waitFor(() => {
       expect(SplashScreen.hideAsync).toHaveBeenCalled();
     });

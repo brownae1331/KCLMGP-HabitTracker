@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { Colors } from './styles/Colors';
 import { CircleProgressStyles } from './styles/CircleProgressStyles';

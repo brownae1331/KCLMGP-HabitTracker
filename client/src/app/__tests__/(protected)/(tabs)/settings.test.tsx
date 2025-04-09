@@ -27,7 +27,7 @@ import { router } from 'expo-router';
 import { deleteUser, exportUserData } from '../../../../lib/client';
 import * as NotificationsHandler from '../../../NotificationsHandler';
 
-// --- Setup global environment ---
+// Setup global environment 
 if (typeof window === "undefined") {
   (global as any).window = {};
 }
@@ -41,7 +41,6 @@ Object.assign(global.window, {
   confirm: jest.fn(),
 });
 
-// --- Mocks ---
 // Prevent fonts from causing errors
 jest.mock('expo-font', () => ({
   loadAsync: jest.fn(() => Promise.resolve({})),

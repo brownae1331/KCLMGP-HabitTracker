@@ -68,10 +68,6 @@ describe('MonthlyCalendar integration (event coverage)', () => {
         timestamp: 1735686000000, // Some arbitrary timestamp
       });
     });
-    
-    // There's no direct "expect" unless you want to verify
-    // the visible dates or onVisibleDatesChange logic,
-    // but this call ensures coverage of calculateVisibleDates(month).
   });
 });
 

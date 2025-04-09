@@ -5,9 +5,6 @@ import { useColorScheme } from '../useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Appearance, ColorSchemeName } from 'react-native';
 
-// Import type for ColorSchemeName if needed
-// import type { ColorSchemeName } from 'react-native';
-
 // Ensure AsyncStorage.getItem is a Jest mock.
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
@@ -17,7 +14,6 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 let capturedCallback: ((info: { colorScheme: ColorSchemeName }) => void) | undefined;
 
 // Spy on Appearance.addChangeListener to capture the callback.
-const originalAddChangeListener = Appearance.addChangeListener;
 jest.spyOn(Appearance, 'addChangeListener').mockImplementation((callback) => {
   capturedCallback = callback;
   return { remove: jest.fn() };

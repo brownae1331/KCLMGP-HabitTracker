@@ -1,5 +1,4 @@
 import React, { ReactNode } from 'react';
-import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 import AuthLayout from '../../(auth)/_layout';
 

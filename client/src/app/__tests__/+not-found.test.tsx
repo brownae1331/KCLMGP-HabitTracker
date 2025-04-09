@@ -1,8 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import NotFoundScreen from '../+not-found';
-import { ThemedText } from '../../components/ThemedText';
-import { Link } from 'expo-router';
 
 // Mock expo-router to prevent errors with Stack.Screen
 jest.mock('expo-router', () => ({

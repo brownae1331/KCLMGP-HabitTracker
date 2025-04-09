@@ -1,5 +1,3 @@
-// Express router for handling user-related actions: signup, login, deletion, password update, and export
-
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { pool } from '../db.js';

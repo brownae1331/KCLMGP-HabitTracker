@@ -7,9 +7,7 @@ import { getUserDetails, updatePassword } from '../../../lib/client';
 import { useTheme } from '../../../components/ThemeContext';
 
 jest.setTimeout(10000);
-// -------------------------------------------------------------------
 // Mock ThemedText to simply render its children inside a Text component
-// -------------------------------------------------------------------
 jest.mock('../../../components/ThemedText', () => {
     const React = require('react');
     const { Text } = require('react-native');
@@ -18,25 +16,19 @@ jest.mock('../../../components/ThemedText', () => {
     };
 });
 
-// -------------------------------------------------------------------
 // Mock AsyncStorage methods
-// -------------------------------------------------------------------
 jest.mock('@react-native-async-storage/async-storage', () => ({
     getItem: jest.fn(),
     setItem: jest.fn(),
 }));
 
-// -------------------------------------------------------------------
 // Mock client functions: getUserDetails and updatePassword
-// -------------------------------------------------------------------
 jest.mock('../../../lib/client', () => ({
     getUserDetails: jest.fn(),
     updatePassword: jest.fn(),
 }));
 
-// -------------------------------------------------------------------
 // Mock useTheme hook to return a static theme
-// -------------------------------------------------------------------
 jest.mock('../../../components/ThemeContext', () => ({
     useTheme: jest.fn(),
 }));

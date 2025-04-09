@@ -1,5 +1,3 @@
-// Express server setup and main backend logic for habit tracking app
-
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';

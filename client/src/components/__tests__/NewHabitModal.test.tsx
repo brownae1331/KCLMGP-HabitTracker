@@ -1,7 +1,6 @@
 import React from 'react';
-import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import { NewHabitModal } from '../NewHabitModal';
-import { Picker } from '@react-native-picker/picker';
 
 jest.mock('../ThemeContext', () => ({
   useTheme: () => ({ theme: 'light' }),

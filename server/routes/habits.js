@@ -1,5 +1,3 @@
-// Express router for habit-related API endpoints (add, update, delete, fetch)
-
 import express from 'express';
 import { pool } from '../db.js';
 import { getHabitsForDate, generateIntervalInstances, generateDayInstances, migrateInstances } from '../server.js';

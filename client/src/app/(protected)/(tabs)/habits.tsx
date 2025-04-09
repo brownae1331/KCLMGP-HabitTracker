@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, ScrollView, SafeAreaView, View, Alert, StyleSheet, Text, Platform } from 'react-native';
+import { TouchableOpacity, ScrollView, SafeAreaView, View, Alert, Text, Platform } from 'react-native';
 import { IconSymbol } from '../../../components/ui/IconSymbol';
 import { WeeklyCalendar } from '../../../components/WeeklyCalendar';
 import { SharedStyles } from '../../../components/styles/SharedStyles';
@@ -12,10 +12,6 @@ import { addHabit, getHabitDays, getHabitInterval, getHabitsForDate, updateHabit
 import HabitPanel, { Habit } from '../../../components/HabitPanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-/**
- * HomeScreen component for viewing, adding, and editing habits for a selected date.
- * Handles habit form logic, validation, and integrates with habit modal and calendar.
- */
 export default function HomeScreen() {
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState<{ date: number; fullDate: Date }>({
@@ -59,25 +55,25 @@ export default function HomeScreen() {
       }
     };
 
-    // 1. Validate Habit Name: It must not be empty.
+    // Validate Habit Name: It must not be empty.
     if (!habitName || habitName.trim() === '') {
       showAlert("Habit name cannot be empty.");
       return;
     }
 
-    // 2. Validate Habit Name Uniqueness: BUT only for new habits or when the name has changed
+    // Validate Habit Name Uniqueness: BUT only for new habits or when the name has changed
     if (!isEditMode && dbHabits.some((habit: any) => habit.habitName.toLowerCase() === habitName.trim().toLowerCase())) {
       showAlert("A habit with this name already exists for this user.");
       return;
     }
 
-    // 3. Validate Color: If no color is picked, default to yellow (#FFFF00)
+    // Validate Color: If no color is picked, default to yellow (#FFFF00)
     let chosenColor = habitColor;
     if (!chosenColor || chosenColor.trim() === '') {
       chosenColor = '#FFFF00';
     }
 
-    // 4. If schedule is "interval", ensure intervalDays is a valid number and not negative.
+    // If schedule is "interval", ensure intervalDays is a valid number and not negative.
     if (scheduleOption === 'interval') {
       if (!intervalDays || isNaN(parseInt(intervalDays, 10))) {
         showAlert("Please enter a valid number of days for the interval schedule.");
@@ -89,7 +85,7 @@ export default function HomeScreen() {
       }
     }
 
-    // 5. If schedule is "weekly", ensure at least one day is selected.
+    // If schedule is "weekly", ensure at least one day is selected.
     if (scheduleOption === 'weekly') {
       if (!selectedDays || selectedDays.length === 0) {
         showAlert("Please select at least one day for the weekly schedule.");
@@ -97,7 +93,7 @@ export default function HomeScreen() {
       }
     }
 
-    // 6. Validate goal value: if goal is enabled, ensure the goal value is not negative.
+    // Validate goal value: if goal is enabled, ensure the goal value is not negative.
     if (isGoalEnabled) {
       if (!goalValue || goalValue.trim() === '') {
         showAlert("Please enter a valid goal value.");
@@ -167,10 +163,6 @@ export default function HomeScreen() {
 
   const [dbHabits, setDbHabits] = useState<any[]>([]);
 
-  /**
-   * Fetches all habits for the selected date from the database.
-   * Updates local state with the result.
-   */
   const fetchHabits = async () => {
     try {
       setIsLoading(true);
@@ -205,12 +197,7 @@ export default function HomeScreen() {
     }
   }, [selectedDate, email]);
 
-  /**
-   * Handles loading an existing habit into the form for editing.
-   * Also fetches any associated schedule (interval or weekly).
-   */
   const handleEditHabit = async (habit: Habit) => {
-    // Store the current habit being edited
     setCurrentEditHabit(habit);
 
     // Pre-fill the form with the habit's data
@@ -257,7 +244,6 @@ export default function HomeScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
       <ScrollView style={{ flex: 1, backgroundColor: Colors[theme].background }}>
 
-        {/* Today/Selected Date */}
         <View style={[SharedStyles.titleContainer, { backgroundColor: Colors[theme].background }]}>
           <ThemedText type="title" style={{ color: Colors[theme].text, textAlign: 'center', width: '100%' }}>
             {selectedDate.date === today.getDate()
@@ -266,13 +252,11 @@ export default function HomeScreen() {
           </ThemedText>
         </View>
 
-        {/* Weekly Calendar */}
         <WeeklyCalendar
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
         />
 
-        {/* Habit Panel */}
         <View style={HabitPageStyles.habitListContainer}>
           {dbHabits.length > 0 ? (
             dbHabits.map((habit: Habit) => (
@@ -291,9 +275,6 @@ export default function HomeScreen() {
           )}
         </View>
 
-
-
-        {/* Add Habit Button */}
         <View style={[SharedStyles.addButtonContainer, { backgroundColor: Colors[theme].background }]}>
           <TouchableOpacity onPress={() => {
             // Reset all form fields when opening the modal
@@ -316,7 +297,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* New Habit Modal */}
         <NewHabitModal
           modalVisible={modalVisible}
           setModalVisible={setModalVisible}

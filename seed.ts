@@ -1,5 +1,3 @@
-// Script to seed the database with test users, habits, and progress data for development
-
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
@@ -105,8 +103,7 @@ function getIntervalDatesInRange(
   const results: Date[] = [];
   let current = new Date(habitStartDate);
 
-  // Move backward if start is after rangeStart
-  // so we land on the earliest scheduled date within the range
+  // Move backward if start is after rangeStart so we land on the earliest scheduled date within the range
   while (current > rangeStart) {
     current.setDate(current.getDate() - increment);
   }
@@ -211,7 +208,7 @@ export async function seed() {
       console.log(`\nCREATED USER: ${u.email}`);
     }
 
-    // 3: Create habits for each user
+    // Create habits for each user
     type HabitRecord = {
       user_email: string;
       habitName: string;
@@ -272,7 +269,7 @@ export async function seed() {
       }
     }
 
-    // 4: Add schedule data and future instances
+    // Add schedule data and future instances
     const earliestDate = stripTime(new Date());
     earliestDate.setDate(earliestDate.getDate() - DAYS_BACK);
 
@@ -355,7 +352,7 @@ export async function seed() {
       }
     }
 
-    // 5: Fill in historical progress with streaks
+    // Fill in historical progress with streaks
     for (const h of allHabits) {
       const habitKey = `${h.user_email}_${h.habitName}`;
       const scheduledDates = scheduledDatesMap.get(habitKey) || [];

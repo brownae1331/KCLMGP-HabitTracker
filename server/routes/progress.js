@@ -1,5 +1,3 @@
-// Express router for handling habit progress: logging, fetching progress, and streaks
-
 import express from 'express';
 import { pool } from '../db.js';
 

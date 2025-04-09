@@ -10,10 +10,6 @@ import { AuthProvider } from '../components/AuthContext';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-/**
- * Root layout component.
- * Wraps the app with theme and auth providers, and manages font + splash screen loading.
- */
 export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),

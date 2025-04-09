@@ -1,5 +1,3 @@
-// Express router for retrieving habit statistics: streaks, averages, completion rates, and progress history
-
 import express from 'express';
 import { pool } from '../db.js';
 

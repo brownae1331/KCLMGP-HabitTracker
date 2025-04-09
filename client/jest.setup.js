@@ -14,7 +14,7 @@ global.__reanimatedWorkletInit = () => {};
 
 // Mock ThemeContext to prevent "useTheme must be used within a ThemeProvider" error
 jest.mock('./src/components/ThemeContext', () => ({
-    ThemeProvider: ({ value, children }) => children, // Render children directly
+    ThemeProvider: ({ value, children }) => children,
     useTheme: () => ({
         dark: false,
         colors: {
