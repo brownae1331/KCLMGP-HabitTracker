@@ -83,7 +83,7 @@ export async function scheduleNotification() {
     await Notifications.scheduleNotificationAsync({
       content: {
         title: 'Weekly Summary',
-        body: 'Open the app to see your which habits you have completed.',
+        body: 'Open the app to see which habits you have completed.',
         data: { info: 'weekly summary' },
       },
       trigger: nextSunday,
