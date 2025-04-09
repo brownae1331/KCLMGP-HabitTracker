@@ -29,7 +29,7 @@ describe('fetchBuildHabitProgress', () => {
     });
 });
 
-const BASE_URL = 'https://kclmgp-habittracker.onrender.com';
+const BASE_URL = 'https://kclmgp-habittracker-1-o948.onrender.com';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -338,7 +338,7 @@ describe('Client API Integration Tests', () => {
         setupFetchMock(responseData);
         const response = await client.addHabit(mockHabit);
         expect(global.fetch).toHaveBeenCalledWith(
-            'https://kclmgp-habittracker.onrender.com/habits',
+            'https://kclmgp-habittracker-1-o948.onrender.com/habits',
             expect.objectContaining({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -437,7 +437,7 @@ describe('Client API Integration Tests', () => {
         const response = await client.updateHabit(mockEmail, updatedHabit);
         expect(response).toEqual(responseData);
         expect(global.fetch).toHaveBeenCalledWith(
-            'https://kclmgp-habittracker.onrender.com/habits',
+            'https://kclmgp-habittracker-1-o948.onrender.com/habits',
             expect.objectContaining({
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -776,7 +776,7 @@ describe('fetchBuildHabitProgress coverage', () => {
         );
         expect(result).toEqual([{ progressDate: '2025-03-15T00:00:00Z', progress: 75 }]);
         expect(global.fetch).toHaveBeenCalledWith(
-            'https://kclmgp-habittracker.onrender.com/stats/test@example.com/Reading?range=week',
+            'https://kclmgp-habittracker-1-o948.onrender.com/stats/test@example.com/Reading?range=week',
             expect.any(Object)
         );
     });

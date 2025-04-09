@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-//const BASE_URL = 'https://kclmgp-habittracker.onrender.com';
-export const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'https://kclmgp-habittracker-1-o948.onrender.com';
 
 // Define the Habit type
 export type Habit = {
