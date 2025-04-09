@@ -29,8 +29,7 @@ describe('fetchBuildHabitProgress', () => {
     });
 });
 
-//const BASE_URL = 'https://kclmgp-habittracker.onrender.com';
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'https://kclmgp-habittracker.onrender.com';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({

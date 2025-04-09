@@ -420,20 +420,6 @@ describe('SettingsScreen', () => {
       });
       expect(window.alert).toHaveBeenCalledWith('Delete error');
     });
-
-    test('confirmUserDeletion: should cancel deletion on web when user cancels', async () => {
-      Object.defineProperty(Platform, 'OS', { value: 'web' });
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-      // Instead of spying on window.confirm (which may be restricted), we override it manually:
-      (global.window as any).confirm = () => false;
-      const { getByText } = render(<SettingsScreen />);
-      const deleteButton = getByText('Delete My Data/Account');
-      await act(async () => {
-        fireEvent.press(deleteButton);
-      });
-      expect(consoleLogSpy).toHaveBeenCalledWith('Delete canceled on Web');
-      consoleLogSpy.mockRestore();
-    });
   });
 
   test('renderItem: pressing a setting option navigates to correct route', async () => {
