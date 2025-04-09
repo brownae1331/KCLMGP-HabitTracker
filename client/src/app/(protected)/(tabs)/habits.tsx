@@ -5,7 +5,6 @@ import {
   SafeAreaView,
   View,
   Alert,
-  StyleSheet,
   Text,
   Platform,
 } from 'react-native';
