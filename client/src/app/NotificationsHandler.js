@@ -25,75 +25,74 @@ export const getNextSundayAtNine = () => {
   return nextSunday;
 };
 
-// Sets up weekly summary notifications across native and web platforms
-export default function ScheduleWeeklyNotification() {
-  useEffect(() => {
-    async function scheduleNotification() {
-      if (Platform.OS === 'web') {
-        if (typeof window !== 'undefined' && !('Notification' in window)) {
-          Alert.alert('Notifications are not supported in this browser.');
-          return;
-        }
-        if (Notification.permission !== 'granted') {
-          const permission = await Notification.requestPermission();
-          if (permission !== 'granted') {
-            Alert.alert('Permission not granted for notifications.');
-            return;
-          }
-        }
-        const nextSunday = getNextSundayAtNine();
-        const delay = nextSunday.getTime() - new Date().getTime();
+// Schedules and sends a browser notification with the user's weekly habit streaks
+export async function scheduleWebNotification() {
+  const email = await AsyncStorage.getItem('email');
+  const habits = await fetchHabits(email);
+  const streakResults = await Promise.all(
+    habits.map(async (habit) => {
+      const rawData = await fetchStreak(email, habit, "week");
+      const mostRecentEntry = rawData && rawData.length > 0 ? rawData[rawData.length - 1] : null;
+      return { habit, streak: mostRecentEntry ? mostRecentEntry.streak : 0 };
+    })
+  );
+  const message = streakResults
+    .map(result => `${result.habit}: ${result.streak}`)
+    .join(", ");
+  new Notification('Weekly Summary For Previous Week', {
+    body: `Your weekly summary: ${message}`,
+  });
+}
 
-        setTimeout(() => {
-          (async () => {
-            const email = await AsyncStorage.getItem('email');
-            const habits = fetchHabits(email);
-            // For each habit, fetch streak data for the week
-            const streakResults = await Promise.all(
-              habits.map(async (habit) => {
-                const rawData = await fetchStreak(email, habit, "week");
-                const mostRecentEntry = rawData && rawData.length > 0 ? rawData[rawData.length - 1] : null;
-                return { habit, streak: mostRecentEntry ? mostRecentEntry.streak : 0 };
-              })
-            );
-            // Build the notification message using the obtained streaks
-            const message = streakResults
-              .map(result => `${result.habit}: ${result.streak}`)
-              .join(", ");
-            new Notification('Weekly Summary For Previous Week', {
-              body: `Your weekly summary: ${message}`,
-            });
-            
-          })();
-        }, delay);
-      } else {
-        // Native: Use expo-notifications
-        if (!Device.isDevice) {
-          Alert.alert('Physical device required for notifications.');
-          return;
-        }
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-        if (existingStatus !== 'granted') {
-          const { status } = await Notifications.requestPermissionsAsync();
-          finalStatus = status;
-        }
-        if (finalStatus !== 'granted') {
-          Alert.alert('Failed to get push token for notifications!');
-          return;
-        }
-        const nextSunday = getNextSundayAtNine();
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: 'Weekly Summary',
-            body: 'Open the app to see your which habits you have completed.',
-            data: { info: 'weekly summary' },
-          },
-          trigger: nextSunday,
-        });
+// Runs notification setup when the component loads
+export async function scheduleNotification() {
+  if (Platform.OS === 'web') {
+    // Web: Use the browser Notification API
+    if (typeof window !== 'undefined' && !('Notification' in window)) {
+      Alert.alert('Notifications are not supported in this browser.');
+      return;
+    }
+    if (Notification.permission !== 'granted') {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        Alert.alert('Permission not granted for notifications.');
+        return;
       }
     }
-    
+    const nextSunday = getNextSundayAtNine();
+    const delay = nextSunday.getTime() - new Date().getTime();
+
+    setTimeout(() => { scheduleWebNotification(); }, delay);
+  } else {
+    // Native: Use expo-notifications
+    if (!Device.isDevice) {
+      Alert.alert('Physical device required for notifications.');
+      return;
+    }
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      Alert.alert('Failed to get push token for notifications!');
+      return;
+    }
+    const nextSunday = getNextSundayAtNine();
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Weekly Summary',
+        body: 'Open the app to see your which habits you have completed.',
+        data: { info: 'weekly summary' },
+      },
+      trigger: nextSunday,
+    });
+  }
+}
+
+export default function ScheduleWeeklyNotification() {
+  useEffect(() => {
     scheduleNotification();
   }, []);
   return null;

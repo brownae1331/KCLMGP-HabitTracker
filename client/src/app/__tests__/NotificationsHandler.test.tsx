@@ -1,4 +1,4 @@
-import React, { act } from 'react';
+// @ts-nocheck
 import { render, waitFor } from '@testing-library/react-native';
 import { Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,7 +10,6 @@ import ScheduleWeeklyNotification, {
 } from '../NotificationsHandler';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import { fetchStreak } from '../../lib/client';
 
 // Define a dummy window.alert if it does not exist (required for web tests)
 if (typeof window === 'undefined') {
@@ -35,26 +34,19 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
 }));
 
-describe('getNextSundayAtNine', () => {
-  test('calculates the correct date for the next Sunday at 9', () => {
-    const nextSunday = getNextSundayAtNine();
-    expect(nextSunday.getDay()).toBe(0);
-    expect(nextSunday.getHours()).toBe(9);
-  });
-});
-
 describe('ScheduleWeeklyNotification - Native Branch', () => {
   let alertSpy: jest.SpyInstance;
   let originalOS: string;
 
   beforeEach(() => {
-    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => { });
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
     originalOS = Platform.OS;
   });
 
   afterEach(() => {
     jest.clearAllMocks();
     Object.defineProperty(Platform, 'OS', { configurable: true, value: originalOS });
+    alertSpy.mockRestore();
   });
 
   test('calls setNotificationHandler with correct configuration', async () => {
@@ -120,25 +112,63 @@ describe('ScheduleWeeklyNotification - Native Branch', () => {
   });
 });
 
+describe('getNextSundayAtNine', () => {
+  test('calculates the correct date for the next Sunday at 9', () => {
+    const nextSunday = getNextSundayAtNine();
+    expect(nextSunday.getDay()).toBe(0);
+    expect(nextSunday.getHours()).toBe(9);
+  });
+
+  test('calculates the correct date for the next Sunday at 9 from a weekday', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2025-01-01T10:00:00'));
+    const nextSunday = getNextSundayAtNine();
+    expect(nextSunday.getDay()).toBe(0);
+    expect(nextSunday.getHours()).toBe(9);
+    expect(nextSunday.getDate()).toBe(5);
+    jest.useRealTimers();
+  });
+
+  test('calculates the correct date for the next Sunday at 9 when today is Sunday', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2025-01-05T10:00:00'));
+    const nextSunday = getNextSundayAtNine();
+    expect(nextSunday.getDay()).toBe(0);
+    expect(nextSunday.getHours()).toBe(9);
+    expect(nextSunday.getDate()).toBe(12);
+    jest.useRealTimers();
+  });
+});
+
 describe('ScheduleWeeklyNotification - Web Branch', () => {
   let alertSpy: jest.SpyInstance;
   let originalNotification: any;
   let originalOS: string;
 
   beforeEach(() => {
-    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => { });
+    jest.clearAllMocks();
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
     originalNotification = global.Notification;
     originalOS = Platform.OS;
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('test@example.com');
+    jest.mock('../../lib/client', () => ({
+      fetchHabits: jest.fn().mockResolvedValue(['Habit1', 'Habit2']),
+      fetchStreak: jest.fn().mockResolvedValue([{ streak: 5 }]),
+    }));
+    const notificationMock = jest.fn((title, options) => ({ title, ...options }));
+    global.Notification = notificationMock as any;
+    Object.defineProperty(global.Notification, 'permission', { value: 'granted', writable: true });
   });
 
   afterEach(() => {
     jest.clearAllMocks();
     Object.defineProperty(Platform, 'OS', { configurable: true, value: originalOS });
     global.Notification = originalNotification;
+    alertSpy.mockRestore();
   });
 
   test('shows alert if Notification API is not supported in web', async () => {
-    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
     delete (global as any).Notification;
     render(<ScheduleWeeklyNotification />);
     await waitFor(() => {
@@ -147,7 +177,6 @@ describe('ScheduleWeeklyNotification - Web Branch', () => {
   });
 
   test('shows alert if notification permission is not granted in web', async () => {
-    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
     global.Notification = {
       permission: 'default',
       requestPermission: jest.fn(() => Promise.resolve('denied')),
@@ -174,9 +203,15 @@ describe('enableNotifications', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => { });
-    windowAlertSpy = jest.spyOn(window, 'alert').mockImplementation(() => { });
-    setItemSpy = jest.spyOn(AsyncStorage, 'setItem');
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    windowAlertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    setItemSpy = jest.spyOn(AsyncStorage, 'setItem').mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    alertSpy.mockRestore();
+    windowAlertSpy.mockRestore();
+    setItemSpy.mockRestore();
   });
 
   afterAll(() => {
@@ -186,11 +221,9 @@ describe('enableNotifications', () => {
 
   test('should alert error if notifications are not supported in web', async () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
-    delete (global as any).Notification; // simulate no Notification API
+    delete (global as any).Notification;
     await enableNotifications();
-    expect(windowAlertSpy).toHaveBeenCalledWith(
-      'Notifications Enabled.'
-    );
+    expect(windowAlertSpy).toHaveBeenCalledWith('Notifications Enabled.');
     expect(setItemSpy).toHaveBeenCalled();
   });
 
@@ -201,9 +234,7 @@ describe('enableNotifications', () => {
     } as any;
     (global.Notification as any).permission = 'granted';
     await enableNotifications();
-    expect(windowAlertSpy).not.toHaveBeenCalledWith(
-      'Permission Denied: Notifications were not enabled.'
-    );
+    expect(windowAlertSpy).not.toHaveBeenCalledWith('Permission Denied: Notifications were not enabled.');
     expect(setItemSpy).toHaveBeenCalledWith('notificationsEnabled', 'true');
   });
 
@@ -219,12 +250,8 @@ describe('enableNotifications', () => {
     } as any;
     await enableNotifications();
     expect(requestPermissionMock).not.toHaveBeenCalled();
-    expect(windowAlertSpy).not.toHaveBeenCalledWith(
-      'Permission Denied: Notifications were not enabled.'
-    );
-    // expect(setItemSpy).toHaveBeenCalledWith('notificationsEnabled', 'true');
+    expect(windowAlertSpy).not.toHaveBeenCalledWith('Permission Denied: Notifications were not enabled.');
   });
-
 
   test('should request permission if not denied nor granted on web, and handle denied', async () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
@@ -234,9 +261,7 @@ describe('enableNotifications', () => {
     } as any;
     await enableNotifications();
     expect(global.Notification.requestPermission).not.toHaveBeenCalled();
-    expect(windowAlertSpy).toHaveBeenCalledWith(
-      'Notifications Enabled.'
-    );
+    expect(windowAlertSpy).toHaveBeenCalledWith('Notifications Enabled.');
     expect(setItemSpy).toHaveBeenCalled();
   });
 
@@ -244,9 +269,7 @@ describe('enableNotifications', () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
     global.Notification = { permission: 'denied' } as any;
     await enableNotifications();
-    expect(windowAlertSpy).toHaveBeenCalledWith(
-      'Notifications Enabled.'
-    );
+    expect(windowAlertSpy).toHaveBeenCalledWith('Notifications Enabled.');
     expect(setItemSpy).toHaveBeenCalled();
   });
 
@@ -257,12 +280,14 @@ describe('enableNotifications', () => {
   });
 
   test('should catch errors and show an alert on error', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
     setItemSpy.mockRejectedValueOnce(new Error('Test error'));
     await enableNotifications();
     expect(window.alert).toHaveBeenCalledTimes(2);
-    expect(window.alert).toHaveBeenNthCalledWith(1, "Notifications Enabled.");
-    expect(window.alert).toHaveBeenNthCalledWith(2, "Error: Failed to enable notifications.");
+    expect(window.alert).toHaveBeenNthCalledWith(1, 'Notifications Enabled.');
+    expect(window.alert).toHaveBeenNthCalledWith(2, 'Error: Failed to enable notifications.');
+    consoleErrorSpy.mockRestore();
   });
 });
 
@@ -278,9 +303,15 @@ describe('disableNotifications', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => { });
-    windowAlertSpy = jest.spyOn(window, 'alert').mockImplementation(() => { });
-    setItemSpy = jest.spyOn(AsyncStorage, 'setItem');
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    windowAlertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    setItemSpy = jest.spyOn(AsyncStorage, 'setItem').mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    alertSpy.mockRestore();
+    windowAlertSpy.mockRestore();
+    setItemSpy.mockRestore();
   });
 
   afterAll(() => {
@@ -290,26 +321,24 @@ describe('disableNotifications', () => {
   test('should show a manual disable message on web and set status to false', async () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
     await disableNotifications();
-    expect(windowAlertSpy).toHaveBeenCalledWith(
-      'Notifications Disabled.'
-    );
+    expect(windowAlertSpy).toHaveBeenCalledWith('Notifications Disabled.');
     expect(setItemSpy).toHaveBeenCalledWith('notificationsEnabled', 'false');
   });
 
   test('should handle the native branch without error and store status', async () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
     await disableNotifications();
-    expect(alertSpy).not.toHaveBeenCalledWith(
-      'To fully disable notifications, go to your browser settings and block them manually.'
-    );
+    expect(alertSpy).not.toHaveBeenCalledWith('To fully disable notifications, go to your browser settings and block them manually.');
     expect(setItemSpy).toHaveBeenCalledWith('notificationsEnabled', 'false');
   });
 
   test('should catch errors and show an alert on error', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
     setItemSpy.mockRejectedValueOnce(new Error('Test error'));
     await disableNotifications();
     expect(windowAlertSpy).toHaveBeenCalledWith('Error: Failed to disable notifications.');
+    consoleErrorSpy.mockRestore();
   });
 });
 
@@ -335,19 +364,10 @@ describe('getNotificationStatus', () => {
 
 describe('enableNotifications - Native Branch setItem call', () => {
   test('calls AsyncStorage.setItem with "notificationsEnabled" and "true"', async () => {
-    // Force the platform to native (e.g., ios)
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
-
-    // Spy on AsyncStorage.setItem
     const setItemSpy = jest.spyOn(AsyncStorage, 'setItem').mockResolvedValue(undefined);
-
-    // Call the function under test.
     await enableNotifications();
-
-    // Assert that setItem was called with the correct key/value pair.
     expect(setItemSpy).toHaveBeenCalledWith('notificationsEnabled', 'true');
-
-    // Cleanup: Restore the spy.
     setItemSpy.mockRestore();
   });
 });
