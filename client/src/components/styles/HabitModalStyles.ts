@@ -1,5 +1,6 @@
 import { StyleSheet, Platform } from 'react-native';
 
+// Style definitions for the NewHabitModal component, including layout, color swatches, and form elements
 export const HabitModalStyles = StyleSheet.create({
     modalOverlay: {
         flex: 1,

@@ -16,7 +16,7 @@ import { SharedStyles } from '../../../components/styles/SharedStyles';
 import { SettingsPageStyles} from '../../../components/styles/SettingsPageStyles';
 import { enableNotifications, disableNotifications, getNotificationStatus } from '../../NotificationsHandler';
 
-// Main Settings screen component
+// Settings screen for managing theme, notifications, data export, and account actions
 export default function SettingsScreen() {
   const { theme, toggleTheme } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -29,19 +29,16 @@ export default function SettingsScreen() {
     fetchNotificationStatus();
   }, []);
 
-  // Toggles app notification settings – accessed by the Settings UI switch
+  // Enables or disables push notifications when the toggle is switched
   const toggleNotifications = async () => {
-    console.log('Toggle function called on web!');
 
     try {
       let newState = !notificationsEnabled;
       setNotificationsEnabled(newState);
 
       if (newState) {
-        console.log('Enabling notifications...');
         await enableNotifications();
       } else {
-        console.log('Disabling notifications...');
         await disableNotifications();
       }
 
@@ -57,7 +54,7 @@ export default function SettingsScreen() {
 
   type RouteType = (typeof settingsOptions)[number]['route'];
 
-  // Exports user data based on saved email
+  // Retrieves and exports user data to a file or download, depending on platform
   const handleExportData = async () => {
     try {
       const storedEmail = await AsyncStorage.getItem('email');
@@ -101,7 +98,7 @@ export default function SettingsScreen() {
     }
   };
 
-  // Signs the user out – called by the "Sign Out" button and also after deleting a user
+  // Signs the user out and clears stored auth token
   const handleSignOut = async () => {
     try {
       await AsyncStorage.removeItem('token');
@@ -111,9 +108,8 @@ export default function SettingsScreen() {
     }
   };
 
-  // Deletes the user account
+  // Deletes the user account from the backend and triggers sign out
   const DeleteUser = async () => {
-    console.log('Confirm Delete pressed');
     try {
       const storedEmail = await AsyncStorage.getItem('email');
       if (!storedEmail) {
@@ -124,7 +120,6 @@ export default function SettingsScreen() {
         }
         return;
       }
-      console.log('Deleting user with email:', storedEmail);
       await deleteUser(storedEmail);
       if (Platform.OS === 'web') {
         window.alert('User Deleted – Your account has been removed successfully.');
@@ -145,29 +140,23 @@ export default function SettingsScreen() {
 
   // Triggers confirmation prompt and proceeds to delete user if confirmed
   const confirmUserDeletion = () => {
-    console.log('Delete User pressed');
     if (Platform.OS === 'web') {
-      console.log('Delete User pressed on Web');
       const confirmed = window.confirm(
         'Are you sure you want to delete your account? This action cannot be undone.'
       );
       if (confirmed) {
-        console.log('Delete confirmed on Web');
         DeleteUser();
-      } else {
-        console.log('Delete canceled on Web');
-      }
+      } 
     } else {
       Alert.alert(
         'Confirm Delete Account',
         'Are you sure you want to delete your account? This action cannot be undone.',
         [
-          { text: 'Cancel', style: 'cancel', onPress: () => console.log('Delete canceled') },
+          { text: 'Cancel', style: 'cancel'},
           {
             text: 'Delete',
             style: 'destructive',
             onPress: () => {
-              console.log('Delete confirmed');
               DeleteUser();
             },
           },

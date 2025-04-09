@@ -8,7 +8,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AccountPageStyles } from '../../components/styles/AccountPageStyles';
 import { getUserDetails, updatePassword } from '../../lib/client';
 
-// Account screen component - displays current user details and allows password updates
+/**
+ * Account screen component.
+ * Displays user's saved username and email, and allows password updates via modal.
+ */
 export default function AccountScreen() {
   const { theme } = useTheme();
   const [username, setUsername] = useState('');
@@ -45,7 +48,7 @@ export default function AccountScreen() {
     loadUserData();
   }, []);
 
-  // Validate and handle password change via API
+  // Validates and submits a password change request to the backend
   const handlePasswordChange = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
       setError('All fields are required');

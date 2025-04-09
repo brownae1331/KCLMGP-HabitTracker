@@ -5,7 +5,10 @@ import { useAuth } from '../../components/AuthContext';
 import { Colors } from '../../components/styles/Colors';
 import { useTheme } from '../../components/ThemeContext';
 
-// Protected layout component - handles authentication checks and screen access control for protected routes
+/**
+ * Protected layout component.
+ * Handles authentication checks and restricts access to protected routes using auth context.
+ */
 export default function ProtectedLayout() {
     const { isAuthenticated, isLoading, checkAuthStatus } = useAuth();
     const [isChecking, setIsChecking] = useState(true);

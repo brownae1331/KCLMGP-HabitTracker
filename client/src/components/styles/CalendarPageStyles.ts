@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 
+// Style definitions for the Calendar screen, including layout for calendar and stats sections
 export const CalendarPageStyles = StyleSheet.create({
     titleContainer: {
         flexDirection: "row",

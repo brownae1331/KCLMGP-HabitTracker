@@ -1,12 +1,5 @@
 import React, { useEffect } from 'react';
-import {
-  Modal,
-  TouchableOpacity,
-  TextInput,
-  View,
-  ScrollView,
-  Switch,
-} from 'react-native';
+import { Modal, TouchableOpacity, TextInput, View, ScrollView, Switch } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { Picker } from '@react-native-picker/picker';
 import { HabitTypeSlider } from './HabitTypeSlider';
@@ -15,6 +8,7 @@ import { HabitModalStyles } from './styles/HabitModalStyles';
 import { Colors } from './styles/Colors';
 import { useTheme } from './ThemeContext';
 
+// Props for NewHabitModal component, including habit data, schedule config, and modal state handlers
 interface NewHabitModalProps {
   modalVisible: boolean;
   setModalVisible: (visible: boolean) => void;
@@ -54,6 +48,7 @@ const colorOptions = [
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+// Modal component for creating or editing a habit, including type, color, schedule, and goal settings
 export const NewHabitModal: React.FC<NewHabitModalProps> = ({
   modalVisible,
   setModalVisible,
@@ -80,12 +75,10 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
   onAddHabit,
   isEditMode = false,
 }) => {
-  // Get the color to use (selected color or default)
   const getActiveColor = () =>
     habitColor && habitColor.trim() !== '' ? habitColor : '#a39d41';
 
   const toggleDay = (day: string) => {
-    console.log(selectedDays);
     if (selectedDays.includes(day)) {
       setSelectedDays(selectedDays.filter((d) => d !== day));
     } else {
@@ -97,7 +90,6 @@ export const NewHabitModal: React.FC<NewHabitModalProps> = ({
 
   useEffect(() => {
     if (modalVisible && !isEditMode) {
-      // Reset form values when opening for a new habit
       setHabitName('');
       setHabitDescription('');
       setHabitColor('');

@@ -5,6 +5,7 @@ import { Svg, Circle } from "react-native-svg";
 import { Colors } from "./styles/Colors";
 import { useTheme } from "./ThemeContext";
 
+// Props for CalendarComponent, including selected date, marked progress, and a callback for visible date changes
 interface CalendarComponentProps {
     selectedDate: string;
     setSelectedDate: (date: string) => void;
@@ -12,6 +13,7 @@ interface CalendarComponentProps {
     onVisibleDatesChange?: (dates: string[]) => void;
 }
 
+// Calendar view with custom day rendering to show habit progress using circular indicators
 export const CalendarComponent: React.FC<CalendarComponentProps> = ({
     selectedDate,
     setSelectedDate,
@@ -19,7 +21,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
     onVisibleDatesChange,
 }) => {
     const { theme } = useTheme();
-    const today = new Date().toISOString().split("T")[0]; // Get today's date
+    const today = new Date().toISOString().split("T")[0]; 
     const [visibleDates, setVisibleDates] = React.useState<string[]>([]);
 
     // Function to calculate all visible dates when month changes

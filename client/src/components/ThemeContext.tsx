@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Theme = 'light' | 'dark';
 
+// Defines the structure for theme context, including current theme, a toggle function, and a refresh key
 interface ThemeContextProps {
   theme: Theme;
   toggleTheme: () => void;
@@ -11,6 +12,7 @@ interface ThemeContextProps {
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
+// Provides theme context to the app, including toggle and persistence via AsyncStorage
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>('light');
   const [refreshKey, setRefreshKey] = useState<number>(0)
@@ -39,6 +41,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
+// Custom hook to access the current theme context values
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {

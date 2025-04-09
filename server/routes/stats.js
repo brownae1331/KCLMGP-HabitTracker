@@ -1,9 +1,11 @@
+// Express router for retrieving habit statistics: streaks, averages, completion rates, and progress history
+
 import express from 'express';
 import { pool } from '../db.js';
 
 const router = express.Router();
 
-// get longest streak for a habit
+// Get longest streak for a habit
 router.get('/longest-streak/:email/:habitName', async (req, res) => {
     const { email, habitName } = req.params;
     try {
@@ -21,7 +23,7 @@ router.get('/longest-streak/:email/:habitName', async (req, res) => {
     }
 });
 
-// get completion rate for a habit
+// Get the completion rate (%) for a habit
 router.get('/completion-rate/:email/:habitName', async (req, res) => {
     const { email, habitName } = req.params;
     try {
@@ -42,7 +44,7 @@ router.get('/completion-rate/:email/:habitName', async (req, res) => {
     }
 });
 
-// get average progress for a habit
+// Get the average progress value for a habit
 router.get('/average-progress/:email/:habitName', async (req, res) => {
     const { email, habitName } = req.params;
     try {
@@ -60,7 +62,7 @@ router.get('/average-progress/:email/:habitName', async (req, res) => {
     }
 });
 
-// get streak for a habit
+// Get streak history for a habit over a selected range (week or month)
 router.get('/streak/:email/:habitName', async (req, res) => {
     const { email, habitName } = req.params;
     const { range } = req.query;
@@ -87,7 +89,7 @@ router.get('/streak/:email/:habitName', async (req, res) => {
     }
 });
 
-// get progress for a habit
+// Get progress history for a habit over a selected range (week, month, or year)
 router.get('/:email/:habitName', async (req, res) => {
     const { email, habitName } = req.params;
     const { range } = req.query;
@@ -118,7 +120,6 @@ router.get('/:email/:habitName', async (req, res) => {
         else {
             return res.status(400).json({ error: 'Invalid range' });
         }
-        console.log('Executing query:', query, 'with params:', params);
         const [rows] = await pool.query(query, params);
         res.json(rows);
     } catch (error) {

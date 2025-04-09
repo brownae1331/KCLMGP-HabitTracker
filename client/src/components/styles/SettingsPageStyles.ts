@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 
+// Styles for the Settings screen layout and action buttons
 export const SettingsPageStyles = StyleSheet.create({
   titleContainer: {
     paddingHorizontal: 20,

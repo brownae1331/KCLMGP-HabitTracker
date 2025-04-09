@@ -1,3 +1,5 @@
+// Express server setup and main backend logic for habit tracking app
+
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -26,10 +28,10 @@ app.use('/stats', statsRouter);
 
 // Default Route
 app.get('/', (req, res) => {
-  res.send('Habit Tracker API is running 🚀');
+  res.send('Habit Tracker API is running');
 });
 
-// Adjust the get habit query to fetch from habit_progress or habit_instances depending on the date
+// Returns habits for a user on a given date (used to fetch past or future habits)
 export async function getHabitsForDate(email, date, type) {
   let query;
   const formattedDate = date.toISOString().split('T')[0];
@@ -54,6 +56,7 @@ export async function getHabitsForDate(email, date, type) {
   return rows;
 }
 
+// Syncs all habits for a user by filling missed progress and generating new instances
 export const syncHabits = async (userEmail) => {
   try {
     const [habits] = await pool.query(
@@ -61,15 +64,11 @@ export const syncHabits = async (userEmail) => {
       [userEmail]
     );
 
-    //if (!Array.isArray(habits) || habits.length === 0) {
-    //  throw new Error('Invalid habits data');
-    //}
-
-    // catch up on all past and current due habits
+    // Catch up on all past and current due habits
     await migrateInstances(userEmail, '<=');
     await fillMissedProgress(userEmail);
 
-    // generate new instances for all habits
+    // Generate new instances for all habits
     for (const habit of habits) {
       if (habit.scheduleOption === 'interval') {
         await generateIntervalInstances(userEmail, habit.habitName);
@@ -77,14 +76,13 @@ export const syncHabits = async (userEmail) => {
         await generateDayInstances(userEmail, habit.habitName);
       }
     }
-    console.log(`Habits synchronized for user ${userEmail}`);
   } catch (error) {
     console.error('Error synchronizing habits:', error);
     throw error;
   }
 };
 
-// helper function: retrieves most recent date of progress of a habit
+// Returns the most recent date of progress or instance for a given habit
 export const getLastDate = async (table, userEmail, habitName, dateColumn, defaultDate) => {
   const [rows] = await pool.query(
     `SELECT MAX(${dateColumn}) as lastDate
@@ -95,7 +93,7 @@ export const getLastDate = async (table, userEmail, habitName, dateColumn, defau
   return rows[0].lastDate ? new Date(rows[0].lastDate) : new Date(defaultDate);
 };
 
-// helper function:
+// Generates a list of future dates for interval-based habits
 export const generateIntervalDates = (startDate, endDate, increment) => {
   const dates = [];
   let currentDate = new Date(startDate);
@@ -106,6 +104,7 @@ export const generateIntervalDates = (startDate, endDate, increment) => {
   return dates;
 };
 
+// Generates a list of future dates for weekly habits
 export const generateWeeklyDates = (startDate, endDate, selectedDays) => {
   const dates = [];
   let currentDate = new Date(startDate);
@@ -119,8 +118,7 @@ export const generateWeeklyDates = (startDate, endDate, selectedDays) => {
   return dates;
 };
 
-//generate missing habit instances for interval habits 
-//pregenerates up to 7 days worth of interval habits
+// Fills upcoming habit instances for interval habits (for the next 7 days)
 export const generateIntervalInstances = async (userEmail, habitName, daysAhead = 7) => {
   try {
     const [habitRows] = await pool.query(
@@ -131,7 +129,6 @@ export const generateIntervalInstances = async (userEmail, habitName, daysAhead 
       WHERE h.user_email = ? AND h.habitName = ?`,
       [userEmail, habitName]
     );
-    //table will have rows for user_email, habitName, scheduleOption and increment
 
     if (!habitRows.length) return;
     const habit = habitRows[0];
@@ -151,14 +148,12 @@ export const generateIntervalInstances = async (userEmail, habitName, daysAhead 
         [userEmail, habitName, date]
       );
     }
-    console.log(`Generated missing interval instances for habit "${habitName}" for user ${userEmail}`);
   } catch (error) {
     console.error('Error generating missing interval instances:', error);
   }
 };
 
-// Calculates future due dates for weekly habits for the next 7 days
-// unless a different daysAhead is passed as a parameter
+// Fills upcoming habit instances for weekly habits (for the next 7 days)
 export const generateDayInstances = async (userEmail, habitName, daysAhead = 7) => {
   try {
     const [dayRows] = await pool.query(
@@ -166,7 +161,6 @@ export const generateDayInstances = async (userEmail, habitName, daysAhead = 7) 
       [userEmail, habitName]
     );
     if (!dayRows.length) {
-      console.log(`No scheduled days found for habit "${habitName}" for user ${userEmail}`);
       return;
     }
     const selectedDays = dayRows.map(row => row.day);
@@ -182,16 +176,13 @@ export const generateDayInstances = async (userEmail, habitName, daysAhead = 7) 
         [userEmail, habitName, date]
       );
     }
-    console.log(`Generated missing day instances for habit "${habitName}" for user ${userEmail}`);
   }
   catch (error) {
     console.error('Error generating missing day instances:', error);
   }
 };
 
-// Moves habits from habit_instances to habit_progress if the due date is today or in the past
-// depending on what dateContidion is passed in 
-//change name to migrateInstances pls
+// Moves due habit instances to the progress table (based on date condition)
 export const migrateInstances = async (userEmail, dateCondition = '=', dateValue = new Date().toISOString().split('T')[0]) => {
   try {
     const [instances] = await pool.query(
@@ -213,14 +204,13 @@ export const migrateInstances = async (userEmail, dateCondition = '=', dateValue
         WHERE user_email = ? AND habitName = ? AND dueDate = ?`,
         [userEmail, habitName, instanceDueDate]
       );
-      console.log(`Migrated habit: ${habitName} due on: ${instanceDueDate} for user: ${userEmail}`);
     }
-    console.log(`Migrated today's instances for user ${userEmail}`);
   } catch (error) {
     console.error('Error migrating today instances:', error);
   }
 };
 
+// Fills in missed progress entries for past days based on the schedule
 export const fillMissedProgress = async (userEmail) => {
   try {
     const today = new Date();
@@ -245,7 +235,7 @@ export const fillMissedProgress = async (userEmail) => {
         );
         if (!interval.length) continue;
         const increment = interval[0].increment;
-        // gap between today and the most recent date of recorded progress
+        // Gap between today and the most recent date of recorded progress
         const gapDays = Math.floor((today - lastProgressDate) / (1000 * 60 * 60 * 24));
         if (gapDays <= increment) continue;
         dates = generateIntervalDates(lastProgressDate, today, increment);
@@ -271,17 +261,15 @@ export const fillMissedProgress = async (userEmail) => {
         }
       }
     }
-    console.log(`Filled missed progress for user ${userEmail}`);
   } catch (error) {
     console.error('Error filling missed progress:', error);
     throw error;
   }
 };
 
-// Start the server
+// Starts the Express server (if not in test mode)
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
   });
 }
 

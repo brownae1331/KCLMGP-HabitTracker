@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 
+// Styles for the Stats screen layout and graph containers
 export const StatsPageStyles = StyleSheet.create({
   pickerContainer: {
     width: '80%',

@@ -1,9 +1,11 @@
+// Express router for handling habit progress: logging, fetching progress, and streaks
+
 import express from 'express';
 import { pool } from '../db.js';
 
 const router = express.Router();
 
-// Log progress of a specific habit
+// Log progress of a specific habit on the current date
 router.post('/', async (req, res) => {
     const { email, habitName, progress } = req.body
     const today = new Date().toISOString().split('T')[0];

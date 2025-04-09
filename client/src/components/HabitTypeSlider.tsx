@@ -11,6 +11,7 @@ interface HabitTypeSliderProps {
     activeColor?: string;
 }
 
+// Toggle switch component for selecting between 'build' and 'quit' habit types
 export const HabitTypeSlider: React.FC<HabitTypeSliderProps> = ({
     habitType,
     setHabitType,

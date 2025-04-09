@@ -12,6 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getHabitProgressByDate } from "../../../lib/client";
 import { useFocusEffect } from "@react-navigation/native";
 
+// Formats a date string into DD/MM/YY format - used to display date text in the calendar and stats UI
 export const formatDate = (date: string): string => {
   const dateObj = new Date(date);
   const day = String(dateObj.getDate()).padStart(2, "0");
@@ -20,10 +21,14 @@ export const formatDate = (date: string): string => {
   return `${day}/${month}/${year}`;
 };
 
+/**
+ * Renders a themed calendar screen showing habit progress, completion stats, and streaks.
+ * Fetches data based on the visible dates and highlights progress per day.
+ */
 export default function CalendarScreen() {
   const { theme } = useTheme();
   const [isThemeLoaded, setIsThemeLoaded] = useState(false);
-  const today = new Date().toISOString().split("T")[0]; // Get today's date
+  const today = new Date().toISOString().split("T")[0]; 
   const [selectedDate, setSelectedDate] = useState(today);
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [markedDates, setMarkedDates] = useState<{ [key: string]: any }>({});
@@ -36,7 +41,6 @@ export default function CalendarScreen() {
 
   // Ensure theme is fully loaded before rendering calendar
   useEffect(() => {
-    // Short timeout to ensure theme context is fully initialized
     const timer = setTimeout(() => {
       setIsThemeLoaded(true);
     }, 50);
@@ -144,6 +148,7 @@ export default function CalendarScreen() {
     fetchProgressData();
   }, [email, visibleCalendarDates, selectedDate, theme, refreshKey]);
 
+  // Calculates current and longest streaks of fully completed habit days
   const calculateStreaks = (dates: { [key: string]: any }) => {
     let currentStreakCount = 0;
     let maxStreakCount = 0;

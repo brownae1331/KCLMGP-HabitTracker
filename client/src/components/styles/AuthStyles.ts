@@ -1,5 +1,6 @@
 import { StyleSheet, Platform } from 'react-native';
 
+// Style definitions for authentication screens (login and register)
 export const AuthStyles = StyleSheet.create({
     container: {
         flexGrow: 1,

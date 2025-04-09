@@ -17,19 +17,19 @@ Notifications.setNotificationHandler({
 // Helper function: calculate next Sunday at 9:00 AM
 export const getNextSundayAtNine = () => {
   const now = new Date();
-  const day = now.getDay(); // Sunday = 0, Monday = 1, etc.
-  const diff = day === 0 ? 7 : 7 - day; // If today is Sunday, schedule for next week
+  const day = now.getDay(); 
+  const diff = day === 0 ? 7 : 7 - day; 
   const nextSunday = new Date(now);
   nextSunday.setDate(now.getDate() + diff);
   nextSunday.setHours(9, 0, 0, 0);
   return nextSunday;
 };
 
+// Sets up weekly summary notifications across native and web platforms
 export default function ScheduleWeeklyNotification() {
   useEffect(() => {
     async function scheduleNotification() {
       if (Platform.OS === 'web') {
-        // Web: Use the browser Notification API
         if (typeof window !== 'undefined' && !('Notification' in window)) {
           Alert.alert('Notifications are not supported in this browser.');
           return;
@@ -48,7 +48,7 @@ export default function ScheduleWeeklyNotification() {
           (async () => {
             const email = await AsyncStorage.getItem('email');
             const habits = fetchHabits(email);
-            // For each habit, fetch streak data for the week.
+            // For each habit, fetch streak data for the week
             const streakResults = await Promise.all(
               habits.map(async (habit) => {
                 const rawData = await fetchStreak(email, habit, "week");
@@ -56,7 +56,7 @@ export default function ScheduleWeeklyNotification() {
                 return { habit, streak: mostRecentEntry ? mostRecentEntry.streak : 0 };
               })
             );
-            // Build the notification message using the obtained streaks.
+            // Build the notification message using the obtained streaks
             const message = streakResults
               .map(result => `${result.habit}: ${result.streak}`)
               .join(", ");
@@ -99,7 +99,7 @@ export default function ScheduleWeeklyNotification() {
   return null;
 }
 
-// Enable notifications
+// Enables notifications by saving preference in AsyncStorage (used in Settings)
 export async function enableNotifications() {
   try {
     if (Platform.OS === 'web') {
@@ -116,7 +116,7 @@ export async function enableNotifications() {
   }
 }
 
-// Disable notifications
+// Disables notifications by updating AsyncStorage preference
 export async function disableNotifications() {
   try {
     if (Platform.OS === 'web') {
@@ -133,7 +133,7 @@ export async function disableNotifications() {
   }
 }
 
-// Check Notification Status
+// Returns true or false based on stored notification preference in AsyncStorage
 export async function getNotificationStatus() {
   const storedStatus = await AsyncStorage.getItem('notificationsEnabled');
   return storedStatus === 'true';

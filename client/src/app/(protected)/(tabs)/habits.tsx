@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  View,
-  Alert,
-  StyleSheet,
-  Text,
-  Platform,
-} from 'react-native';
+import { TouchableOpacity, ScrollView, SafeAreaView, View, Alert, StyleSheet, Text, Platform } from 'react-native';
 import { IconSymbol } from '../../../components/ui/IconSymbol';
 import { WeeklyCalendar } from '../../../components/WeeklyCalendar';
 import { SharedStyles } from '../../../components/styles/SharedStyles';
@@ -21,12 +12,17 @@ import { addHabit, getHabitDays, getHabitInterval, getHabitsForDate, updateHabit
 import HabitPanel, { Habit } from '../../../components/HabitPanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/**
+ * HomeScreen component for viewing, adding, and editing habits for a selected date.
+ * Handles habit form logic, validation, and integrates with habit modal and calendar.
+ */
 export default function HomeScreen() {
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState<{ date: number; fullDate: Date }>({
     date: today.getDate(),
     fullDate: today
   });
+
   // State for modal and habit form
   const [email, setEmail] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -47,13 +43,14 @@ export default function HomeScreen() {
   const { theme } = useTheme();
 
   const [isEditMode, setIsEditMode] = useState(false);
-
   const [currentEditHabit, setCurrentEditHabit] = useState<Habit | null>(null);
-
   const [isLoading, setIsLoading] = useState(true);
 
+  /**
+   * Validates and submits the habit form.
+   * If in edit mode, updates an existing habit. Otherwise, adds a new habit.
+   */
   const handleAddHabit = async () => {
-    // Helper function for showing alerts
     const showAlert = (message: string) => {
       if (Platform.OS === 'web') {
         window.alert(message);
@@ -77,7 +74,7 @@ export default function HomeScreen() {
     // 3. Validate Color: If no color is picked, default to yellow (#FFFF00)
     let chosenColor = habitColor;
     if (!chosenColor || chosenColor.trim() === '') {
-      chosenColor = '#FFFF00'; // default yellow
+      chosenColor = '#FFFF00';
     }
 
     // 4. If schedule is "interval", ensure intervalDays is a valid number and not negative.
@@ -170,10 +167,11 @@ export default function HomeScreen() {
 
   const [dbHabits, setDbHabits] = useState<any[]>([]);
 
-
+  /**
+   * Fetches all habits for the selected date from the database.
+   * Updates local state with the result.
+   */
   const fetchHabits = async () => {
-    //if (!email) return;
-
     try {
       setIsLoading(true);
       const dateString = selectedDate.fullDate.toISOString().split('T')[0];
@@ -207,7 +205,10 @@ export default function HomeScreen() {
     }
   }, [selectedDate, email]);
 
-  // Add a function to handle editing a habit
+  /**
+   * Handles loading an existing habit into the form for editing.
+   * Also fetches any associated schedule (interval or weekly).
+   */
   const handleEditHabit = async (habit: Habit) => {
     // Store the current habit being edited
     setCurrentEditHabit(habit);
@@ -225,7 +226,6 @@ export default function HomeScreen() {
         setIntervalDays(interval.increment.toString());
       } else {
         const daysResponse = await getHabitDays(email, habit.habitName);
-        // Extract just the day names from the response objects
         const dayNames = daysResponse.map((dayObj: { day: string }) => dayObj.day);
         setSelectedDays(dayNames);
       }
@@ -248,6 +248,7 @@ export default function HomeScreen() {
     setModalVisible(true);
   };
 
+  // Refetches the habit list after a habit is deleted
   const handleHabitDelete = () => {
     fetchHabits();
   };

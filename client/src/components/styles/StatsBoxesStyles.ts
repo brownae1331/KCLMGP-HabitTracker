@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 
+// Styles for the StatsBox layout and statistic display boxes
 export const StatsBoxesStyles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',

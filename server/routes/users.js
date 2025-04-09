@@ -1,3 +1,5 @@
+// Express router for handling user-related actions: signup, login, deletion, password update, and export
+
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { pool } from '../db.js';
@@ -5,7 +7,7 @@ import { syncHabits } from '../server.js';
 
 const router = express.Router();
 
-// Create a new user
+// Register a new user with email, username, and hashed password
 router.post('/signup', async (req, res) => {
     const { email, password, username } = req.body;
 
@@ -56,7 +58,7 @@ router.post('/signup', async (req, res) => {
     }
 });
 
-// Login a user
+// Log in an existing user
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -93,7 +95,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Delete a user
+// Delete all data for a specific user by email
 router.delete('/:email', async (req, res) => {
     const { email } = req.params;
     const connection = await pool.getConnection();
@@ -122,7 +124,7 @@ router.delete('/:email', async (req, res) => {
     }
 });
 
-// Change password
+// Update a user's password after verifying the old password
 router.post('/update-password', async (req, res) => {
     const { username, oldPassword, newPassword } = req.body;
     try {
@@ -145,7 +147,7 @@ router.post('/update-password', async (req, res) => {
     }
 });
 
-// Export all data for a user as JSON
+// Export all data for a user as JSON (user info, habits, and progress)
 router.get('/export/:email', async (req, res) => {
     try {
         const userEmail = req.params.email;

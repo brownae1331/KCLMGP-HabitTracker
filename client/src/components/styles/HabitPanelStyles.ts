@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 
+// Styles for the HabitPanel component UI and controls
 export const HabitPanelStyles = StyleSheet.create({
   habitPanel: {
     padding: 15,

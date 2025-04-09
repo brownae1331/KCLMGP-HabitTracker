@@ -20,6 +20,7 @@ interface BuildHabitGraphProps {
   habitName: string;
 }
 
+// Displays a bar chart of build-type habit progress over time (week, month, or year)
 const BuildHabitGraph = ({ email, habitName }: BuildHabitGraphProps) => {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();

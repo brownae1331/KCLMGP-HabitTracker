@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 
+// Style definitions for the Account screen layout and components
 export const AccountPageStyles = StyleSheet.create({
   section: {
     paddingHorizontal: 20,

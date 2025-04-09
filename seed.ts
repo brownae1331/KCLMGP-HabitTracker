@@ -1,3 +1,5 @@
+// Script to seed the database with test users, habits, and progress data for development
+
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
@@ -15,30 +17,19 @@ const DB_CONFIG = {
 };
 
 const SALT_ROUNDS = 10;
-
-// How many users to create
 const NUM_USERS = 10;
-
-// Each user will get random habits in this range
 const MIN_HABITS_PER_USER = 3;
 const MAX_HABITS_PER_USER = 6;
-
-// We'll seed from 30 days ago up through today (31 total days)
 const DAYS_BACK = 30;
-
-// We'll also add future days for the next 7 days with no progress
 const DAYS_FORWARD = 7;
-
-// Probability that a "build" habit is completed on any scheduled day
 const BUILD_SUCCESS_CHANCE = 0.7;
-// Probability that a "quit" habit is completed ("didn't do it") on any scheduled day
 const QUIT_SUCCESS_CHANCE = 0.8;
 
-// Some sample habit names, descriptions, and colors to randomize
 const SAMPLE_HABIT_NAMES = [
   'Exercise', 'Read More', 'Quit Smoking', 'Meditate', 'Learn Guitar',
   'Drink Water', 'Stop Snacking', 'Study Spanish', 'Run 5K', 'Write Journal'
 ];
+
 const SAMPLE_DESCRIPTIONS = [
   'Improve my daily routine',
   'Focus on better health',
@@ -46,12 +37,12 @@ const SAMPLE_DESCRIPTIONS = [
   'Cut out bad habits',
   'Develop a new skill'
 ];
+
 const SAMPLE_COLORS = ['#FF5733', '#33FF57', '#0055ff', '#FF9900', '#123456', '#007AFF', '#FFFF00'];
 
-// Days of the week for weekly scheduling
 const ALL_WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-// Utility: return a new date with Y/M/D only (no time).
+// Return a new date with Y/M/D only (no time).
 function stripTime(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
@@ -104,8 +95,7 @@ function getWeeklyDatesInRange(
   return allDates.filter(d => selectedDays.includes(ALL_WEEKDAYS[d.getDay()]));
 }
 
-// For interval schedules, generate every Nth day from a chosen 'start date'
-// continuing until we surpass 'rangeEnd'
+// For interval schedules, generate every Nth day from a chosen 'start date' until we surpass 'rangeEnd'
 function getIntervalDatesInRange(
   rangeStart: Date,
   rangeEnd: Date,
@@ -133,10 +123,7 @@ function getIntervalDatesInRange(
   return results;
 }
 
-// Decide if the user "completed" the habit, then return { progress, completed, newStreak }.
-// For build habits with numeric goals, success => progress >= goal, fail => progress < goal
-// For build with no goal, success => any progress>0, fail => progress=0
-// For quit habits, success => progress=0 (didn't do it), fail => progress=1
+// Simulates a user's outcome for a single day of a habit
 function getDailyOutcome(habit: {
   habitType: 'build' | 'quit';
   goalValue: number | null;
@@ -148,10 +135,8 @@ function getDailyOutcome(habit: {
   if (habit.habitType === 'build') {
     const success = Math.random() < BUILD_SUCCESS_CHANCE;
     if (!success) {
-      // fail => progress < goal (or 0 if no numeric goal)
       let progress = 0;
       if (habit.goalValue !== null) {
-        // pick an integer from 0..(goalValue-1) if goalValue>0
         const upperBound = Math.max(0, habit.goalValue - 1);
         progress = upperBound > 0 ? randInt(0, upperBound) : 0;
       }
@@ -161,13 +146,10 @@ function getDailyOutcome(habit: {
         newStreak: 0
       };
     } else {
-      // success => progress >= goal, or >0 if no numeric goal
       let progress = 1;
       if (habit.goalValue !== null) {
-        // pick an integer from goalValue..(goalValue+3)
         progress = randInt(habit.goalValue, habit.goalValue + 3);
       } else {
-        // no numeric goal => any positive number means success
         progress = randInt(1, 3);
       }
       return {
@@ -177,8 +159,6 @@ function getDailyOutcome(habit: {
       };
     }
   } else {
-    // 'quit' => 0 => success => completed = true => streak=prev+1
-    //           1 => fail => completed = false => streak=0
     const success = Math.random() < QUIT_SUCCESS_CHANCE;
     if (success) {
       return {
@@ -196,15 +176,14 @@ function getDailyOutcome(habit: {
   }
 }
 
+// Populates the database with sample users, habits, scheduled instances, and progress
 export async function seed() {
   const pool = mysql.createPool(DB_CONFIG);
   try {
     const connection = await pool.getConnection();
     console.log('Seeding database with scheduled data + future days, respecting consecutive streaks...');
 
-    //----------------------------------------------------------------------
-    // 1) Clear existing data (in correct order due to FKs)
-    //----------------------------------------------------------------------
+    // 1: Clear existing data
     await connection.query('DELETE FROM habit_progress');
     await connection.query('DELETE FROM habit_instances');
     await connection.query('DELETE FROM habit_days');
@@ -212,9 +191,7 @@ export async function seed() {
     await connection.query('DELETE FROM habits');
     await connection.query('DELETE FROM users');
 
-    //----------------------------------------------------------------------
-    // 2) Create users
-    //----------------------------------------------------------------------
+    // 2: Create random users
     const userList: { email: string; username: string; password: string }[] = [];
     for (let i = 0; i < NUM_USERS; i++) {
       const email = randomEmail();
@@ -231,16 +208,10 @@ export async function seed() {
         'INSERT INTO users (email, password, username) VALUES (?, ?, ?)',
         [u.email, hashed, u.username]
       );
-      console.log(`\nCREATED USER:
-        Email: ${u.email}
-        Username: ${u.username}
-        Plain Password: ${u.password}
-      `);
+      console.log(`\nCREATED USER: ${u.email}`);
     }
 
-    //----------------------------------------------------------------------
-    // 3) Generate random habits for each user, store in DB
-    //----------------------------------------------------------------------
+    // 3: Create habits for each user
     type HabitRecord = {
       user_email: string;
       habitName: string;
@@ -263,17 +234,16 @@ export async function seed() {
         const habitType: 'build' | 'quit' = Math.random() > 0.5 ? 'build' : 'quit';
         const scheduleOption: 'weekly' | 'interval' = Math.random() > 0.5 ? 'weekly' : 'interval';
 
-        // If it's a build habit, 50% chance we set an integer goal
         let goalVal: number | null = null;
         let goalU: string | null = null;
         if (habitType === 'build' && Math.random() > 0.5) {
-          goalVal = randInt(5, 50); // integer from 5..50
+          goalVal = randInt(5, 50);
           goalU = 'units';
         }
 
         const habitObj: HabitRecord = {
           user_email: user.email,
-          habitName: `${name} ${randInt(100, 9999)}`, // ensure uniqueness
+          habitName: `${name} ${randInt(100, 9999)}`,
           habitType,
           scheduleOption,
           goalValue: goalVal,
@@ -282,7 +252,7 @@ export async function seed() {
         };
         allHabits.push(habitObj);
 
-        // Insert into DB
+        // Insert into database
         await connection.query(
           `INSERT INTO habits
            (user_email, habitName, habitDescription, habitType, habitColor,
@@ -302,10 +272,7 @@ export async function seed() {
       }
     }
 
-    //----------------------------------------------------------------------
-    // 4) Insert into habit_days (for weekly) or habit_intervals (for interval)
-    //    Figure out which days are scheduled for the past 30 days + today
-    //----------------------------------------------------------------------
+    // 4: Add schedule data and future instances
     const earliestDate = stripTime(new Date());
     earliestDate.setDate(earliestDate.getDate() - DAYS_BACK);
 
@@ -316,17 +283,15 @@ export async function seed() {
     const futureEnd = stripTime(new Date());
     futureEnd.setDate(futureEnd.getDate() + DAYS_FORWARD);
 
-    // We'll store scheduled day arrays in a map
     const scheduledDatesMap = new Map<string, Date[]>();
 
     for (const h of allHabits) {
       const habitKey = `${h.user_email}_${h.habitName}`;
 
       if (h.scheduleOption === 'weekly') {
-        // Randomly pick 1..4 days of the week
         const shuffled = [...ALL_WEEKDAYS].sort(() => 0.5 - Math.random());
         const selectedDays = shuffled.slice(0, randInt(1, 4));
-        // Insert them
+  
         for (const d of selectedDays) {
           await connection.query(
             `INSERT INTO habit_days (user_email, habitName, day)
@@ -334,6 +299,7 @@ export async function seed() {
             [h.user_email, h.habitName, d]
           );
         }
+
         // Generate all matching days in [earliestDate..today]
         const historicalDates = getWeeklyDatesInRange(earliestDate, today, selectedDays);
         scheduledDatesMap.set(habitKey, historicalDates);
@@ -341,7 +307,7 @@ export async function seed() {
         // Also generate the next 7 days for the future
         const futureDates = getWeeklyDatesInRange(tomorrow, futureEnd, selectedDays);
 
-        // We'll insert habit_instances for the future (no progress).
+        // Insert habit_instances for the future (no progress)
         for (const d of futureDates) {
           await connection.query(
             `INSERT IGNORE INTO habit_instances (user_email, habitName, dueDate)
@@ -350,7 +316,6 @@ export async function seed() {
           );
         }
       } else {
-        // interval
         const inc = randInt(2, 7);
         await connection.query(
           `INSERT INTO habit_intervals (user_email, habitName, increment)
@@ -358,21 +323,18 @@ export async function seed() {
           [h.user_email, h.habitName, inc]
         );
 
-        // pick a random start date for the historical range
+        // Pick a random start date for the historical range
         const randomStart = new Date(earliestDate);
         randomStart.setDate(randomStart.getDate() + randInt(0, DAYS_BACK));
 
         const historicalDates = getIntervalDatesInRange(earliestDate, today, inc, randomStart);
         scheduledDatesMap.set(habitKey, historicalDates);
 
-        // For the future 7 days, let's pick the last historical day or randomStart
-        // as the base, then keep incrementing
         let baseDate = randomStart;
         if (historicalDates.length > 0) {
           baseDate = historicalDates[historicalDates.length - 1];
         }
         // Generate interval for [tomorrow..futureEnd]
-        // We'll do a small function that continues from baseDate forward
         const futureDates: Date[] = [];
         let nextDate = new Date(baseDate);
         while (nextDate <= futureEnd) {
@@ -393,14 +355,10 @@ export async function seed() {
       }
     }
 
-    //----------------------------------------------------------------------
-    // 5) For each habit, fill in habit_instances + progress for historical days
-    //    with correct streak logic. Future days are already inserted above, no progress.
-    //----------------------------------------------------------------------
+    // 5: Fill in historical progress with streaks
     for (const h of allHabits) {
       const habitKey = `${h.user_email}_${h.habitName}`;
       const scheduledDates = scheduledDatesMap.get(habitKey) || [];
-      // Sort ascending
       scheduledDates.sort((a, b) => a.getTime() - b.getTime());
 
       let currentStreak = 0;

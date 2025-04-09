@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 
+// Style definitions for the Habit page, including habit list layout and empty state text
 export const HabitPageStyles = StyleSheet.create({
   habitListContainer: {
     marginHorizontal: 16,

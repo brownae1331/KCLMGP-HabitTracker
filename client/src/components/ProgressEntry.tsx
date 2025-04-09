@@ -6,6 +6,7 @@ import { useTheme } from './ThemeContext';
 import { ProgressEntryStyles } from './styles/ProgressEntryStyles';
 import { CircleProgress } from './CircleProgress';
 
+// Props for the ProgressEntry modal, including habit info, progress data, and event handlers
 interface ProgressEntryProps {
     visible: boolean;
     onClose: () => void;
@@ -22,6 +23,7 @@ interface ProgressEntryProps {
     isEditable?: boolean;
 }
 
+// Modal component for entering and displaying habit progress, with goal tracking or binary status
 export const ProgressEntry: React.FC<ProgressEntryProps> = ({
     visible,
     onClose,

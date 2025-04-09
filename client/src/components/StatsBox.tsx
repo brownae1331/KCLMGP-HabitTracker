@@ -6,6 +6,7 @@ import { Colors } from "./styles/Colors";
 import { useTheme } from "./ThemeContext";
 import { CircleProgress } from "./CircleProgress";
 
+// Props for StatsBoxComponent, including streak data and average habit completion for a selected date
 interface StatsBoxComponentProps {
     selectedDate: string;
     completionPercentage: number;
@@ -14,6 +15,7 @@ interface StatsBoxComponentProps {
     longestStreak: number;
 }
 
+// Displays current and longest streaks with a visual completion percentage chart for a selected date
 export const StatsBoxComponent: React.FC<StatsBoxComponentProps> = ({
     selectedDate,
     completionPercentage,

@@ -13,10 +13,10 @@ const DB_CONFIG = {
     queueLimit: 0
 };
 
-// Create a MySQL Connection Pool
+// MySQL connection pool for querying the database
 export const pool = mysql.createPool(DB_CONFIG);
 
-// Initialize Database (Create Tables if Not Exists)
+// Initialise Database (create all required tables if they don't already exist)
 export const initDatabase = async () => {
     try {
         const connection = await pool.getConnection();
@@ -89,7 +89,6 @@ export const initDatabase = async () => {
     `);
 
         connection.release();
-        console.log('Database initialized successfully');
     } catch (error) {
         console.error('Error initializing database:', error);
     }

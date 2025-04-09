@@ -6,6 +6,7 @@ import { useWeekCalendarStyles } from './styles/WeekCalendarStyles';
 import { ThemedText } from './ThemedText';
 import { Colors } from './styles/Colors';
 
+// Props for WeeklyCalendar component, including selected date and state update function
 interface WeeklyCalendarProps {
     selectedDate: { date: number; fullDate: Date };
     setSelectedDate: React.Dispatch<React.SetStateAction<{ date: number; fullDate: Date }>>;
@@ -17,6 +18,7 @@ interface DayType {
     fullDate: Date;
 }
 
+// Renders a swipeable or arrow-based horizontal week view for selecting specific dates
 export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ selectedDate, setSelectedDate }) => {
     const { width } = useWindowDimensions();
     const today = new Date();

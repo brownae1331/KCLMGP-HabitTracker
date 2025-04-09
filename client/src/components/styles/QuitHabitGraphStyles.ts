@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 
+// Styles for the QuitHabitGraph component and UI elements
 export const QuitHabitGraphStyles = StyleSheet.create({
   container: {
     flex: 1,

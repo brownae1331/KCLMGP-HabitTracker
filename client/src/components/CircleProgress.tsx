@@ -12,6 +12,7 @@ interface CircleProgressProps {
     strokeWidth?: number;
 }
 
+// Circular progress indicator showing percentage completion as a ring
 export const CircleProgress: React.FC<CircleProgressProps> = ({
     percentage,
     color,

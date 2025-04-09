@@ -1,7 +1,6 @@
-// Start of Selection
 import { StyleSheet, Platform } from 'react-native';
 
-// Core Reusable Styles
+// Reusable global styles for inputs, buttons, and layout containers
 export const SharedStyles = StyleSheet.create({
     input: {
         height: 40,

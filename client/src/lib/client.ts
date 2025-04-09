@@ -273,7 +273,7 @@ export async function getHabitStreak(email: string, habitName: string, date: str
   return response.json();
 }
 
-// generic function to handle api requests
+// Internal utility to handle API requests with error handling
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   try {
     const response = await fetch(endpoint, options);
@@ -288,7 +288,7 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
   }
 }
 
-// fetch a user's habits
+// Fetch a user's habits
 export const fetchHabits = async (email: string): Promise<any[]> => {
   const data = await apiRequest<any[]>(`${BASE_URL}/habits/${email}`);
   if (!Array.isArray(data)) {
@@ -298,35 +298,35 @@ export const fetchHabits = async (email: string): Promise<any[]> => {
   return data;
 };
 
-// fetch progress data for a build habit
+// Fetch progress data for a build habit
 export async function fetchBuildHabitProgress(email: string, habitName: string, range: 'week' | 'month' | 'year') {
   return apiRequest<any[]>(`${BASE_URL}/stats/${email}/${habitName}?range=${range}`);
 }
 
-// fetch streak data
+// Fetch streak data
 export async function fetchStreak(email: string, habitName: string, range: 'week' | 'month') {
   return apiRequest<any[]>(`${BASE_URL}/stats/streak/${email}/${habitName}?range=${range}`);
 }
 
-// fetch longest streak
+// Fetch longest streak
 export async function fetchLongestStreak(email: string, habitName: string): Promise<number> {
   const data = await apiRequest<{ longestStreak: number }>(`${BASE_URL}/stats/longest-streak/${email}/${habitName}`);
   return data.longestStreak;
 }
 
-// fetch completion rate
+// Fetch completion rate
 export async function fetchCompletionRate(email: string, habitName: string): Promise<number> {
   const data = await apiRequest<{ completionRate: number }>(`${BASE_URL}/stats/completion-rate/${email}/${habitName}`);
   return data.completionRate;
 }
 
-// fetch average progress
+// Fetch average progress
 export async function fetchAverageProgress(email: string, habitName: string): Promise<number> {
   const data = await apiRequest<{ averageProgress: number }>(`${BASE_URL}/stats/average-progress/${email}/${habitName}`);
   return data.averageProgress;
 }
 
-// export user data
+// Export user data
 export async function exportUserData(email: string) {
   return apiRequest<any>(`${BASE_URL}/users/export/${email}`);
 }

@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 
+// Styles for the NotFound (404) screen layout and link
 export const NotFoundPageStyles = StyleSheet.create({
   container: {
     flex: 1,

@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 
+// Styles for ThemedText component typography
 export const ThemedTextStyles = StyleSheet.create({
   default: {
     fontSize: 16,

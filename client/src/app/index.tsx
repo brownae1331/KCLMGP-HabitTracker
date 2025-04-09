@@ -4,7 +4,10 @@ import { ActivityIndicator, View } from 'react-native';
 import { useTheme } from '../components/ThemeContext';
 import { Colors } from '../components/styles/Colors';
 
-// Entry route redirects users based on authentication status (login or main app)
+/**
+ * Index route component.
+ * Automatically redirects users to login or the protected habits screen based on auth status.
+ */
 export default function IndexRoute() {
   const { isAuthenticated, isLoading } = useAuth();
   const { theme } = useTheme();

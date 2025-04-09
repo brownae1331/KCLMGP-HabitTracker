@@ -1,6 +1,7 @@
 import { SymbolView, SymbolViewProps, SymbolWeight } from 'expo-symbols';
 import { StyleProp, ViewStyle } from 'react-native';
 
+// Reusable SF Symbol icon component with custom size, color, and style
 export function IconSymbol({
   name,
   size = 24,

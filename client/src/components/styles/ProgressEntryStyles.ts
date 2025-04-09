@@ -1,6 +1,6 @@
-// components/styles/ProgressEntryStyles.ts
 import { StyleSheet } from 'react-native';
 
+// Styles for the ProgressEntry component layout and controls
 export const ProgressEntryStyles = StyleSheet.create({
   modalOverlay: {
     flex: 1,

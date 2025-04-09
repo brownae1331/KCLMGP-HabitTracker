@@ -5,6 +5,7 @@ import { Colors } from './styles/Colors';
 import { useTheme } from './ThemeContext';
 import { StatsBoxesStyles } from './styles/StatsBoxesStyles';
 
+// Props for StatsBoxes component, showing current/longest streaks, completion rate, and an extra stat
 interface StatsBoxesProps {
   currentStreak: number;
   longestStreak: number;
@@ -15,6 +16,7 @@ interface StatsBoxesProps {
   };
 }
 
+// Displays four stat boxes in a grid layout with dynamic theming
 const StatsBoxes: React.FC<StatsBoxesProps> = ({ currentStreak, longestStreak, completionRate, fourthStat }) => {
   const { theme } = useTheme();
   const stats = [

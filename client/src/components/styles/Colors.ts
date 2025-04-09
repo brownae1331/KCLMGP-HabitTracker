@@ -1,6 +1,10 @@
 const tintColorLight = '#A39D41';
 const tintColorDark = '#fff';
 
+/**
+ * Centralised color palette used for light and dark themes throughout the app.
+ * Provides text, background, tint, and component-specific colors for consistent styling.
+ */
 export const Colors = {
     light: {
         text: '#11181C',

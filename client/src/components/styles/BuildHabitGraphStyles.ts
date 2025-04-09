@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 
+// Style definitions for the BuildHabitGraph component layout and UI elements
 export const BuildHabitGraphStyles = StyleSheet.create({
   container: {
     flex: 1,

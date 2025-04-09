@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../components/ThemeContext'
 
-
+// Background component for the bottom tab bar using a BlurView that adapts to the current theme
 export default function BlurTabBarBackground() {
   const { theme } = useTheme();
 
@@ -19,6 +19,7 @@ export default function BlurTabBarBackground() {
   );
 }
 
+// Calculates safe area overflow below the bottom tab bar for proper content spacing
 export function useBottomTabOverflow() {
   const tabHeight = useBottomTabBarHeight();
   const { bottom } = useSafeAreaInsets();

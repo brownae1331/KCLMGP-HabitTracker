@@ -15,11 +15,13 @@ interface ChartData {
   y: number;
 }
 
+// Props for the QuitHabitGraph component, including user email and habit name
 interface QuitHabitGraphProps {
   email: string;
   habitName: string;
 }
 
+// Displays a line chart of streak progress for quit-type habits, with selectable week/month range
 const QuitHabitGraph = ({ email, habitName }: QuitHabitGraphProps) => {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();

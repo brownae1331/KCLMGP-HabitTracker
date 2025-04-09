@@ -1,5 +1,6 @@
 import { StyleSheet, useWindowDimensions, Platform } from 'react-native';
 
+// Hook that generates responsive styles for the WeeklyCalendar UI
 export const useWeekCalendarStyles = () => {
     const { width } = useWindowDimensions();
 

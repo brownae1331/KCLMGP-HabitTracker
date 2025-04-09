@@ -18,7 +18,10 @@ type Habit = {
   goalValue: number | null;
 };
 
-// Stats screen component - displays user habit statistics with selectable graphs based on habit type
+/**
+ * Stats screen component. Displays user habit statistics as graphs based on selected habit type.
+ * Fetches habits dynamically and renders either a build or quit graph.
+ */
 export default function StatsScreen() {
   const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
   const [habits, setHabits] = useState<Habit[]>([]);

@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Appearance, ColorSchemeName } from 'react-native';
 
+// Custom hook that returns the current color scheme ('light' or 'dark'), based on user preference or system setting
 export function useColorScheme() {
-  // Convert system theme to 'light' or 'dark'
   const initialTheme: 'light' | 'dark' =
     Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
 

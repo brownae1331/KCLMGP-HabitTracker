@@ -7,7 +7,7 @@ import { HabitPanelStyles } from './styles/HabitPanelStyles';
 import { deleteHabit } from '../lib/client';
 import { ProgressEntry } from './ProgressEntry';
 
-// Define the Habit interface (using user_email to match your DB)
+// Interface for user-defined habits, including schedule, color, type, and optional goal data
 export interface Habit {
   user_email: string;
   habitName: string;
@@ -22,6 +22,7 @@ export interface Habit {
   goalUnit?: string;
 }
 
+// Props for the HabitPanel component including habit data, selected date, and edit/delete handlers
 interface HabitPanelProps {
   habit: Habit;
   onEdit?: (habit: Habit) => void;
@@ -29,6 +30,10 @@ interface HabitPanelProps {
   onDelete?: () => void;
 }
 
+/**
+ * HabitPanel displays a habit's name, description, progress, and streak.
+ * It allows users to edit, delete, or update progress (based on habit type and date).
+ */
 const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, selectedDate }) => {
   // For build habits: track numeric progress
   const [buildProgress, setBuildProgress] = useState<string>('');
@@ -121,13 +126,13 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
       } catch (error) {
         console.error('Error fetching habit progress:', error);
       }
-    }, 500); // Poll every 10 seconds
+    }, 500);
 
     return () => clearInterval(interval);
   }, [habit, date]);
 
 
-  // Add this helper function to find the last scheduled date for the habit
+  // Determines the most recent scheduled date for a habit based on its interval or selected weekdays
   const findLastScheduledDate = async (habit: Habit) => {
     try {
       const today = new Date();
@@ -161,17 +166,13 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
           }
         }
       }
-
-      // If we couldn't determine the specific last date, default to yesterday
-      //const yesterday = new Date(today);
-      //yesterday.setDate(today.getDate() - 1);
-      //return yesterday;
     } catch (error) {
       console.error('Error finding last scheduled date:', error);
       return null;
     }
   };
 
+  // Updates the progress value for the current habit and adjusts the streak accordingly
   const handleUpdate = async (progress: number) => {
     try {
       // Determine if this is a build habit without a goal
@@ -201,8 +202,8 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
 
         // Determine if the goal was reached
         const isGoalReached = habit.habitType === 'build' && habit.goalValue
-          ? progressValue >= habit.goalValue  // Build habit with goal
-          : progressValue === 1;  // Quit habit or build habit without goal
+          ? progressValue >= habit.goalValue  
+          : progressValue === 1;  
 
         // For today's update
         if (isToday) {
@@ -232,6 +233,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
     }
   };
 
+  // Deletes the current habit after user confirmation (platform-specific dialogs)
   const handleDelete = async () => {
     if (Platform.OS === 'web') {
       const confirmed = window.confirm("Are you sure you want to delete this habit?");
@@ -272,15 +274,14 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
     }
   };
 
+  // Opens the progress entry modal, fetching current progress (or falling back to local state)
   const openProgressEntry = async () => {
     // Don't allow editing future dates
     if (isDateInFuture) return;
 
     try {
       const progressData = await getHabitProgressByDateAndHabit(habit.user_email, habit.habitName, date);
-      console.log('Progress data:', progressData);
 
-      // Make sure we're handling the API response correctly
       const progressValue = progressData && typeof progressData.progress !== 'undefined'
         ? progressData.progress
         : 0;
@@ -289,7 +290,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
       setProgressModalVisible(true);
     } catch (error) {
       console.error('Error fetching habit progress:', error);
-      // Fall back to using local state
+      
       const isBuildWithoutGoal = habit.habitType === 'build' &&
         (habit.goalValue === undefined || habit.goalValue === null);
 
@@ -302,6 +303,7 @@ const HabitPanel: React.FC<HabitPanelProps> = ({ habit, onDelete, onEdit, select
     }
   };
 
+  // Handles saving updated progress from the modal
   const handleSaveProgress = (progress: number) => {
     handleUpdate(progress);
   };
