@@ -73,10 +73,10 @@ export default function HomeScreen() {
       return;
     }
 
-    // 3. Validate Color: If no color is picked, default to yellow (#FFFF00)
+    // 3. Validate Color: If no color is picked, default to yellow (#FFCC00)
     let chosenColor = habitColor;
     if (!chosenColor || chosenColor.trim() === '') {
-      chosenColor = '#FFFF00'; // default yellow
+      chosenColor = '#FFCC00'; // default yellow
     }
 
     // 4. If schedule is "interval", ensure intervalDays is a valid number and not negative.

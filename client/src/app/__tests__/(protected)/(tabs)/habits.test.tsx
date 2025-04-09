@@ -194,7 +194,7 @@ describe('HomeScreen', () => {
             habitName: 'New Habit',
             habitDescription: '',
             habitType: 'build',
-            habitColor: '#FFFF00',
+            habitColor: '#FFCC00',
             scheduleOption: 'interval',
             intervalDays: 5,
             selectedDays: [],
@@ -474,7 +474,7 @@ describe('HomeScreen', () => {
         consoleErrorSpy.mockRestore();
     });
 
-    test('defaults to #FFFF00 if no color is chosen', async () => {
+    test('defaults to #FFCC00 if no color is chosen', async () => {
         (AsyncStorage.getItem as jest.Mock).mockResolvedValue('user@example.com');
         (getHabitsForDate as jest.Mock).mockResolvedValue([]);
         (addHabit as jest.Mock).mockResolvedValue({});
@@ -509,7 +509,7 @@ describe('HomeScreen', () => {
                 goalValue: null,
                 habitDescription: '',
                 habitName: 'Colorless Habit',
-                habitColor: '#FFFF00',
+                habitColor: '#FFCC00',
                 habitType: 'build',
                 scheduleOption: 'interval',
                 intervalDays: 5,

@@ -46,7 +46,7 @@ const SAMPLE_DESCRIPTIONS = [
   'Cut out bad habits',
   'Develop a new skill'
 ];
-const SAMPLE_COLORS = ['#FF5733', '#33FF57', '#0055ff', '#FF9900', '#123456', '#007AFF', '#FFFF00'];
+const SAMPLE_COLORS = ['#FF5733', '#33FF57', '#0055ff', '#FF9900', '#123456', '#007AFF', '#FFCC00'];
 
 // Days of the week for weekly scheduling
 const ALL_WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
