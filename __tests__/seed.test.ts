@@ -1,7 +1,6 @@
-// seed.test.ts
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcrypt';
-import { seed } from '../seed'; // Ensure seed.ts exports the seed function
+import { seed } from '../seed';
 
 // Set up Jest mocks for mysql and bcrypt
 jest.mock('mysql2/promise');

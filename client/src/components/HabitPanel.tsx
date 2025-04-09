@@ -1,7 +1,7 @@
 import { updateHabitProgress, getHabitStreak, getHabitInterval, getHabitDays, getHabitProgressByDateAndHabit } from '../lib/client';
 import { IconSymbol } from './ui/IconSymbol';
 import React, { useState, useEffect } from 'react';
-import { Platform, View, TouchableOpacity, TextInput, Text, StyleSheet, Alert } from 'react-native';
+import { Platform, View, TouchableOpacity, Text, Alert } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { HabitPanelStyles } from './styles/HabitPanelStyles';
 import { deleteHabit } from '../lib/client';
