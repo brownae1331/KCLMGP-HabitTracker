@@ -39,3 +39,4 @@ app-example
 
 # coverage
 client/coverage
+server/coverage
