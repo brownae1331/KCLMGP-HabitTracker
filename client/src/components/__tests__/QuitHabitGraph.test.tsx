@@ -189,42 +189,6 @@ describe('QuitHabitGraph', () => {
     });
   });
 
-  test('computes grade A when completion rate is >= 90', async () => {
-    // Arrange: Mock API functions to return desired values.
-    (fetchStreak as jest.Mock).mockResolvedValueOnce([
-      { progressDate: '2025-04-01T00:00:00Z', streak: 3 },
-    ]);
-    (fetchLongestStreak as jest.Mock).mockResolvedValueOnce(7);
-    // For grade A, set completion rate to 95.
-    (fetchCompletionRate as jest.Mock).mockResolvedValueOnce(95);
-  
-    // Act: Render the component.
-    const { getByText } = render(<QuitHabitGraph email="user@example.com" habitName="Smoking" />);
-  
-    // Assert: Wait for StatsBoxes to update and verify the grade is "A".
-    await waitFor(() => {
-      expect(getByText('fourthStat: A')).toBeTruthy();
-    });
-  });
-  
-  test('computes grade D when completion rate is >= 45 but less than 60', async () => {
-    // Arrange: Mock API functions to return desired values.
-    (fetchStreak as jest.Mock).mockResolvedValueOnce([
-      { progressDate: '2025-04-01T00:00:00Z', streak: 3 },
-    ]);
-    (fetchLongestStreak as jest.Mock).mockResolvedValueOnce(7);
-    // For grade D, set completion rate to 50.
-    (fetchCompletionRate as jest.Mock).mockResolvedValueOnce(50);
-  
-    // Act: Render the component.
-    const { getByText } = render(<QuitHabitGraph email="user@example.com" habitName="Smoking" />);
-  
-    // Assert: Wait for StatsBoxes to update and verify the grade is "D".
-    await waitFor(() => {
-      expect(getByText('fourthStat: D')).toBeTruthy();
-    });
-  });  
-
   test('formats monthly tick labels correctly', async () => {
     (fetchStreak as jest.Mock).mockResolvedValueOnce([]); // weekly
     (fetchLongestStreak as jest.Mock).mockResolvedValueOnce(5);

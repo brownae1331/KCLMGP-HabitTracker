@@ -4,7 +4,7 @@ import { getHabitsForDate, generateIntervalInstances, generateDayInstances, migr
 
 const router = express.Router();
 
-// Add a new habit
+// Add a new habit to the database
 router.post('/', async (req, res) => {
     const {
         email,
@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
     } = req.body;
 
     try {
-        // 1) Insert into the main habits table
+        // Insert into the main habits table
         await pool.query(
             `INSERT INTO habits
           (user_email, habitName, habitDescription, habitType, habitColor,
@@ -38,7 +38,7 @@ router.post('/', async (req, res) => {
             ]
         );
 
-        // 2) If the schedule is "weekly," insert each selected day into habit_days
+        // If the schedule is "weekly," insert each selected day into habit_days
         if (scheduleOption === 'weekly' && Array.isArray(selectedDays)) {
             for (const day of selectedDays) {
                 await pool.query(
@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
             }
         }
 
-        // 3) If the schedule is "interval," insert a row into habit_intervals
+        // If the schedule is "interval," insert a row into habit_intervals
         if (scheduleOption === 'interval' && intervalDays) {
             await pool.query(
                 `INSERT INTO habit_intervals (user_email, habitName, increment)
@@ -74,7 +74,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Update an existing habit
+// Update an existing habit and its schedule
 router.put('/', async (req, res) => {
     const {
         email,
@@ -90,7 +90,7 @@ router.put('/', async (req, res) => {
     } = req.body;
 
     try {
-        // 1) Update the main habits table
+        // Update the main habits table
         await pool.query(
             `UPDATE habits SET 
             habitDescription = ?, 
@@ -112,11 +112,11 @@ router.put('/', async (req, res) => {
             ]
         );
 
-        // 2) Delete existing schedule data
+        // Delete existing schedule data
         await pool.query('DELETE FROM habit_days WHERE user_email = ? AND habitName = ?', [email, habitName]);
         await pool.query('DELETE FROM habit_intervals WHERE user_email = ? AND habitName = ?', [email, habitName]);
 
-        // 3) If the schedule is "weekly," insert each selected day into habit_days
+        // If the schedule is "weekly," insert each selected day into habit_days
         if (scheduleOption === 'weekly' && Array.isArray(selectedDays)) {
             for (const day of selectedDays) {
                 await pool.query(
@@ -143,7 +143,7 @@ router.put('/', async (req, res) => {
             }
         }
 
-        // 4) If the schedule is "interval," insert a row into habit_intervals
+        // If the schedule is "interval," insert a row into habit_intervals
         if (scheduleOption === 'interval' && intervalDays) {
             await pool.query(
                 `INSERT INTO habit_intervals (user_email, habitName, increment)
@@ -155,7 +155,7 @@ router.put('/', async (req, res) => {
             // as the interval recalculation might still include today
         }
 
-        // 5) Regenerate future instances based on new schedule
+        // Regenerate future instances based on new schedule
         await pool.query('DELETE FROM habit_instances WHERE user_email = ? AND habitName = ?', [email, habitName]);
 
         if (scheduleOption === 'interval') {
@@ -176,7 +176,6 @@ router.put('/', async (req, res) => {
 // Get all habits for a particular date
 router.get('/:email/:date', async (req, res) => {
     const { email, date } = req.params;
-    console.log(email, date);
     const requestedDate = new Date(date);
     if (isNaN(requestedDate.getTime())) {
         return res.status(400).json({ error: 'Invalid date format' });
@@ -219,7 +218,7 @@ router.get('/:email', async (req, res) => {
     }
 });
 
-// Delete a habit
+// Delete a specific habit for a user
 router.delete('/:email/:habitName', async (req, res) => {
     const { email, habitName } = req.params;
     try {
@@ -234,7 +233,7 @@ router.delete('/:email/:habitName', async (req, res) => {
     }
 });
 
-// Get habit days
+// Get scheduled days for a weekly habit
 router.get('/days/:email/:habitName', async (req, res) => {
     const { email, habitName } = req.params;
     try {
@@ -250,7 +249,7 @@ router.get('/days/:email/:habitName', async (req, res) => {
     }
 });
 
-// Get habit interval
+// Get interval setting for an interval-based habit
 router.get('/interval/:email/:habitName', async (req, res) => {
     const { email, habitName } = req.params;
     try {

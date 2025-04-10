@@ -26,7 +26,7 @@ app.use('/stats', statsRouter);
 
 // Default Route
 app.get('/', (req, res) => {
-  res.send('Habit Tracker API is running 🚀');
+  res.send('Habit Tracker API is running');
 });
 
 // Adjust the get habit query to fetch from habit_progress or habit_instances depending on the date

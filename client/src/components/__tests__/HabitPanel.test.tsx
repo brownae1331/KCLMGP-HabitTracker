@@ -145,7 +145,7 @@ describe('HabitPanel - Coverage tests', () => {
       fireEvent.press(getByText('Test Habit'));
     });
   });
-  
+
 
   it('should call polling function in useEffect', () => {
     jest.useFakeTimers();

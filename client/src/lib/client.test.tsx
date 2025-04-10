@@ -29,8 +29,8 @@ describe('fetchBuildHabitProgress', () => {
     });
 });
 
-//const BASE_URL = 'https://kclmgp-habittracker.onrender.com';
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'https://kclmgp-habittracker.onrender.com';
+// const BASE_URL = 'http://localhost:3000';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -339,7 +339,7 @@ describe('Client API Integration Tests', () => {
         setupFetchMock(responseData);
         const response = await client.addHabit(mockHabit);
         expect(global.fetch).toHaveBeenCalledWith(
-            '${BASE_URL}/habits',
+            `${BASE_URL}/habits`,
             expect.objectContaining({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -438,7 +438,7 @@ describe('Client API Integration Tests', () => {
         const response = await client.updateHabit(mockEmail, updatedHabit);
         expect(response).toEqual(responseData);
         expect(global.fetch).toHaveBeenCalledWith(
-            '${BASE_URL}/habits',
+            `${BASE_URL}/habits`,
             expect.objectContaining({
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -777,7 +777,7 @@ describe('fetchBuildHabitProgress coverage', () => {
         );
         expect(result).toEqual([{ progressDate: '2025-03-15T00:00:00Z', progress: 75 }]);
         expect(global.fetch).toHaveBeenCalledWith(
-            '${BASE_URL}/stats/test@example.com/Reading?range=week',
+            `${BASE_URL}/stats/test@example.com/Reading?range=week`,
             expect.any(Object)
         );
     });
