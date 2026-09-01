@@ -21,7 +21,7 @@
     "expo": "^52.0.38",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
-    "mysql2": "^3.6.2",
+    "mysql2": "^3.22.0",
     "nock": "^14.0.2"
   },
   "devDependencies": {
